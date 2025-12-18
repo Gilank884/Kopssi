@@ -3,8 +3,10 @@ import Navbar from './components/Navbar';
 import LoginModal from './components/LoginModal';
 import Home from './sections/Home';
 import About from './sections/About';
-import Personil from './sections/Personil';
+import Pengurus from './sections/Pengurus';
+import Pengawas from './sections/Pengawas'
 import Business from './sections/Business';
+import Footer from './components/Footer';
 import gsap from 'gsap';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -17,6 +19,7 @@ const LandingPage = () => {
     const homeRef = useRef(null);
     const aboutRef = useRef(null);
     const personilRef = useRef(null);
+    const pengawasRef = useRef(null);
     const businessRef = useRef(null);
 
     const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -27,6 +30,7 @@ const LandingPage = () => {
         home: homeRef,
         about: aboutRef,
         personil: personilRef,
+        pengawas: pengawasRef,
         business: businessRef,
     };
 
@@ -37,6 +41,7 @@ const LandingPage = () => {
                 { id: 'home', ref: homeRef },
                 { id: 'about', ref: aboutRef },
                 { id: 'personil', ref: personilRef },
+                { id: 'pengawas', ref: pengawasRef },
                 { id: 'business', ref: businessRef },
             ];
 
@@ -87,7 +92,8 @@ const LandingPage = () => {
 
             <div ref={homeRef} id="home"><Home /></div>
             <div ref={aboutRef} id="about"><About /></div>
-            <div ref={personilRef} id="personil"><Personil /></div>
+            <div ref={personilRef} id="personil"><Pengurus /></div>
+            <div ref={pengawasRef} id="pengawas"><Pengawas /></div>
             <div ref={businessRef} id="business"><Business /></div>
 
             <LoginModal
@@ -96,10 +102,7 @@ const LandingPage = () => {
                 onLogin={handleLogin}
             />
 
-            {/* Simple Footer */}
-            <footer className="bg-gray-900 text-white py-8 text-center">
-                <p className="text-gray-500">© 2024 Brand. All rights reserved.</p>
-            </footer>
+            <Footer />
         </div>
     );
 };
