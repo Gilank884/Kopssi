@@ -25,7 +25,7 @@ const Navbar = ({ onNavigate, onLoginClick, activeTab }) => {
                 <div className="flex items-center gap-2 cursor-pointer" onClick={() => onNavigate('home')}>
                     <img src="/Logo.png" alt="KOPSSI Logo" className="w-10 h-10 object-contain" />
                     <div className="text-2xl font-bold text-gray-900">
-                        KOPERASI PEGAWAI<span className="text-red-600"> SSI</span>
+                        KOPERASI SYARIAH<span className="text-red-600"> INDONESIA</span>
                     </div>
                 </div>
 
@@ -48,6 +48,7 @@ const Navbar = ({ onNavigate, onLoginClick, activeTab }) => {
                     >
                         Login
                     </button>
+
                 </div>
 
                 {/* Mobile Menu Button (Hamburger) - simplified for this demo */}

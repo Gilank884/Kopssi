@@ -64,13 +64,13 @@ const Home = () => {
             </div>
 
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 leading-tight mb-6">
-              Koperasi Pegawai <br />
-              <span className="text-red-600">PT. Swadharma Sarana Informatika</span>
+              Koperasi Syariah Indonesia <br />
+              <span className="text-red-600">PT Swadharma Sarana Informatika</span>
             </h1>
 
             <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border-l-4 border-red-600 shadow-sm mb-8">
               <p className="text-gray-600 leading-relaxed italic">
-                "KOPSSI Didirikan pada tanggal 20 september 2002 di Gedung Hanglekir Raya No 30 kel Gunung. Kebayoran Baru - Jakarta Selatan 12120. Di sahkan dengan nomor akte pendirian: <strong>295/BH/MENEG.I/VIII/2003</strong>. Dengan Jumlah anggota awal 33 (tiga puluh tiga) orang yang disebut sebagai pendiri Koperasi Pegawai PT. SSI."
+                "KOPSSI Didirikan pada tanggal 20 september 2002 di Gedung Hanglekir Raya No 30 kel Gunung. Kebayoran Baru - Jakarta Selatan 12120. Di sahkan dengan nomor akte pendirian: <strong>295/BH/MENEG.I/VIII/2003</strong>. Dengan Jumlah anggota awal 33 (tiga puluh tiga) orang yang disebut sebagai pendiri Koperasi Pegawai PT SSI."
               </p>
             </div>
 
@@ -92,7 +92,7 @@ const Home = () => {
                 <div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2">Simpanan</h3>
                   <p className="text-gray-600 text-sm leading-relaxed">
-                    Produk Simpanan dapat diikutin oleh seluruh Pegawai PT. Swadharma Sarana Informatika yang telah menjadi anggota.
+                    Produk Simpanan dapat diikutin oleh seluruh Pegawai PT Swadharma Sarana Informatika yang telah menjadi anggota.
                   </p>
                 </div>
               </div>
@@ -107,7 +107,7 @@ const Home = () => {
                 <div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2">Pinjaman</h3>
                   <p className="text-gray-600 text-sm leading-relaxed">
-                    Produk Pinjaman dapat diikuti oleh seluruh Pegawai PT. Swadharma Sarana Informatika yang telah menjadi anggota.
+                    Produk Pinjaman dapat diikuti oleh seluruh Pegawai PT Swadharma Sarana Informatika yang telah menjadi anggota.
                   </p>
                 </div>
               </div>

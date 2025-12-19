@@ -53,7 +53,7 @@ const About = () => {
                         About <span className="text-red-600">KOPSSI</span>
                     </h2>
                     <p className="text-gray-600 text-lg leading-relaxed">
-                        Koperasi Pegawai PT. Swadharma Sarana Informatika (KOPSSI) hadir untuk membangun kesejahteraan bersama melalui pengelolaan yang profesional dan transparan.
+                        Koperasi Pegawai PT Swadharma Sarana Informatika (KOPSSI) hadir untuk membangun kesejahteraan bersama melalui pengelolaan yang profesional dan transparan.
                     </p>
                 </div>
             </section>

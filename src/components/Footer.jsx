@@ -12,7 +12,7 @@ const Footer = () => {
                     <div className="lg:col-span-4 space-y-6">
                         <div className="flex items-center gap-4">
                             <div className="w-16 h-16 bg-white rounded-xl p-2 flex items-center justify-center shrink-0">
-                                <img src="/Logo.png" alt="KOPSSI Logo" className="w-full h-full object-contain" />
+                                <img src="/Kopsi.jpg" alt="KOPSSI Logo" className="w-full h-full object-contain" />
                             </div>
                             <div>
                                 <h3 className="text-xl font-bold text-white leading-tight">
