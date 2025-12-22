@@ -22,7 +22,7 @@ const AdminOverview = () => {
                     <div className="flex justify-between items-start">
                         <div>
                             <p className="text-gray-500 text-sm mb-1">Total Anggota</p>
-                            <h3 className="text-3xl font-bold text-gray-900">1,245</h3>
+                            <h3 className="text-3xl font-bold text-gray-900">123</h3>
                         </div>
                         <div className="p-2 bg-red-50 text-red-600 rounded-lg">
                             <Users size={24} />
