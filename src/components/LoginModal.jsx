@@ -45,35 +45,76 @@ const LoginModal = ({ isOpen, onClose, onLogin }) => {
         setLoading(true);
 
         // 🔹 Query user berdasarkan phone & password
-        const { data, error } = await supabase
+        const { data: userData, error: userError } = await supabase
             .from('users')
             .select('*')
             .eq('phone', phone)
             .eq('password', password)
             .single();
 
-        if (error || !data) {
+        if (userError || !userData) {
             setLoading(false);
             alert('Nomor HP atau password salah');
             return;
         }
 
-        const dbRole = data.role; // ADMIN | MEMBER
+        const dbRole = userData.role; // ADMIN | MEMBER
 
-        // 🔐 Validasi akses role
-        if (dbRole === 'MEMBER' && role === 'admin') {
-            setLoading(false);
-            alert('Akses ditolak. Anggota tidak memiliki akses Admin.');
-            return;
+        // 🔐 Validasi akses role untuk ADMIN
+        if (role === 'admin') {
+            // Jika user memilih admin, harus dicek apakah role di database adalah ADMIN
+            if (dbRole !== 'ADMIN') {
+                setLoading(false);
+                alert('Anda bukan ADMIN. Akses ditolak.');
+                return;
+            }
+            // Jika role adalah ADMIN dan user memilih admin, langsung login
+            // Tidak perlu cek personal_data untuk admin
+            // Admin akan di-redirect ke /admin di handleLogin
+        }
+
+        // 🔍 Cek status user dari personal_data (hanya untuk MEMBER)
+        if (dbRole === 'MEMBER') {
+            const { data: personalData, error: personalError } = await supabase
+                .from('personal_data')
+                .select('status, full_name')
+                .eq('user_id', userData.id)
+                .single();
+
+            if (personalError || !personalData) {
+                setLoading(false);
+                alert('Data personal tidak ditemukan. Silakan hubungi administrator.');
+                return;
+            }
+
+            // Cek apakah status aktif
+            // Status yang diizinkan: 'active' atau 'approved'
+            // Status yang ditolak: 'pending', 'rejected', null, atau lainnya
+            const activeStatuses = ['active', 'approved'];
+            const userStatus = personalData.status?.toLowerCase();
+
+            if (!userStatus || !activeStatuses.includes(userStatus)) {
+                setLoading(false);
+                if (userStatus === 'pending' || !userStatus) {
+                    alert('Akun Anda belum aktif. Pendaftaran Anda masih dalam proses verifikasi. Silakan tunggu persetujuan dari administrator.');
+                } else if (userStatus === 'rejected') {
+                    alert('Akun Anda ditolak. Silakan hubungi administrator untuk informasi lebih lanjut.');
+                } else {
+                    alert('Akun Anda belum aktif. Silakan hubungi administrator.');
+                }
+                return;
+            }
         }
 
         // ✅ Login sukses
-        onLogin({
-            id: data.id,
-            phone: data.phone,
+        const loginData = {
+            id: userData.id,
+            phone: userData.phone,
             role: dbRole,
             loginAs: role // admin | user
-        });
+        };
+
+        onLogin(loginData);
 
         setLoading(false);
         onClose();

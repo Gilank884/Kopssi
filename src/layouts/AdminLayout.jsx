@@ -7,7 +7,8 @@ import {
     Settings,
     LogOut,
     Menu,
-    Bell
+    Bell,
+    UserPlus
 } from 'lucide-react';
 import LogoutModal from '../components/LogoutModal';
 
@@ -28,6 +29,7 @@ const AdminLayout = () => {
 
     const navItems = [
         { path: '/admin', label: 'Dashboard', icon: <LayoutDashboard size={20} />, end: true },
+        { path: '/admin/pengajuan-anggota', label: 'Pengajuan Anggota', icon: <UserPlus size={20} /> },
         { path: '/admin/members', label: 'Data Anggota', icon: <Users size={20} /> },
         { path: '/admin/reports', label: 'Laporan', icon: <FileText size={20} /> },
         { path: '/admin/settings', label: 'Pengaturan', icon: <Settings size={20} /> },

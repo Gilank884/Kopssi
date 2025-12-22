@@ -11,6 +11,7 @@ import Profil from './pages/Dashboard/Profil';
 import PengajuanPinjaman from './pages/Dashboard/PengajuanPinjaman';
 import AdminLayout from './layouts/AdminLayout';
 import AdminOverview from './pages/Admin/Dashboard';
+import PengajuanAnggota from './pages/Admin/PengajuanAnggota';
 import MemberList from './pages/Admin/Members';
 import AdminReports from './pages/Admin/Reports';
 import AdminSettings from './pages/Admin/Settings';
@@ -35,6 +36,7 @@ function App() {
         {/* Admin Dashboard Routes */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminOverview />} />
+          <Route path="pengajuan-anggota" element={<PengajuanAnggota />} />
           <Route path="members" element={<MemberList />} />
           <Route path="reports" element={<AdminReports />} />
           <Route path="settings" element={<AdminSettings />} />

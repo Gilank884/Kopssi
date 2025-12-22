@@ -87,12 +87,16 @@ const LandingPage = () => {
         setIsRegisterOpen(false);
     };
 
-    const handleLogin = (role) => {
+    const handleLogin = (loginData) => {
         setIsLoginOpen(false);
         setTimeout(() => {
-            if (role === 'admin') {
+            // loginData.role adalah role dari database (ADMIN | MEMBER)
+            // loginData.loginAs adalah pilihan user di UI (admin | user)
+            if (loginData.role === 'ADMIN') {
+                // Admin redirect ke dashboard admin
                 navigate('/admin');
             } else {
+                // Member redirect ke dashboard biasa
                 navigate('/dashboard');
             }
         }, 300);
