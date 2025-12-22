@@ -8,6 +8,7 @@ import Pinjaman from './pages/Dashboard/Pinjaman';
 import Angsuran from './pages/Dashboard/Angsuran';
 import SHU from './pages/Dashboard/SHU';
 import Profil from './pages/Dashboard/Profil';
+import PengajuanPinjaman from './pages/Dashboard/PengajuanPinjaman';
 import AdminLayout from './layouts/AdminLayout';
 import AdminOverview from './pages/Admin/Dashboard';
 import MemberList from './pages/Admin/Members';
@@ -27,6 +28,7 @@ function App() {
           <Route path="pinjaman" element={<Pinjaman />} />
           <Route path="angsuran" element={<Angsuran />} />
           <Route path="shu" element={<SHU />} />
+          <Route path="pengajuan-pinjaman" element={<PengajuanPinjaman />} />
           <Route path="profil" element={<Profil />} />
         </Route>
 

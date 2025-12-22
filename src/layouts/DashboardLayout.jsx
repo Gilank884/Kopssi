@@ -9,7 +9,8 @@ import {
     User,
     LogOut,
     Menu,
-    Bell
+    Bell,
+    FileText
 } from 'lucide-react';
 import gsap from 'gsap';
 import LogoutModal from '../components/LogoutModal';
@@ -46,6 +47,7 @@ const DashboardLayout = () => {
         { path: '/dashboard/pinjaman', label: 'Pinjaman Saya', icon: <CreditCard size={20} /> },
         { path: '/dashboard/angsuran', label: 'Angsuran Saya', icon: <CalendarDays size={20} /> },
         { path: '/dashboard/shu', label: 'SHU Saya', icon: <PieChart size={20} /> },
+        { path: '/dashboard/pengajuan-pinjaman', label: 'Pengajuan Pinjaman', icon: <FileText size={20} /> },
         { path: '/dashboard/profil', label: 'Profil', icon: <User size={20} /> },
     ];
 
