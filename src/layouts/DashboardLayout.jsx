@@ -58,9 +58,9 @@ const DashboardLayout = () => {
             {/* Sidebar */}
             <aside
                 ref={sidebarRef}
-                className={`bg-white border-r border-red-100 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-20'} fixed h-full z-20 md:relative shadow-sm`}
+                className={`bg-white border-r border-emerald-100 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-20'} fixed h-full z-20 md:relative shadow-sm`}
             >
-                <div className="h-16 flex items-center justify-center border-b border-red-50 bg-red-600">
+                <div className="h-16 flex items-center justify-center border-b border-emerald-50 bg-emerald-600">
                     {isSidebarOpen ? <span className="text-xl font-bold tracking-wider text-white">KOPSSI</span> : <span className="text-xl font-bold text-white">K</span>}
                 </div>
 
@@ -71,7 +71,7 @@ const DashboardLayout = () => {
                             to={item.path}
                             end={item.end}
                             className={({ isActive }) =>
-                                `flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-300 ${isActive ? 'bg-red-50 text-red-600 shadow-sm border border-red-100 translate-x-1' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}`
+                                `flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-300 ${isActive ? 'bg-emerald-50 text-emerald-600 shadow-sm border border-emerald-100 translate-x-1' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}`
                             }
                         >
                             <div>{item.icon}</div>
@@ -80,10 +80,10 @@ const DashboardLayout = () => {
                     ))}
                 </nav>
 
-                <div className="p-3 border-t border-red-50">
+                <div className="p-3 border-t border-emerald-50">
                     <button
                         onClick={handleLogoutClick}
-                        className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                        className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-gray-400 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
                     >
                         <LogOut size={20} />
                         {isSidebarOpen && <span className="font-medium">Logout</span>}
@@ -94,9 +94,9 @@ const DashboardLayout = () => {
             {/* Main Content */}
             <div className="flex-1 flex flex-col overflow-hidden">
                 {/* Header */}
-                <header ref={headerRef} className="h-16 bg-white shadow-sm flex items-center justify-between px-6 z-10 border-b border-red-50">
+                <header ref={headerRef} className="h-16 bg-white shadow-sm flex items-center justify-between px-6 z-10 border-b border-emerald-50">
                     <div className="flex items-center gap-4">
-                        <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="text-gray-400 hover:text-red-600 transition-colors">
+                        <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="text-gray-400 hover:text-emerald-600 transition-colors">
                             <Menu size={24} />
                         </button>
                         <h1 className="text-xl font-bold text-gray-800 hidden md:block">{currentItem.label}</h1>
@@ -104,18 +104,18 @@ const DashboardLayout = () => {
 
                     <div className="flex items-center gap-6">
                         {/* Notification */}
-                        <button className="relative text-gray-400 hover:text-red-600 transition-colors">
+                        <button className="relative text-gray-400 hover:text-emerald-600 transition-colors">
                             <Bell size={20} />
-                            <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                            <span className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
                         </button>
 
                         {/* User Profile */}
-                        <div className="flex items-center gap-3 pl-6 border-l border-red-50">
+                        <div className="flex items-center gap-3 pl-6 border-l border-emerald-50">
                             <div className="text-right hidden md:block">
                                 <p className="text-sm font-bold text-gray-900">Gilang Prasetyo</p>
-                                <p className="text-xs text-red-500 font-medium">Anggota #12345</p>
+                                <p className="text-xs text-emerald-500 font-medium">Anggota #12345</p>
                             </div>
-                            <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center text-red-600 font-bold border-2 border-red-50 shadow-md">
+                            <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 font-bold border-2 border-emerald-50 shadow-md">
                                 GP
                             </div>
                         </div>

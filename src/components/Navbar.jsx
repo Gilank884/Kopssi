@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const Navbar = ({ onNavigate, onLoginClick, activeTab }) => {
+const Navbar = ({ onNavigate, onLoginClick, onRegisterClick, activeTab }) => {
     const [scrolled, setScrolled] = useState(false);
 
     useEffect(() => {
@@ -25,7 +25,7 @@ const Navbar = ({ onNavigate, onLoginClick, activeTab }) => {
                 <div className="flex items-center gap-2 cursor-pointer" onClick={() => onNavigate('home')}>
                     <img src="/Logo.png" alt="KOPSSI Logo" className="w-10 h-10 object-contain" />
                     <div className="text-2xl font-bold text-gray-900">
-                        KOPERASI SYARIAH<span className="text-red-600"> INDONESIA</span>
+                        KOPERASI SYARIAH<span className="text-emerald-600"> INDONESIA</span>
                     </div>
                 </div>
 
@@ -37,16 +37,22 @@ const Navbar = ({ onNavigate, onLoginClick, activeTab }) => {
                             onClick={() => {
                                 onNavigate(item.id);
                             }}
-                            className={`text-sm font-medium transition-colors hover:text-red-600 ${activeTab === item.id ? 'text-red-600' : 'text-gray-600'}`}
+                            className={`text-sm font-medium transition-colors hover:text-emerald-600 ${activeTab === item.id ? 'text-emerald-600' : 'text-gray-600'}`}
                         >
                             {item.label}
                         </button>
                     ))}
                     <button
                         onClick={onLoginClick}
-                        className="px-5 py-2 rounded-full border border-red-600 text-red-600 font-medium hover:bg-red-600 hover:text-white transition-all text-sm"
+                        className="px-5 py-2 rounded-full border border-emerald-600 text-emerald-600 font-medium hover:bg-emerald-600 hover:text-white transition-all text-sm"
                     >
                         Login
+                    </button>
+                    <button
+                        onClick={onRegisterClick}
+                        className="ml-2 px-5 py-2 rounded-full bg-emerald-600 text-white font-medium hover:bg-emerald-700 transition-all text-sm"
+                    >
+                        Register
                     </button>
 
                 </div>

@@ -44,7 +44,7 @@ const LogoutModal = ({ isOpen, onClose, onConfirm }) => {
                 ref={contentRef}
                 className="bg-white p-6 rounded-2xl w-full max-w-sm shadow-2xl relative text-center"
             >
-                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-600">
+                <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 text-emerald-600">
                     <LogOut size={32} />
                 </div>
 
@@ -60,7 +60,7 @@ const LogoutModal = ({ isOpen, onClose, onConfirm }) => {
                     </button>
                     <button
                         onClick={onConfirm}
-                        className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors shadow-lg shadow-red-200"
+                        className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-200"
                     >
                         Ya, Keluar
                     </button>

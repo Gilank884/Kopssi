@@ -17,7 +17,7 @@ const Footer = () => {
                             <div>
                                 <h3 className="text-xl font-bold text-white leading-tight">
                                     Koperasi Jasa Pegawai <br />
-                                    <span className="text-red-500">Swadharma Sarana Informatika</span>
+                                    <span className="text-emerald-500">Swadharma Sarana Informatika</span>
                                 </h3>
                                 <div className="text-sm text-gray-400 font-semibold tracking-wider mt-1">(KOPSSI)</div>
                             </div>
@@ -30,7 +30,7 @@ const Footer = () => {
                     {/* Middle Column: Pusat Address */}
                     <div className="lg:col-span-3 space-y-6">
                         <h4 className="text-lg font-bold text-white flex items-center gap-2">
-                            <MapPin className="text-red-500" size={20} />
+                            <MapPin className="text-emerald-500" size={20} />
                             Kantor Pusat
                         </h4>
                         <div className="space-y-4 text-sm">
@@ -46,7 +46,7 @@ const Footer = () => {
                             </div>
                             <div className="flex items-center gap-3">
                                 <Mail size={16} className="text-gray-500" />
-                                <a href="mailto:info@koperasissi.com" className="hover:text-red-400 transition-colors">info@koperasissi.com</a>
+                                <a href="mailto:info@koperasissi.com" className="hover:text-emerald-400 transition-colors">info@koperasissi.com</a>
                             </div>
                         </div>
                     </div>
@@ -54,7 +54,7 @@ const Footer = () => {
                     {/* Middle Column: Operasional Address */}
                     <div className="lg:col-span-3 space-y-6">
                         <h4 className="text-lg font-bold text-white flex items-center gap-2">
-                            <MapPin className="text-red-500" size={20} />
+                            <MapPin className="text-emerald-500" size={20} />
                             Kantor Operasional
                         </h4>
                         <div className="space-y-4 text-sm">
@@ -79,14 +79,14 @@ const Footer = () => {
                         <h4 className="text-lg font-bold text-white">Connect</h4>
                         <ul className="space-y-4 text-sm">
                             <li>
-                                <a href="https://www.koperasissi.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:text-red-400 transition-colors group">
-                                    <Globe size={18} className="text-gray-500 group-hover:text-red-500" />
+                                <a href="https://www.koperasissi.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:text-emerald-400 transition-colors group">
+                                    <Globe size={18} className="text-gray-500 group-hover:text-emerald-500" />
                                     www.koperasissi.com
                                 </a>
                             </li>
                             <li>
-                                <a href="https://instagram.com/koperasipegawaissi" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:text-red-400 transition-colors group">
-                                    <Instagram size={18} className="text-gray-500 group-hover:text-red-500" />
+                                <a href="https://instagram.com/koperasipegawaissi" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:text-emerald-400 transition-colors group">
+                                    <Instagram size={18} className="text-gray-500 group-hover:text-emerald-500" />
                                     koperasipegawaissi
                                 </a>
                             </li>
@@ -104,7 +104,7 @@ const Footer = () => {
                         rel="noopener noreferrer"
                         className="flex items-center gap-2 hover:text-white transition-colors px-4 py-2 bg-gray-800/50 rounded-full hover:bg-gray-800"
                     >
-                        <span>Developer by <span className="text-red-500 font-semibold"></span></span>
+                        <span>Developer by <span className="text-emerald-500 font-semibold"></span></span>
                         <ExternalLink size={14} />
                     </a>
                 </div>

@@ -44,7 +44,7 @@ const Home = () => {
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage: `linear-gradient(#ef4444 1px, transparent 1px), linear-gradient(to right, #ef4444 1px, transparent 1px)`,
+            backgroundImage: `linear-gradient(#10b981 1px, transparent 1px), linear-gradient(to right, #10b981 1px, transparent 1px)`,
             backgroundSize: '40px 40px',
             maskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)',
             WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)',
@@ -58,23 +58,23 @@ const Home = () => {
 
           {/* Left Content: Text & History */}
           <div className="lg:w-1/2 hero-content-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100 text-red-600 text-sm font-semibold mb-6">
-              <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-600 text-sm font-semibold mb-6">
+              <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
               Trusted Since 2002
             </div>
 
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 leading-tight mb-6">
               Koperasi Syariah Indonesia <br />
-              <span className="text-red-600">PT Swadharma Sarana Informatika</span>
+              <span className="text-emerald-600">PT Swadharma Sarana Informatika</span>
             </h1>
 
-            <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border-l-4 border-red-600 shadow-sm mb-8">
+            <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border-l-4 border-emerald-600 shadow-sm mb-8">
               <p className="text-gray-600 leading-relaxed italic">
                 "KOPSSI Didirikan pada tanggal 20 september 2002 di Gedung Hanglekir Raya No 30 kel Gunung. Kebayoran Baru - Jakarta Selatan 12120. Di sahkan dengan nomor akte pendirian: <strong>295/BH/MENEG.I/VIII/2003</strong>. Dengan Jumlah anggota awal 33 (tiga puluh tiga) orang yang disebut sebagai pendiri Koperasi Pegawai PT SSI."
               </p>
             </div>
 
-            <button className="group bg-red-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-red-700 transition-all shadow-lg hover:shadow-red-200 flex items-center gap-3">
+            <button className="group bg-emerald-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-emerald-700 transition-all shadow-lg hover:shadow-emerald-200 flex items-center gap-3">
               Explore More
               <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
             </button>
@@ -84,7 +84,7 @@ const Home = () => {
           <div className="lg:w-1/2 w-full grid gap-6">
 
             {/* Simpanan Card */}
-            <div className="hero-card bg-white p-6 rounded-2xl shadow-xl border border-gray-100 hover:border-red-200 transition-all duration-300 group">
+            <div className="hero-card bg-white p-6 rounded-2xl shadow-xl border border-gray-100 hover:border-emerald-200 transition-all duration-300 group">
               <div className="flex items-start gap-4">
                 <div className="p-3 bg-green-100 rounded-xl text-green-600 group-hover:scale-110 transition-transform">
                   <Wallet size={32} />
@@ -99,7 +99,7 @@ const Home = () => {
             </div>
 
             {/* Pinjaman Card */}
-            <div className="hero-card bg-white p-6 rounded-2xl shadow-xl border border-gray-100 hover:border-red-200 transition-all duration-300 group">
+            <div className="hero-card bg-white p-6 rounded-2xl shadow-xl border border-gray-100 hover:border-emerald-200 transition-all duration-300 group">
               <div className="flex items-start gap-4">
                 <div className="p-3 bg-blue-100 rounded-xl text-blue-600 group-hover:scale-110 transition-transform">
                   <CreditCard size={32} />
@@ -114,7 +114,7 @@ const Home = () => {
             </div>
 
             {/* Jumlah Anggota Card */}
-            <div className="hero-card bg-gradient-to-r from-red-600 to-red-800 p-6 rounded-2xl shadow-xl text-white transform hover:-translate-y-1 transition-transform duration-300">
+            <div className="hero-card bg-gradient-to-r from-emerald-600 to-emerald-800 p-6 rounded-2xl shadow-xl text-white transform hover:-translate-y-1 transition-transform duration-300">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-medium text-white mb-1">Jumlah Anggota</h3>

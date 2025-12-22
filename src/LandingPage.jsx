@@ -1,6 +1,7 @@
 import React, { useRef, useState, useLayoutEffect } from 'react';
 import Navbar from './components/Navbar';
 import LoginModal from './components/LoginModal';
+import RegistrationModal from './components/RegistrationModal';
 import Home from './sections/Home';
 import About from './sections/About';
 import Pengurus from './sections/Pengurus';
@@ -23,6 +24,7 @@ const LandingPage = () => {
     const businessRef = useRef(null);
 
     const [isLoginOpen, setIsLoginOpen] = useState(false);
+    const [isRegisterOpen, setIsRegisterOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('home');
     const navigate = useNavigate();
 
@@ -71,6 +73,20 @@ const LandingPage = () => {
         }
     };
 
+    const handleRegisterOpen = () => {
+        setIsRegisterOpen(true);
+    };
+
+    const handleRegisterClose = () => {
+        setIsRegisterOpen(false);
+    };
+
+    const handleRegisterSubmit = (data) => {
+        console.log('Submitted registration data:', data);
+        // TODO: integrate with backend API
+        setIsRegisterOpen(false);
+    };
+
     const handleLogin = (role) => {
         setIsLoginOpen(false);
         setTimeout(() => {
@@ -87,6 +103,7 @@ const LandingPage = () => {
             <Navbar
                 onNavigate={handleNavigate}
                 onLoginClick={() => setIsLoginOpen(true)}
+                onRegisterClick={handleRegisterOpen}
                 activeTab={activeTab}
             />
 
@@ -100,6 +117,11 @@ const LandingPage = () => {
                 isOpen={isLoginOpen}
                 onClose={() => setIsLoginOpen(false)}
                 onLogin={handleLogin}
+            />
+            <RegistrationModal
+                isOpen={isRegisterOpen}
+                onClose={handleRegisterClose}
+                onSubmit={handleRegisterSubmit}
             />
 
             <Footer />
