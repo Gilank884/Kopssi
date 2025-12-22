@@ -118,7 +118,7 @@ const Home = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-medium text-white mb-1">Jumlah Anggota</h3>
-                  <div className="text-4xl font-bold text-white mb-2">6,768 <span className="text-base font-normal text-white">Orang</span></div>
+                  <div className="text-4xl font-bold text-white mb-2">7,000 <span className="text-base font-normal text-white">Orang</span></div>
                   <div className="flex items-center gap-2 text-sm text-green-400">
                     <Users size={16} />
                     <span>Active Members</span>
