@@ -4,7 +4,6 @@ import {
     User,
     MapPin,
     FileText,
-    Wallet,
     ChevronRight,
     ChevronLeft,
     Check,
@@ -16,6 +15,9 @@ import {
 const RegistrationModal = ({ isOpen, onClose, onSubmit }) => {
     const modalRef = useRef(null);
     const contentRef = useRef(null);
+    const canvasRef = useRef(null);
+    const isDrawing = useRef(false);
+    const lastPositionRef = useRef({ x: 0, y: 0 });
     const [currentStep, setCurrentStep] = useState(1);
 
     // Form state
@@ -24,15 +26,25 @@ const RegistrationModal = ({ isOpen, onClose, onSubmit }) => {
         nik: '',
         phone: '',
         nip: '',
+
+        company: '',
+        otherCompany: '',
+        workUnit: '',
+        otherWorkUnit: '',
+        employmentStatus: '',
+
         address: '',
         postalCode: '',
         emergencyPhone: '',
-        mandatoryDeposit: '',
-        principalDeposit: '',
+
         ktpFile: null,
         idCardFile: null,
-        transferProofFile: null,
+
+        signature: null,
+        photo34File: null,
+        agreement: false,
     });
+
 
     const totalSteps = 4;
 
@@ -59,12 +71,91 @@ const RegistrationModal = ({ isOpen, onClose, onSubmit }) => {
     }, [isOpen]);
 
     const handleChange = (e) => {
-        const { name, value, files } = e.target;
+        const { name, value, files, type, checked } = e.target;
+
+        if (type === 'checkbox') {
+            setFormData((prev) => ({ ...prev, [name]: checked }));
+            return;
+        }
+
+        if (type === 'radio') {
+            setFormData((prev) => ({ ...prev, [name]: value }));
+            return;
+        }
+
         if (files) {
             setFormData((prev) => ({ ...prev, [name]: files[0] }));
         } else {
             setFormData((prev) => ({ ...prev, [name]: value }));
         }
+    };
+
+    const getCanvasPosition = (event) => {
+        const canvas = canvasRef.current;
+        const rect = canvas.getBoundingClientRect();
+
+        if (event.touches && event.touches[0]) {
+            return {
+                x: event.touches[0].clientX - rect.left,
+                y: event.touches[0].clientY - rect.top,
+            };
+        }
+
+        return {
+            x: event.clientX - rect.left,
+            y: event.clientY - rect.top,
+        };
+    };
+
+    const startDraw = (event) => {
+        if (!canvasRef.current) return;
+        const ctx = canvasRef.current.getContext('2d');
+        const pos = getCanvasPosition(event);
+
+        isDrawing.current = true;
+        lastPositionRef.current = pos;
+
+        ctx.strokeStyle = '#059669'; // emerald-600
+        ctx.lineWidth = 2;
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+        event.preventDefault();
+    };
+
+    const draw = (event) => {
+        if (!isDrawing.current || !canvasRef.current) return;
+        const ctx = canvasRef.current.getContext('2d');
+        const pos = getCanvasPosition(event);
+
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        lastPositionRef.current = pos;
+        event.preventDefault();
+    };
+
+    const endDraw = (event) => {
+        if (!isDrawing.current || !canvasRef.current) return;
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+
+        ctx.closePath();
+        isDrawing.current = false;
+        event && event.preventDefault();
+
+        // Simpan tanda tangan sebagai data URL di state
+        const dataUrl = canvas.toDataURL('image/png');
+        setFormData((prev) => ({ ...prev, signature: dataUrl }));
+    };
+
+    const clearSignature = () => {
+        if (!canvasRef.current) return;
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        setFormData((prev) => ({ ...prev, signature: null }));
     };
 
     const nextStep = () => {
@@ -86,8 +177,9 @@ const RegistrationModal = ({ isOpen, onClose, onSubmit }) => {
         { id: 1, title: 'Bio', icon: <User size={18} /> },
         { id: 2, title: 'Alamat', icon: <MapPin size={18} /> },
         { id: 3, title: 'Berkas', icon: <FileText size={18} /> },
-        { id: 4, title: 'Bayar', icon: <Wallet size={18} /> },
+        { id: 4, title: 'Tanda Tangan', icon: <FileText size={18} /> },
     ];
+
 
     if (!isOpen) return null;
 
@@ -124,8 +216,8 @@ const RegistrationModal = ({ isOpen, onClose, onSubmit }) => {
                         {steps.map((step) => (
                             <div key={step.id} className="relative z-10 flex flex-col items-center gap-2">
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${currentStep >= step.id
-                                        ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200'
-                                        : 'bg-white text-gray-400 border-2 border-gray-200'
+                                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200'
+                                    : 'bg-white text-gray-400 border-2 border-gray-200'
                                     }`}>
                                     {currentStep > step.id ? <Check size={18} strokeWidth={3} /> : step.icon}
                                 </div>
@@ -190,6 +282,97 @@ const RegistrationModal = ({ isOpen, onClose, onSubmit }) => {
                                         />
                                     </div>
                                 </div>
+
+                                {/* Bio Perusahaan */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Perusahaan *</label>
+                                        <select
+                                            name="company"
+                                            value={formData.company}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                            required
+                                        >
+                                            <option value="">Pilih Perusahaan</option>
+                                            <option value="PT Swadharma Sarana Informatika">PT Swadharma Sarana Informatika</option>
+                                            <option value="Lainnya">Lainnya</option>
+                                        </select>
+                                        {formData.company === 'Lainnya' && (
+                                            <input
+                                                type="text"
+                                                name="otherCompany"
+                                                value={formData.otherCompany}
+                                                onChange={handleChange}
+                                                placeholder="Tuliskan nama perusahaan"
+                                                className="mt-2 w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                                required
+                                            />
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Unit Kerja *</label>
+                                        <select
+                                            name="workUnit"
+                                            value={formData.workUnit}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                            required
+                                        >
+                                            <option value="">Pilih Unit Kerja</option>
+                                            <option value="Centra">Centra</option>
+                                            <option value="Lainnya">Lainnya</option>
+                                        </select>
+                                        {formData.workUnit === 'Lainnya' && (
+                                            <input
+                                                type="text"
+                                                name="otherWorkUnit"
+                                                value={formData.otherWorkUnit}
+                                                onChange={handleChange}
+                                                placeholder="Tuliskan unit kerja"
+                                                className="mt-2 w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                                required
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Status Pegawai */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Status Pegawai *</label>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <label className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer text-sm font-medium transition-all ${formData.employmentStatus === 'Pegawai Tetap'
+                                            ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                                            : 'border-gray-200 bg-gray-50 text-gray-700'
+                                            }`}>
+                                            <input
+                                                type="radio"
+                                                name="employmentStatus"
+                                                value="Pegawai Tetap"
+                                                checked={formData.employmentStatus === 'Pegawai Tetap'}
+                                                onChange={handleChange}
+                                                className="text-emerald-600 focus:ring-emerald-500"
+                                                required
+                                            />
+                                            <span>Pegawai Tetap</span>
+                                        </label>
+                                        <label className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer text-sm font-medium transition-all ${formData.employmentStatus === 'Pegawai Kontrak'
+                                            ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                                            : 'border-gray-200 bg-gray-50 text-gray-700'
+                                            }`}>
+                                            <input
+                                                type="radio"
+                                                name="employmentStatus"
+                                                value="Pegawai Kontrak"
+                                                checked={formData.employmentStatus === 'Pegawai Kontrak'}
+                                                onChange={handleChange}
+                                                className="text-emerald-600 focus:ring-emerald-500"
+                                                required
+                                            />
+                                            <span>Pegawai Kontrak</span>
+                                        </label>
+                                    </div>
+                                </div>
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">Nomor Induk Pegawai (NIP)</label>
                                     <input
@@ -198,6 +381,17 @@ const RegistrationModal = ({ isOpen, onClose, onSubmit }) => {
                                         value={formData.nip}
                                         onChange={handleChange}
                                         placeholder="Masukkan NIP (Opsional)"
+                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email Pegawai</label>
+                                    <input
+                                        type="text"
+                                        name="nip"
+                                        value={formData.nip}
+                                        onChange={handleChange}
+                                        placeholder="Contoh: Pegawai@gmail.com"
                                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
                                     />
                                 </div>
@@ -283,63 +477,77 @@ const RegistrationModal = ({ isOpen, onClose, onSubmit }) => {
                             </div>
                         )}
 
-                        {/* Step 4: Finansial */}
+                        {/* Step 4: Tanda Tangan */}
                         {currentStep === 4 && (
                             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Simpanan Pokok (Rp) *</label>
-                                        <div className="relative">
-                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">Rp</span>
-                                            <input
-                                                type="number"
-                                                name="principalDeposit"
-                                                value={formData.principalDeposit}
-                                                onChange={handleChange}
-                                                placeholder="0"
-                                                className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all font-semibold"
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">Simpanan Wajib (Rp) *</label>
-                                        <div className="relative">
-                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">Rp</span>
-                                            <input
-                                                type="number"
-                                                name="mandatoryDeposit"
-                                                value={formData.mandatoryDeposit}
-                                                onChange={handleChange}
-                                                placeholder="0"
-                                                className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all font-semibold"
-                                                required
-                                            />
-                                        </div>
+
+                                {/* Tanda Tangan */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Tanda Tangan Digital *
+                                    </label>
+
+                                    <div className="border-2 border-dashed border-gray-300 rounded-2xl bg-gray-50 p-3">
+                                        <canvas
+                                            ref={canvasRef}
+                                            width={500}
+                                            height={180}
+                                            className="w-full bg-white rounded-xl"
+                                            onMouseDown={startDraw}
+                                            onMouseMove={draw}
+                                            onMouseUp={endDraw}
+                                            onMouseLeave={endDraw}
+                                            onTouchStart={startDraw}
+                                            onTouchMove={draw}
+                                            onTouchEnd={endDraw}
+                                        />
+
+                                        <button
+                                            type="button"
+                                            onClick={clearSignature}
+                                            className="mt-3 text-sm font-bold text-red-600 hover:underline"
+                                        >
+                                            Hapus Tanda Tangan
+                                        </button>
                                     </div>
                                 </div>
 
-                                <div className="p-6 bg-emerald-50 rounded-2xl border-2 border-dashed border-emerald-200">
-                                    <div className="flex flex-col md:flex-row items-center gap-6">
-                                        <div className="flex-1 text-center md:text-left">
-                                            <h4 className="text-sm font-bold text-emerald-900 mb-1">Bukti Transfer Pembayaran *</h4>
-                                            <p className="text-xs text-emerald-600 font-medium">BSI: 7788990011 a.n KOPSSI SARANA</p>
-                                        </div>
-                                        <div>
-                                            <input type="file" name="transferProofFile" id="transfer-upload" onChange={handleChange} className="hidden" required />
-                                            <label htmlFor="transfer-upload" className="px-6 py-2.5 bg-white border-2 border-emerald-500 text-emerald-600 text-sm font-bold rounded-xl hover:bg-emerald-50 cursor-pointer shadow-sm transition-all whitespace-nowrap block">
-                                                {formData.transferProofFile ? 'Bukti Terpilih' : 'Upload Bukti'}
-                                            </label>
-                                        </div>
-                                    </div>
-                                    {formData.transferProofFile && (
-                                        <p className="mt-3 text-[10px] text-emerald-700 font-bold bg-white/50 py-1 px-3 rounded-full text-center truncate">
-                                            {formData.transferProofFile.name}
+                                {/* Upload Foto 3x4 */}
+                                <div>
+                                    <input
+                                        type="file"
+                                        name="photo34File"
+                                        id="photo34-upload"
+                                        onChange={handleChange}
+                                        className="hidden"
+                                        required
+                                    />
+                                    <label
+                                        htmlFor="photo34-upload"
+                                        className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 hover:bg-emerald-50 hover:border-emerald-300 cursor-pointer transition-all"
+                                    >
+                                        <Upload className="w-8 h-8 mb-3 text-gray-400" />
+                                        <p className="text-sm font-semibold text-gray-600">
+                                            {formData.photo34File ? formData.photo34File.name : 'Upload Foto 3x4 *'}
                                         </p>
-                                    )}
+                                        <p className="text-xs text-gray-400">PNG / JPG</p>
+                                    </label>
                                 </div>
+
+                                {/* Persetujuan */}
+                                <label className="flex items-start gap-3 text-sm text-gray-700">
+                                    <input
+                                        type="checkbox"
+                                        name="agreement"
+                                        checked={formData.agreement}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                    Saya menyatakan bahwa data yang saya isi benar dan dapat dipertanggungjawabkan
+                                </label>
                             </div>
                         )}
+
                     </form>
                 </div>
 
