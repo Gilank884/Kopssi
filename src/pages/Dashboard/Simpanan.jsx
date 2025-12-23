@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Wallet, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
+import { supabase } from '../../lib/supabaseClient';
 
 const SimpananCard = ({ title, amount, color }) => (
     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
@@ -9,21 +10,135 @@ const SimpananCard = ({ title, amount, color }) => (
 );
 
 const Simpanan = () => {
-    const history = [
-        { date: '12 Dec 2024', type: 'Simpanan Sukarela', nominal: 500000, status: 'Setor', balance: 7000000 },
-        { date: '10 Nov 2024', type: 'Simpanan Wajib', nominal: 100000, status: 'Setor', balance: 6500000 },
-        { date: '10 Oct 2024', type: 'Simpanan Wajib', nominal: 100000, status: 'Setor', balance: 6400000 },
-        { date: '25 Sep 2024', type: 'Penarikan', nominal: 200000, status: 'Tarik', balance: 6300000 },
-        { date: '10 Sep 2024', type: 'Simpanan Wajib', nominal: 100000, status: 'Setor', balance: 6500000 },
-    ];
+    const [history, setHistory] = useState([]);
+    const [pokok, setPokok] = useState(0);
+    const [wajib, setWajib] = useState(0);
+    const [totalSaldo, setTotalSaldo] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [hasData, setHasData] = useState(false);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            console.log("Simpanan: Fetching started...");
+            try {
+                // Cek Auth via Supabase
+                const { data: { user } } = await supabase.auth.getUser();
+                console.log("Simpanan: Supabase User ->", user);
+
+                // Cek Auth via LocalStorage (fallback)
+                const storedUser = localStorage.getItem('auth_user');
+                console.log("Simpanan: LocalStorage User ->", storedUser);
+
+                let userId = user?.id;
+
+                if (!userId && storedUser) {
+                    try {
+                        const parsedUser = JSON.parse(storedUser);
+                        userId = parsedUser.id;
+                        console.log("Simpanan: Using ID from LocalStorage ->", userId);
+                    } catch (e) {
+                        console.error("Simpanan: Error parsing local storage user", e);
+                    }
+                }
+
+                if (!userId) {
+                    console.warn("Simpanan: No user ID found. Aborting.");
+                    setLoading(false);
+                    return;
+                }
+
+                const { data: personalData } = await supabase
+                    .from('personal_data')
+                    .select('id')
+                    .eq('user_id', userId)
+                    .single();
+
+                console.log("Simpanan: Personal Data ->", personalData);
+
+                if (!personalData) {
+                    setLoading(false);
+                    return;
+                }
+
+                const { data: simpananData } = await supabase
+                    .from('simpanan')
+                    .select('*')
+                    .eq('personal_data_id', personalData.id)
+                    .order('created_at', { ascending: false });
+
+                console.log("Simpanan: Data ->", simpananData);
+
+                if (simpananData && simpananData.length > 0) {
+                    let totalP = 0;
+                    let totalW = 0;
+                    let currentBalance = 0;
+
+                    // Logic to calculate balances from transactions
+                    // We sort ascending to calculate running balance
+                    const sortedForCalc = [...simpananData].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+                    sortedForCalc.forEach(item => {
+                        const amount = parseFloat(item.amount);
+                        if (item.transaction_type === 'SETOR') {
+                            currentBalance += amount;
+                            if (item.type === 'POKOK') totalP += amount;
+                            if (item.type === 'WAJIB') totalW += amount;
+                        } else if (item.transaction_type === 'TARIK') {
+                            currentBalance -= amount;
+                            if (item.type === 'POKOK') totalP -= amount;
+                            if (item.type === 'WAJIB') totalW -= amount;
+                        }
+                        item.balanceSnapshot = currentBalance;
+                    });
+
+                    // Reverse back for display
+                    const displayList = sortedForCalc.reverse().map(item => ({
+                        date: new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
+                        type: `Simpanan ${item.type.charAt(0) + item.type.slice(1).toLowerCase()}`,
+                        nominal: parseFloat(item.amount),
+                        status: item.transaction_type === 'SETOR' ? 'Setor' : 'Tarik',
+                        balance: item.balanceSnapshot
+                    }));
+
+                    setPokok(totalP);
+                    setWajib(totalW);
+                    setTotalSaldo(currentBalance);
+                    setHistory(displayList);
+                    setHasData(true);
+                } else {
+                    setHasData(false);
+                }
+
+            } catch (error) {
+                console.error("Error fetching simpanan:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    const formatCurrency = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+
+    if (loading) return <div>Loading...</div>;
+
+    if (!hasData) {
+        return (
+            <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-100 text-center">
+                <h3 className="text-xl font-bold text-gray-800">Simpanan Tidak ada</h3>
+                <p className="text-gray-500 mt-2">Anda belum memiliki riwayat simpanan.</p>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <SimpananCard title="Simpanan Pokok" amount="Rp 1.000.000" />
-                <SimpananCard title="Simpanan Wajib" amount="Rp 3.500.000" />
-                <SimpananCard title="Simpanan Sukarela" amount="Rp 2.500.000" />
-                <SimpananCard title="Total Saldo" amount="Rp 7.000.000" color="green" />
+                <SimpananCard title="Simpanan Pokok" amount={formatCurrency(pokok)} />
+                <SimpananCard title="Simpanan Wajib" amount={formatCurrency(wajib)} />
+
+                <SimpananCard title="Total Saldo" amount={formatCurrency(totalSaldo)} color="green" />
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -55,9 +170,9 @@ const Simpanan = () => {
                                         </span>
                                     </td>
                                     <td className={`px-6 py-4 font-medium ${item.status === 'Setor' ? 'text-emerald-600' : 'text-red-600'}`}>
-                                        {item.status === 'Setor' ? '+' : '-'} Rp {item.nominal.toLocaleString()}
+                                        {item.status === 'Setor' ? '+' : '-'} {formatCurrency(item.nominal)}
                                     </td>
-                                    <td className="px-6 py-4 font-bold text-gray-800">Rp {item.balance.toLocaleString()}</td>
+                                    <td className="px-6 py-4 font-bold text-gray-800">{formatCurrency(item.balance)}</td>
                                 </tr>
                             ))}
                         </tbody>

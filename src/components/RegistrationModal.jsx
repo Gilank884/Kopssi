@@ -320,7 +320,7 @@ const RegistrationModal = ({ isOpen, onClose, onSubmit }) => {
                 setCurrentStep(1);
                 setPasswordError('');
                 setSubmitSuccess(false);
-                onClose();
+        onClose();
             }, 2000);
 
         } catch (error) {
@@ -482,8 +482,8 @@ const RegistrationModal = ({ isOpen, onClose, onSubmit }) => {
                                 </>
                             ) : (
                                 <>
-                                    Kirim Pendaftaran
-                                    <Check size={20} />
+                            Kirim Pendaftaran
+                            <Check size={20} />
                                 </>
                             )}
                         </button>

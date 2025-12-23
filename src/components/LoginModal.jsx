@@ -1,12 +1,13 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
-import { supabase } from '../lib/supabaseClient'; // sesuaikan path
+import { supabase } from '../lib/supabaseClient';
+import { Phone, Lock, X, ArrowRight } from 'lucide-react';
 
 const LoginModal = ({ isOpen, onClose, onLogin }) => {
     const modalRef = useRef(null);
     const contentRef = useRef(null);
+    const formRef = useRef(null);
 
-    const [role, setRole] = useState('user'); // user | admin (UI)
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -14,28 +15,29 @@ const LoginModal = ({ isOpen, onClose, onLogin }) => {
     useLayoutEffect(() => {
         if (isOpen) {
             gsap.to(modalRef.current, {
-                duration: 0.1,
+                opacity: 1,
                 pointerEvents: 'auto',
-                opacity: 1
+                duration: 0.3
             });
 
-            gsap.fromTo(
+            const tl = gsap.timeline();
+            tl.fromTo(
                 contentRef.current,
-                { scale: 0.8, opacity: 0, y: 20 },
-                { scale: 1, opacity: 1, y: 0, duration: 0.4, ease: 'back.out(1.7)' }
-            );
+                { scale: 0.95, opacity: 0, y: 20 },
+                { scale: 1, opacity: 1, y: 0, duration: 0.5, ease: 'back.out(1.2)' }
+            )
+                .fromTo(
+                    formRef.current.children,
+                    { y: 20, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.4, stagger: 0.1, ease: 'power2.out' },
+                    "-=0.3"
+                );
+
         } else {
-            gsap.to(contentRef.current, {
-                scale: 0.8,
+            gsap.to(modalRef.current, {
                 opacity: 0,
-                duration: 0.2,
-                onComplete: () => {
-                    gsap.to(modalRef.current, {
-                        opacity: 0,
-                        duration: 0.2,
-                        pointerEvents: 'none'
-                    });
-                }
+                pointerEvents: 'none',
+                duration: 0.2
             });
         }
     }, [isOpen]);
@@ -44,190 +46,164 @@ const LoginModal = ({ isOpen, onClose, onLogin }) => {
         e.preventDefault();
         setLoading(true);
 
-        // 🔹 Query user berdasarkan phone & password
-        const { data: userData, error: userError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('phone', phone)
-            .eq('password', password)
-            .single();
-
-        if (userError || !userData) {
-            setLoading(false);
-            alert('Nomor HP atau password salah');
-            return;
-        }
-
-        const dbRole = userData.role; // ADMIN | MEMBER
-
-        // 🔐 Validasi akses role untuk ADMIN
-        if (role === 'admin') {
-            // Jika user memilih admin, harus dicek apakah role di database adalah ADMIN
-            if (dbRole !== 'ADMIN') {
-                setLoading(false);
-                alert('Anda bukan ADMIN. Akses ditolak.');
-                return;
-            }
-            // Jika role adalah ADMIN dan user memilih admin, langsung login
-            // Tidak perlu cek personal_data untuk admin
-            // Admin akan di-redirect ke /admin di handleLogin
-        }
-
-        // 🔍 Cek status user dari personal_data (hanya untuk MEMBER)
-        if (dbRole === 'MEMBER') {
-            const { data: personalData, error: personalError } = await supabase
-                .from('personal_data')
-                .select('status, full_name')
-                .eq('user_id', userData.id)
+        try {
+            // 🔍 CEK USER
+            const { data: userData, error: userError } = await supabase
+                .from('users')
+                .select('id, phone, role')
+                .eq('phone', phone)
+                .eq('password', password)
                 .single();
 
-            if (personalError || !personalData) {
+            if (userError || !userData) {
+                throw new Error('Nomor HP atau password salah');
+            }
+
+            // ================= ADMIN =================
+            if (userData.role === 'ADMIN') {
+                const adminPayload = {
+                    id: userData.id,
+                    phone: userData.phone,
+                    role: 'ADMIN',
+                    name: 'Administrator'
+                };
+
+                localStorage.setItem('auth_user', JSON.stringify(adminPayload));
+                onLogin(adminPayload);
                 setLoading(false);
-                alert('Data personal tidak ditemukan. Silakan hubungi administrator.');
+                onClose();
                 return;
             }
 
-            // Cek apakah status aktif
-            // Status yang diizinkan: 'active' atau 'approved'
-            // Status yang ditolak: 'pending', 'rejected', null, atau lainnya
-            const activeStatuses = ['active', 'approved'];
-            const userStatus = personalData.status?.toLowerCase();
+            // ================= MEMBER =================
+            if (userData.role === 'MEMBER') {
+                const { data: personalData, error: personalError } = await supabase
+                    .from('personal_data')
+                    .select('full_name, status')
+                    .eq('user_id', userData.id)
+                    .single();
 
-            if (!userStatus || !activeStatuses.includes(userStatus)) {
-                setLoading(false);
-                if (userStatus === 'pending' || !userStatus) {
-                    alert('Akun Anda belum aktif. Pendaftaran Anda masih dalam proses verifikasi. Silakan tunggu persetujuan dari administrator.');
-                } else if (userStatus === 'rejected') {
-                    alert('Akun Anda ditolak. Silakan hubungi administrator untuk informasi lebih lanjut.');
-                } else {
-                    alert('Akun Anda belum aktif. Silakan hubungi administrator.');
+                if (personalError || !personalData) {
+                    throw new Error('Data personal tidak ditemukan');
                 }
-                return;
+
+                const status = personalData.status?.toLowerCase();
+                if (!['active', 'approved'].includes(status)) {
+                    throw new Error('Akun Anda belum aktif / belum disetujui');
+                }
+
+                const memberPayload = {
+                    id: userData.id,
+                    phone: userData.phone,
+                    role: 'MEMBER',
+                    name: personalData.full_name
+                };
+
+                localStorage.setItem('auth_user', JSON.stringify(memberPayload));
+                onLogin(memberPayload);
+                setLoading(false);
+                onClose();
             }
+        } catch (error) {
+            setLoading(false);
+            alert(error.message);
         }
-
-        // ✅ Login sukses
-        const loginData = {
-            id: userData.id,
-            phone: userData.phone,
-            role: dbRole,
-            loginAs: role // admin | user
-        };
-
-        onLogin(loginData);
-
-        setLoading(false);
-        onClose();
     };
+
+    if (!isOpen) return null;
 
     return (
         <div
             ref={modalRef}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 opacity-0 pointer-events-none backdrop-blur-sm"
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none p-4"
         >
             <div
                 ref={contentRef}
-                className="bg-white p-8 rounded-2xl w-full max-w-lg shadow-2xl relative"
+                className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden relative"
             >
+                {/* Close Button */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                    className="absolute top-4 right-4 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors z-10"
                 >
-                    ✕
+                    <X size={20} />
                 </button>
 
-                <h2 className="text-2xl font-bold mb-2 text-center text-gray-900">
-                    Selamat Datang
-                </h2>
-                <p className="text-center text-gray-500 mb-6">
-                    Silakan pilih akses masuk Anda
-                </p>
-
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* ROLE SELECTION */}
-                    <div className="grid grid-cols-2 gap-4">
-                        {/* ANGGOTA */}
-                        <div
-                            onClick={() => setRole('user')}
-                            className={`cursor-pointer p-4 rounded-xl border-2 flex flex-col items-center gap-3 transition-all
-                                ${role === 'user'
-                                    ? 'border-emerald-600 bg-emerald-50'
-                                    : 'border-gray-200 hover:border-emerald-200'}`}
-                        >
-                            <div className={`w-12 h-12 rounded-full flex items-center justify-center
-                                ${role === 'user'
-                                    ? 'bg-emerald-600 text-white'
-                                    : 'bg-gray-100 text-gray-500'}`}
-                            >
-                                👤
-                            </div>
-                            <div className="text-center">
-                                <h3 className="font-bold">Anggota</h3>
-                                <p className="text-xs text-gray-500">Akses data pribadi</p>
-                            </div>
+                {/* Header Section */}
+                <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 p-8 pt-10 text-white relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/20 rounded-full blur-3xl -mr-10 -mt-10"></div>
+                    <div className="relative z-10 text-center">
+                        <div className="inline-flex p-3 bg-white/10 rounded-2xl mb-4 backdrop-blur-md border border-white/20 shadow-lg">
+                            <img src="/Logo.png" alt="Logo" className="w-12 h-12 object-contain" />
                         </div>
-
-                        {/* ADMIN */}
-                        <div
-                            onClick={() => setRole('admin')}
-                            className={`cursor-pointer p-4 rounded-xl border-2 flex flex-col items-center gap-3 transition-all
-                                ${role === 'admin'
-                                    ? 'border-emerald-600 bg-emerald-50'
-                                    : 'border-gray-200 hover:border-emerald-200'}`}
-                        >
-                            <div className={`w-12 h-12 rounded-full flex items-center justify-center
-                                ${role === 'admin'
-                                    ? 'bg-emerald-600 text-white'
-                                    : 'bg-gray-100 text-gray-500'}`}
-                            >
-                                🛡️
-                            </div>
-                            <div className="text-center">
-                                <h3 className="font-bold">Admin</h3>
-                                <p className="text-xs text-gray-500">Pengelolaan Koperasi</p>
-                            </div>
-                        </div>
+                        <h2 className="text-2xl font-bold mb-1">Selamat Datang Kembali</h2>
+                        <p className="text-slate-300 text-sm">Silakan masuk ke akun KOPSSI Anda</p>
                     </div>
+                </div>
 
-                    {/* INPUT */}
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                No. Handphone
-                            </label>
-                            <input
-                                type="tel"
-                                value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
-                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500"
-                                required
-                            />
+                {/* Form Section */}
+                <div className="p-8">
+                    <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-gray-700 ml-1">Nomor HP</label>
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Phone className="h-5 w-5 text-gray-400 group-focus-within:text-emerald-600 transition-colors" />
+                                </div>
+                                <input
+                                    type="tel"
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                    className="block w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-medium"
+                                    placeholder="Contoh: 08123456789"
+                                    required
+                                />
+                            </div>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Password
-                            </label>
-                            <input
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500"
-                                required
-                            />
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-gray-700 ml-1">Password</label>
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Lock className="h-5 w-5 text-gray-400 group-focus-within:text-emerald-600 transition-colors" />
+                                </div>
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="block w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-medium"
+                                    placeholder="••••••••"
+                                    required
+                                />
+                            </div>
                         </div>
+
+                        <div className="pt-2">
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                            >
+                                {loading ? (
+                                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                ) : (
+                                    <>
+                                        Masuk Sekarang <ArrowRight size={18} />
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </form>
+
+                    <div className="mt-8 text-center">
+                        <p className="text-sm text-gray-500">
+                            Belum menjadi anggota?{' '}
+                            <button onClick={onClose} className="text-emerald-600 font-bold hover:underline">
+                                Daftar disini
+                            </button>
+                        </p>
                     </div>
-
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold hover:bg-emerald-700 disabled:opacity-50"
-                    >
-                        {loading
-                            ? 'Memproses...'
-                            : `Masuk sebagai ${role === 'user' ? 'Anggota' : 'Administrator'}`}
-                    </button>
-                </form>
+                </div>
             </div>
         </div>
     );
