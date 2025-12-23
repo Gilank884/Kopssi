@@ -1,7 +1,7 @@
 
 import React, { useLayoutEffect, useRef } from 'react';
 import gsap from 'gsap';
-import { Wallet, CreditCard, Users, ArrowRight } from 'lucide-react';
+import { Wallet, CreditCard, Users, ArrowRight, ShieldCheck } from 'lucide-react';
 
 const Home = () => {
   const comp = useRef(null);
@@ -10,10 +10,6 @@ const Home = () => {
     let ctx = gsap.context(() => {
       const tl = gsap.timeline();
 
-      // Background Animation
-      // Use .to check because we might start from opacity 0 defined in CSS if we wanted, 
-      // but here we rely on from() which should be fine if initialized correctly.
-      // Added safe defaults and clearProps to ensure visibility at end.
       tl.from(".grid-bg", { opacity: 0, duration: 1.5 })
         .from(".hero-content-left > *", {
           y: 50,
@@ -38,19 +34,21 @@ const Home = () => {
   }, []);
 
   return (
-    <section ref={comp} className="relative min-h-screen flex items-center bg-white overflow-hidden py-20">
+    <section ref={comp} className="relative min-h-screen flex items-center bg-slate-50 overflow-hidden py-24">
       {/* Grid Pattern Background */}
       <div className="absolute inset-0 grid-bg pointer-events-none">
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage: `linear-gradient(#10b981 1px, transparent 1px), linear-gradient(to right, #10b981 1px, transparent 1px)`,
+            backgroundImage: `linear-gradient(#cbd5e1 1px, transparent 1px), linear-gradient(to right, #cbd5e1 1px, transparent 1px)`,
             backgroundSize: '40px 40px',
             maskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)',
             WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)',
             opacity: 0.4
           }}
         ></div>
+        {/* Navy Blob */}
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-blue-900/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
@@ -58,24 +56,24 @@ const Home = () => {
 
           {/* Left Content: Text & History */}
           <div className="lg:w-1/2 hero-content-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-600 text-sm font-semibold mb-6">
-              <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
-              Trusted Since 2002
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-100 text-blue-800 text-sm font-bold mb-6 border border-blue-200">
+              <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+              Official Cooperative Partner
             </div>
 
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 leading-tight mb-6">
-              Koperasi Syariah Indonesia <br />
-              <span className="text-emerald-600">PT Swadharma Sarana Informatika</span>
+            <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 leading-tight mb-6">
+              Koperasi Konsumen <br />
+              <span className="text-blue-900">Swadharma Sarana Informatika</span>
             </h1>
 
-            <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border-l-4 border-emerald-600 shadow-sm mb-8">
-              <p className="text-gray-600 leading-relaxed italic">
+            <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border-l-4 border-blue-900 shadow-sm mb-8">
+              <p className="text-slate-600 leading-relaxed italic">
                 "KOPSSI Didirikan pada tanggal 20 september 2002 di Gedung Hanglekir Raya No 30 kel Gunung. Kebayoran Baru - Jakarta Selatan 12120. Di sahkan dengan nomor akte pendirian: <strong>295/BH/MENEG.I/VIII/2003</strong>. Dengan Jumlah anggota awal 33 (tiga puluh tiga) orang yang disebut sebagai pendiri Koperasi Pegawai PT SSI."
               </p>
             </div>
 
-            <button className="group bg-emerald-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-emerald-700 transition-all shadow-lg hover:shadow-emerald-200 flex items-center gap-3">
-              Explore More
+            <button className="group bg-slate-900 text-white px-8 py-4 rounded-xl text-lg font-bold hover:bg-slate-800 transition-all shadow-xl hover:shadow-slate-900/20 flex items-center gap-3">
+              Jelajahi Sekarang
               <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
             </button>
           </div>
@@ -84,48 +82,49 @@ const Home = () => {
           <div className="lg:w-1/2 w-full grid gap-6">
 
             {/* Simpanan Card */}
-            <div className="hero-card bg-white p-6 rounded-2xl shadow-xl border border-gray-100 hover:border-emerald-200 transition-all duration-300 group">
+            <div className="hero-card bg-white p-6 rounded-2xl shadow-xl border border-slate-100 hover:border-blue-200 transition-all duration-300 group">
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-green-100 rounded-xl text-green-600 group-hover:scale-110 transition-transform">
+                <div className="p-3 bg-blue-50 rounded-xl text-blue-700 group-hover:scale-110 transition-transform">
                   <Wallet size={32} />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Simpanan</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">
-                    Produk Simpanan dapat diikutin oleh seluruh Pegawai PT Swadharma Sarana Informatika yang telah menjadi anggota.
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">Simpanan Anggota</h3>
+                  <p className="text-slate-600 text-sm leading-relaxed">
+                    Pengelolaan dana simpanan yang profesional dan transparan bagi kesejahteraan seluruh anggota KOPSSI.
                   </p>
                 </div>
               </div>
             </div>
 
             {/* Pinjaman Card */}
-            <div className="hero-card bg-white p-6 rounded-2xl shadow-xl border border-gray-100 hover:border-emerald-200 transition-all duration-300 group">
+            <div className="hero-card bg-white p-6 rounded-2xl shadow-xl border border-slate-100 hover:border-blue-200 transition-all duration-300 group">
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-blue-100 rounded-xl text-blue-600 group-hover:scale-110 transition-transform">
+                <div className="p-3 bg-indigo-50 rounded-xl text-indigo-700 group-hover:scale-110 transition-transform">
                   <CreditCard size={32} />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Pinjaman</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">
-                    Produk Pinjaman dapat diikuti oleh seluruh Pegawai PT Swadharma Sarana Informatika yang telah menjadi anggota.
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">Fasilitas Pinjaman</h3>
+                  <p className="text-slate-600 text-sm leading-relaxed">
+                    Solusi finansial yang fleksibel dan terjangkau untuk memenuhi berbagai kebutuhan anggota koperasi.
                   </p>
                 </div>
               </div>
             </div>
 
             {/* Jumlah Anggota Card */}
-            <div className="hero-card bg-gradient-to-r from-emerald-600 to-emerald-800 p-6 rounded-2xl shadow-xl text-white transform hover:-translate-y-1 transition-transform duration-300">
-              <div className="flex items-center justify-between">
+            <div className="hero-card bg-gradient-to-r from-slate-900 to-blue-900 p-8 rounded-2xl shadow-xl text-white transform hover:-translate-y-1 transition-transform duration-300 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-10 -mt-10"></div>
+              <div className="flex items-center justify-between relative z-10">
                 <div>
-                  <h3 className="text-lg font-medium text-white mb-1">Jumlah Anggota</h3>
-                  <div className="text-4xl font-bold text-white mb-2">7,000 <span className="text-base font-normal text-white">Orang</span></div>
-                  <div className="flex items-center gap-2 text-sm text-green-400">
+                  <h3 className="text-lg font-medium text-blue-100 mb-1">Total Anggota Aktif</h3>
+                  <div className="text-4xl font-bold text-white mb-2">7,000+</div>
+                  <div className="flex items-center gap-2 text-sm text-blue-200">
                     <Users size={16} />
-                    <span>Active Members</span>
+                    <span>Pegawai PT SSI</span>
                   </div>
                 </div>
-                <div className="w-24 h-24 bg-white rounded-full p-2 flex items-center justify-center flex-shrink-0 shadow-lg">
-                  <img src="/Ssi.png" alt="SSI Logo" className="w-full h-full object-contain" />
+                <div className="w-20 h-20 bg-white/10 backdrop-blur-sm rounded-2xl p-3 flex items-center justify-center border border-white/20">
+                  <ShieldCheck size={40} className="text-white" />
                 </div>
               </div>
             </div>
