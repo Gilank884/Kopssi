@@ -20,7 +20,6 @@ const BioStep = ({ formData, handleChange, passwordError }) => {
                     onChange={handleChange}
                     placeholder="Contoh: Ahmad Subagja"
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
-                    required
                 />
             </div>
 
@@ -35,7 +34,6 @@ const BioStep = ({ formData, handleChange, passwordError }) => {
                         placeholder="3201xxxxxxxxxxxx"
                         maxLength={16}
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
-                        required
                     />
                 </div>
                 <div>
@@ -47,7 +45,6 @@ const BioStep = ({ formData, handleChange, passwordError }) => {
                         onChange={handleChange}
                         placeholder="08xxxxxxxxxx"
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
-                        required
                     />
                 </div>
             </div>
@@ -61,7 +58,6 @@ const BioStep = ({ formData, handleChange, passwordError }) => {
                         value={formData.company}
                         onChange={handleChange}
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
-                        required
                     >
                         <option value="">Pilih Perusahaan</option>
                         <option value="PT Swadharma Sarana Informatika">PT Swadharma Sarana Informatika</option>
@@ -75,7 +71,6 @@ const BioStep = ({ formData, handleChange, passwordError }) => {
                             onChange={handleChange}
                             placeholder="Tuliskan nama perusahaan"
                             className="mt-2 w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
-                            required
                         />
                     )}
                 </div>
@@ -86,7 +81,6 @@ const BioStep = ({ formData, handleChange, passwordError }) => {
                         value={formData.workUnit}
                         onChange={handleChange}
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
-                        required
                     >
                         <option value="">Pilih Unit Kerja</option>
                         <option value="Centra">Centra</option>
@@ -100,7 +94,6 @@ const BioStep = ({ formData, handleChange, passwordError }) => {
                             onChange={handleChange}
                             placeholder="Tuliskan unit kerja"
                             className="mt-2 w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
-                            required
                         />
                     )}
                 </div>
@@ -121,7 +114,6 @@ const BioStep = ({ formData, handleChange, passwordError }) => {
                             checked={formData.employmentStatus === 'Pegawai Tetap'}
                             onChange={handleChange}
                             className="text-emerald-600 focus:ring-emerald-500"
-                            required
                         />
                         <span>Pegawai Tetap</span>
                     </label>
@@ -136,7 +128,6 @@ const BioStep = ({ formData, handleChange, passwordError }) => {
                             checked={formData.employmentStatus === 'Pegawai Kontrak'}
                             onChange={handleChange}
                             className="text-emerald-600 focus:ring-emerald-500"
-                            required
                         />
                         <span>Pegawai Kontrak</span>
                     </label>
@@ -164,7 +155,6 @@ const BioStep = ({ formData, handleChange, passwordError }) => {
                     onChange={handleChange}
                     placeholder="Contoh: pegawai@gmail.com"
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
-                    required
                 />
             </div>
 
@@ -177,8 +167,6 @@ const BioStep = ({ formData, handleChange, passwordError }) => {
                     onChange={handleChange}
                     placeholder="Masukkan password"
                     className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all ${passwordError ? 'border-red-300' : 'border-gray-200'}`}
-                    required
-                    minLength={6}
                 />
             </div>
 
@@ -191,8 +179,6 @@ const BioStep = ({ formData, handleChange, passwordError }) => {
                     onChange={handleChange}
                     placeholder="Konfirmasi password"
                     className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all ${passwordError ? 'border-red-300' : 'border-gray-200'}`}
-                    required
-                    minLength={6}
                 />
                 {passwordError && (
                     <p className="mt-1.5 text-sm text-red-600 font-medium">{passwordError}</p>
@@ -203,4 +189,3 @@ const BioStep = ({ formData, handleChange, passwordError }) => {
 };
 
 export default BioStep;
-

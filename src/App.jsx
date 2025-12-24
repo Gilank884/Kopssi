@@ -11,6 +11,8 @@ import PengajuanPinjaman from './pages/Dashboard/PengajuanPinjaman';
 import AdminLayout from './layouts/AdminLayout';
 import AdminOverview from './pages/Admin/Dashboard';
 import PengajuanAnggota from './pages/Admin/PengajuanAnggota';
+import AssesmentPinjaman from './pages/Admin/AssesmentPinjaman';
+import PencairanPinjaman from './pages/Admin/PencairanPinjaman';
 import MemberList from './pages/Admin/Members';
 import AdminReports from './pages/Admin/Reports';
 import AdminSettings from './pages/Admin/Settings';
@@ -36,6 +38,8 @@ function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminOverview />} />
           <Route path="pengajuan-anggota" element={<PengajuanAnggota />} />
+          <Route path="assesment-pinjaman" element={<AssesmentPinjaman />} />
+          <Route path="pencairan-pinjaman" element={<PencairanPinjaman />} />
           <Route path="members" element={<MemberList />} />
           <Route path="reports" element={<AdminReports />} />
           <Route path="settings" element={<AdminSettings />} />

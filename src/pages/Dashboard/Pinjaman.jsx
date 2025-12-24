@@ -122,8 +122,6 @@ const Pinjaman = () => {
                         totalPinjaman,
                         pokokTerbayar,
                         sisaPokok,
-                        pokokTerbayar,
-                        sisaPokok,
                         paidMonths,
                         unpaidMonths,
                         remainingMonths,

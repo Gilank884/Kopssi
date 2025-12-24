@@ -162,45 +162,84 @@ const RegistrationModal = ({ isOpen, onClose, onSubmit }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log('Submit triggered', formData);
         setSubmitError('');
         setSubmitSuccess(false);
+
+        // Validasi Manual Step 1: Bio
+        if (!formData.fullName || !formData.nik || !formData.phone || !formData.email || !formData.password) {
+            setSubmitError('Mohon lengkapi semua data pribadi di langkah pertama');
+            setCurrentStep(1);
+            return;
+        }
+
+        if (formData.nik.length !== 16) {
+            setSubmitError('NIK harus 16 digit');
+            setCurrentStep(1);
+            return;
+        }
+
+        if (!formData.company || (formData.company === 'Lainnya' && !formData.otherCompany)) {
+            setSubmitError('Mohon isi data perusahaan');
+            setCurrentStep(1);
+            return;
+        }
+
+        if (!formData.workUnit || (formData.workUnit === 'Lainnya' && !formData.otherWorkUnit)) {
+            setSubmitError('Mohon isi data unit kerja');
+            setCurrentStep(1);
+            return;
+        }
+
+        if (!formData.employmentStatus) {
+            setSubmitError('Mohon pilih status pegawai');
+            setCurrentStep(1);
+            return;
+        }
 
         // Validasi password sebelum submit
         if (formData.password !== formData.confirmPassword) {
             setPasswordError('Password tidak sama');
+            setCurrentStep(1);
             return;
         }
 
         if (formData.password.length < 6) {
             setPasswordError('Password minimal 6 karakter');
+            setCurrentStep(1);
             return;
         }
 
-        // Validasi KTP file
+        // Validasi Manual Step 2: Alamat
+        if (!formData.address || !formData.postalCode || !formData.emergencyPhone) {
+            setSubmitError('Mohon lengkapi data alamat dan kontak darurat');
+            setCurrentStep(2);
+            return;
+        }
+
+        // Validasi Manual Step 3: Berkas
         if (!formData.ktpFile) {
             setSubmitError('File KTP wajib diupload');
-            setCurrentStep(3); // Kembali ke step 3
+            setCurrentStep(3);
             return;
         }
 
-        // Validasi foto 3x4
+        // Validasi Manual Step 4: Tanda Tangan & Foto
         if (!formData.photo34File) {
             setSubmitError('Foto 3x4 wajib diupload');
-            setCurrentStep(4); // Kembali ke step 4
+            setCurrentStep(4);
             return;
         }
 
-        // Validasi tanda tangan
         if (!formData.signature) {
             setSubmitError('Tanda tangan digital wajib diisi');
-            setCurrentStep(4); // Kembali ke step 4
+            setCurrentStep(4);
             return;
         }
 
-        // Validasi persetujuan
         if (!formData.agreement) {
-            setSubmitError('Anda harus menyetujui pernyataan');
-            setCurrentStep(4); // Kembali ke step 4
+            setSubmitError('Anda harus menyetujui pernyataan untuk mendaftar');
+            setCurrentStep(4);
             return;
         }
 
@@ -208,6 +247,7 @@ const RegistrationModal = ({ isOpen, onClose, onSubmit }) => {
         setIsSubmitting(true);
 
         try {
+            console.log('Starting file uploads...');
             // 1. Upload files ke Supabase Storage
             let ktpFilePath = null;
             let idCardFilePath = null;
@@ -225,12 +265,15 @@ const RegistrationModal = ({ isOpen, onClose, onSubmit }) => {
                 photo34FilePath = await uploadFile(formData.photo34File, 'photo-34', formData.nik);
             }
 
+            console.log('File uploads completed. Registering user...');
             // 2. Insert ke tabel users
             const { data: userData, error: userError } = await supabase
                 .from('users')
                 .insert({
+                    email: formData.email,
                     phone: formData.phone,
                     password: formData.password, // Note: Sebaiknya di-hash dulu di production
+                    status: 'pending',
                     role: 'MEMBER'
                 })
                 .select()
@@ -320,7 +363,7 @@ const RegistrationModal = ({ isOpen, onClose, onSubmit }) => {
                 setCurrentStep(1);
                 setPasswordError('');
                 setSubmitSuccess(false);
-        onClose();
+                onClose();
             }, 2000);
 
         } catch (error) {
@@ -389,7 +432,7 @@ const RegistrationModal = ({ isOpen, onClose, onSubmit }) => {
                 </div>
 
                 {/* Form Content Area */}
-                <div className="flex-1 overflow-y-auto p-6 md:p-8">
+                <div className="flex-1 overflow-y-auto p-6 md:p-8 text-left">
                     <form onSubmit={handleSubmit} id="registration-form" className="space-y-6">
                         {currentStep === 1 && (
                             <BioStep
@@ -422,29 +465,29 @@ const RegistrationModal = ({ isOpen, onClose, onSubmit }) => {
                             />
                         )}
 
+                        {/* Error/Success Messages inside form for better visibility */}
+                        {(submitError || submitSuccess) && (
+                            <div className="pt-4">
+                                {submitError && (
+                                    <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
+                                        <Info className="text-red-600 shrink-0 mt-0.5" size={20} />
+                                        <p className="text-sm text-red-800 font-medium">{submitError}</p>
+                                    </div>
+                                )}
+                                {submitSuccess && (
+                                    <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-3">
+                                        <Check className="text-emerald-600 shrink-0 mt-0.5" size={20} />
+                                        <div>
+                                            <p className="text-sm text-emerald-800 font-bold">Pendaftaran Berhasil!</p>
+                                            <p className="text-xs text-emerald-700 mt-1">Data Anda sedang diproses. Modal akan tertutup otomatis...</p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </form>
                 </div>
 
-                {/* Error/Success Messages */}
-                {(submitError || submitSuccess) && (
-                    <div className="px-6 md:px-8 pb-4">
-                        {submitError && (
-                            <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
-                                <Info className="text-red-600 shrink-0 mt-0.5" size={20} />
-                                <p className="text-sm text-red-800 font-medium">{submitError}</p>
-                            </div>
-                        )}
-                        {submitSuccess && (
-                            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-3">
-                                <Check className="text-emerald-600 shrink-0 mt-0.5" size={20} />
-                                <div>
-                                    <p className="text-sm text-emerald-800 font-bold">Pendaftaran Berhasil!</p>
-                                    <p className="text-xs text-emerald-700 mt-1">Data Anda sedang diproses. Modal akan tertutup otomatis...</p>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                )}
 
                 {/* Footer Controls */}
                 <div className="p-6 md:p-8 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
@@ -482,8 +525,8 @@ const RegistrationModal = ({ isOpen, onClose, onSubmit }) => {
                                 </>
                             ) : (
                                 <>
-                            Kirim Pendaftaran
-                            <Check size={20} />
+                                    Kirim Pendaftaran
+                                    <Check size={20} />
                                 </>
                             )}
                         </button>

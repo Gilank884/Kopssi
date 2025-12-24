@@ -8,7 +8,10 @@ import {
     LogOut,
     Menu,
     Bell,
-    UserPlus
+    UserPlus,
+    ClipboardCheck,
+    Banknote,
+    FileBarChart
 } from 'lucide-react';
 import LogoutModal from '../components/LogoutModal';
 
@@ -31,8 +34,11 @@ const AdminLayout = () => {
         { path: '/admin', label: 'Dashboard', icon: <LayoutDashboard size={20} />, end: true },
         { path: '/admin/pengajuan-anggota', label: 'Pengajuan Anggota', icon: <UserPlus size={20} /> },
         { path: '/admin/members', label: 'Data Anggota', icon: <Users size={20} /> },
-        { path: '/admin/reports', label: 'Laporan', icon: <FileText size={20} /> },
+        { path: '/admin/reports', label: 'Laporan', icon: <FileBarChart size={20} /> },
         { path: '/admin/settings', label: 'Pengaturan', icon: <Settings size={20} /> },
+        { path: '/admin/assesment-pinjaman', label: 'Penyetujuan Pinjaman', icon: <ClipboardCheck size={20} /> },
+        { path: '/admin/pencairan-pinjaman', label: 'Pencairan Pinjaman', icon: <Banknote size={20} /> },
+
     ];
 
     const currentPath = location.pathname;
