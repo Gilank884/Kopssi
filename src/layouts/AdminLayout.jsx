@@ -38,6 +38,7 @@ const AdminLayout = () => {
         { path: '/admin/settings', label: 'Pengaturan', icon: <Settings size={20} /> },
         { path: '/admin/assesment-pinjaman', label: 'Penyetujuan Pinjaman', icon: <ClipboardCheck size={20} /> },
         { path: '/admin/pencairan-pinjaman', label: 'Pencairan Pinjaman', icon: <Banknote size={20} /> },
+        { path: '/admin/pencairan-pinjaman', label: 'Notes', icon: <Banknote size={20} /> },
 
     ];
 
