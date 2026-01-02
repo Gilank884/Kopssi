@@ -20,7 +20,7 @@ const PengajuanHutang = () => {
     const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState(null);
     const [personalDataId, setPersonalDataId] = useState(null);
-    const [existingLoan, setExistingLoan] = useState(null);
+    const [loans, setLoans] = useState([]);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -60,18 +60,15 @@ const PengajuanHutang = () => {
                     }));
                     setPersonalDataId(personalData.id);
 
-                    // Cek apakah sudah ada pengajuan pinjaman aktif
+                    // Ambil semua riwayat pinjaman
                     const { data: loanData, error: loanError } = await supabase
                         .from('pinjaman')
                         .select('*')
                         .eq('personal_data_id', personalData.id)
-                        .in('status', ['PENGAJUAN', 'DISETUJUI', 'DICAIRKAN'])
-                        .order('created_at', { ascending: false })
-                        .limit(1)
-                        .maybeSingle();
+                        .order('created_at', { ascending: false });
 
                     if (!loanError && loanData) {
-                        setExistingLoan(loanData);
+                        setLoans(loanData);
                     }
                 }
             } catch (err) {
@@ -218,15 +215,14 @@ const PengajuanHutang = () => {
             }
 
             // Refresh data pengajuan setelah submit
-            const { data: newLoanData } = await supabase
+            const { data: updatedLoans } = await supabase
                 .from('pinjaman')
                 .select('*')
                 .eq('personal_data_id', personalDataId)
-                .eq('no_pinjaman', noPinjaman)
-                .single();
+                .order('created_at', { ascending: false });
 
-            if (newLoanData) {
-                setExistingLoan(newLoanData);
+            if (updatedLoans) {
+                setLoans(updatedLoans);
             }
 
             setSubmitted(true);
@@ -289,217 +285,205 @@ const PengajuanHutang = () => {
 
 
 
-            {/* Tampilkan Status Pengajuan jika sudah ada */}
-            {existingLoan ? (
-                <div className="loan-card-anim bg-white rounded-2xl border border-emerald-100 shadow-sm">
-                    <div className="px-6 py-4 border-b border-emerald-50 flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
-                            <FileText size={20} />
-                        </div>
-                        <div>
-                            <h2 className="text-lg font-bold text-gray-900">Status Pengajuan Pinjaman</h2>
-                            <p className="text-xs text-gray-500">
-                                Detail pengajuan pinjaman Anda
-                            </p>
-                        </div>
+            {/* Form Pengajuan Pinjaman */}
+            <div className="loan-card-anim bg-white rounded-2xl border border-emerald-100 shadow-sm">
+                <div className="px-6 py-4 border-b border-emerald-50 flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+                        <FileText size={20} />
                     </div>
-
-                    <div className="px-6 py-6 space-y-6">
-                        {/* Info Status */}
-                        <div className={`p-4 rounded-xl border-2 ${existingLoan.status === 'PENGAJUAN' ? 'bg-amber-50 border-amber-200' :
-                            existingLoan.status === 'DISETUJUI' ? 'bg-blue-50 border-blue-200' :
-                                existingLoan.status === 'DICAIRKAN' ? 'bg-emerald-50 border-emerald-200' :
-                                    'bg-gray-50 border-gray-200'
-                            }`}>
-                            <div className="flex items-center gap-3">
-                                {getStatusIcon(existingLoan.status)}
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">Status</p>
-                                    <p className="text-lg font-bold text-gray-900">{getStatusLabel(existingLoan.status)}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Detail Pengajuan */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                                <p className="text-xs text-gray-500 font-medium mb-1">Nomor Pengajuan</p>
-                                <p className="text-base font-bold text-gray-900">{existingLoan.no_pinjaman}</p>
-                            </div>
-                            <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                                <p className="text-xs text-gray-500 font-medium mb-1">Tanggal Pengajuan</p>
-                                <p className="text-base font-bold text-gray-900">
-                                    {new Date(existingLoan.created_at).toLocaleDateString('id-ID', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric'
-                                    })}
-                                </p>
-                            </div>
-                            <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                                <p className="text-xs text-gray-500 font-medium mb-1">Jumlah Pinjaman</p>
-                                <p className="text-lg font-bold text-emerald-600">
-                                    Rp {parseFloat(existingLoan.jumlah_pinjaman).toLocaleString('id-ID')}
-                                </p>
-                            </div>
-                            <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                                <p className="text-xs text-gray-500 font-medium mb-1">Tenor</p>
-                                <p className="text-base font-bold text-gray-900">{existingLoan.tenor_bulan} Bulan</p>
-                            </div>
-                        </div>
-
-                        {/* Info Tambahan */}
-                        <div className="bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3 text-xs text-emerald-700">
-                            {existingLoan.status === 'PENGAJUAN' && (
-                                <p>Pengajuan Anda sedang dalam proses verifikasi oleh pengurus koperasi. Mohon tunggu konfirmasi lebih lanjut.</p>
-                            )}
-                            {existingLoan.status === 'DISETUJUI' && (
-                                <p>Pengajuan Anda telah disetujui. Proses pencairan dana akan segera dilakukan.</p>
-                            )}
-                            {existingLoan.status === 'DICAIRKAN' && (
-                                <p>Pinjaman Anda telah dicairkan. Silakan lakukan pembayaran angsuran sesuai jadwal yang telah ditentukan.</p>
-                            )}
-                        </div>
+                    <div>
+                        <h2 className="text-lg font-bold text-gray-900">Form Pengajuan Pinjaman</h2>
+                        <p className="text-xs text-gray-500">
+                            Mohon isi data dengan lengkap dan sesuai. Pengajuan akan diverifikasi oleh pengurus koperasi.
+                        </p>
                     </div>
                 </div>
-            ) : (
-                /* Form Pengajuan Pinjaman */
-                <div className="loan-card-anim bg-white rounded-2xl border border-emerald-100 shadow-sm">
-                    <div className="px-6 py-4 border-b border-emerald-50 flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
-                            <FileText size={20} />
+
+                <form onSubmit={handleSubmit} className="px-6 py-5 space-y-6">
+                    {error && (
+                        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg flex items-center gap-2 text-sm">
+                            <AlertCircle size={16} />
+                            {error}
+                        </div>
+                    )}
+
+                    {/* Data Anggota */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Nama Lengkap
+                            </label>
+                            <input
+                                type="text"
+                                name="full_name"
+                                value={formData.full_name}
+                                onChange={handleChange}
+                                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-gray-50"
+                                readOnly
+                            />
+                            <p className="text-[11px] text-gray-400 mt-1">Data diambil dari profil anggota.</p>
                         </div>
                         <div>
-                            <h2 className="text-lg font-bold text-gray-900">Form Pengajuan Pinjaman</h2>
-                            <p className="text-xs text-gray-500">
-                                Mohon isi data dengan lengkap dan sesuai. Pengajuan akan diverifikasi oleh pengurus koperasi.
-                            </p>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Nomor Anggota
+                            </label>
+                            <input
+                                type="text"
+                                name="no_npp"
+                                value={formData.no_npp}
+                                onChange={handleChange}
+                                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-gray-50"
+                                readOnly
+                            />
+                            <p className="text-[11px] text-gray-400 mt-1">Sesuai No. NPP Anda.</p>
                         </div>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="px-6 py-5 space-y-6">
-                        {error && (
-                            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg flex items-center gap-2 text-sm">
-                                <AlertCircle size={16} />
-                                {error}
+                    {/* Detail Pinjaman */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Jumlah Pinjaman (Rp) *
+                            </label>
+                            <input
+                                type="text"
+                                name="jumlah_pinjaman"
+                                value={formData.jumlah_pinjaman}
+                                onChange={handleChange}
+                                placeholder="Contoh: 5.000.000"
+                                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                required
+                            />
+                            <p className="text-[11px] text-gray-400 mt-1">Isi nominal pinjaman. Minimum Rp 1.000.000</p>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Tenor (bulan) *
+                            </label>
+                            <select
+                                name="tenor_bulan"
+                                value={formData.tenor_bulan}
+                                onChange={handleChange}
+                                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
+                                required
+                            >
+                                <option value="">Pilih tenor</option>
+                                <option value="3">3 bulan</option>
+                                <option value="6">6 bulan</option>
+                                <option value="12">12 bulan</option>
+                                <option value="18">18 bulan</option>
+                                <option value="24">24 bulan</option>
+                            </select>
+                            <p className="text-[11px] text-gray-400 mt-1">Pilih jangka waktu pengembalian pinjaman</p>
+                        </div>
+                    </div>
+
+                    {/* Info Persetujuan */}
+                    <div className="bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3 text-xs text-emerald-700 flex gap-3">
+                        <div className="mt-0.5">
+                            <input type="checkbox" required className="rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500" />
+                        </div>
+                        <p>
+                            Dengan mengirim form ini, saya menyatakan bahwa seluruh data yang saya isi adalah benar dan saya
+                            bersedia mengikuti ketentuan serta kebijakan pinjaman yang berlaku di KOPSSI.
+                        </p>
+                    </div>
+
+                    {/* Aksi */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-2">
+                        {submitted && (
+                            <div className="inline-flex items-center gap-2 text-xs text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-full px-3 py-1">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                Pengajuan berhasil dikirim. Menunggu persetujuan pengurus.
                             </div>
                         )}
-
-                        {/* Data Anggota */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Nama Lengkap
-                                </label>
-                                <input
-                                    type="text"
-                                    name="full_name"
-                                    value={formData.full_name}
-                                    onChange={handleChange}
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-gray-50"
-                                    readOnly
-                                />
-                                <p className="text-[11px] text-gray-400 mt-1">Data diambil dari profil anggota.</p>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Nomor Anggota
-                                </label>
-                                <input
-                                    type="text"
-                                    name="no_npp"
-                                    value={formData.no_npp}
-                                    onChange={handleChange}
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-gray-50"
-                                    readOnly
-                                />
-                                <p className="text-[11px] text-gray-400 mt-1">Sesuai No. NPP Anda.</p>
-                            </div>
+                        <div className="flex gap-3 md:ml-auto">
+                            <button
+                                type="reset"
+                                onClick={() =>
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        jumlah_pinjaman: '',
+                                        tenor_bulan: '',
+                                    }))
+                                }
+                                disabled={submitting}
+                                className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+                            >
+                                Reset
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={submitting || !personalDataId}
+                                className={`px-5 py-2 rounded-lg text-sm font-semibold bg-emerald-600 text-white shadow-sm transition-colors ${submitting || !personalDataId ? 'opacity-50 cursor-not-allowed' : 'hover:bg-emerald-700'}`}
+                            >
+                                {submitting ? 'Mengirim...' : 'Kirim Pengajuan'}
+                            </button>
                         </div>
+                    </div>
+                </form>
+            </div>
 
-                        {/* Detail Pinjaman */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Jumlah Pinjaman (Rp) *
-                                </label>
-                                <input
-                                    type="text"
-                                    name="jumlah_pinjaman"
-                                    value={formData.jumlah_pinjaman}
-                                    onChange={handleChange}
-                                    placeholder="Contoh: 5.000.000"
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                                    required
-                                />
-                                <p className="text-[11px] text-gray-400 mt-1">Isi nominal pinjaman. Minimum Rp 1.000.000</p>
+            {/* Riwayat Pinjaman */}
+            {loans.length > 0 && (
+                <div className="loan-card-anim bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                    <div className="px-6 py-4 border-b border-gray-50 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-blue-50 text-blue-600">
+                                <FileText size={20} />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Tenor (bulan) *
-                                </label>
-                                <select
-                                    name="tenor_bulan"
-                                    value={formData.tenor_bulan}
-                                    onChange={handleChange}
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
-                                    required
-                                >
-                                    <option value="">Pilih tenor</option>
-                                    <option value="3">3 bulan</option>
-                                    <option value="6">6 bulan</option>
-                                    <option value="12">12 bulan</option>
-                                    <option value="18">18 bulan</option>
-                                    <option value="24">24 bulan</option>
-                                </select>
-                                <p className="text-[11px] text-gray-400 mt-1">Pilih jangka waktu pengembalian pinjaman</p>
+                                <h2 className="text-lg font-bold text-gray-900">Pinjaman Terdaftar</h2>
+                                <p className="text-xs text-gray-500">Daftar semua pengajuan pinjaman Anda</p>
                             </div>
                         </div>
+                    </div>
 
-                        {/* Info Persetujuan */}
-                        <div className="bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3 text-xs text-emerald-700 flex gap-3">
-                            <div className="mt-0.5">
-                                <input type="checkbox" required className="rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500" />
-                            </div>
-                            <p>
-                                Dengan mengirim form ini, saya menyatakan bahwa seluruh data yang saya isi adalah benar dan saya
-                                bersedia mengikuti ketentuan serta kebijakan pinjaman yang berlaku di KOPSSI.
-                            </p>
-                        </div>
-
-                        {/* Aksi */}
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-2">
-                            {submitted && (
-                                <div className="inline-flex items-center gap-2 text-xs text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-full px-3 py-1">
-                                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                    Pengajuan berhasil dikirim. Menunggu persetujuan pengurus.
-                                </div>
-                            )}
-                            <div className="flex gap-3 md:ml-auto">
-                                <button
-                                    type="reset"
-                                    onClick={() =>
-                                        setFormData((prev) => ({
-                                            ...prev,
-                                            jumlah_pinjaman: '',
-                                            tenor_bulan: '',
-                                        }))
-                                    }
-                                    disabled={submitting}
-                                    className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
-                                >
-                                    Reset
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={submitting || !personalDataId}
-                                    className={`px-5 py-2 rounded-lg text-sm font-semibold bg-emerald-600 text-white shadow-sm transition-colors ${submitting || !personalDataId ? 'opacity-50 cursor-not-allowed' : 'hover:bg-emerald-700'}`}
-                                >
-                                    {submitting ? 'Mengirim...' : 'Kirim Pengajuan'}
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead className="bg-gray-50 text-gray-500 text-xs font-medium uppercase tracking-wider">
+                                <tr>
+                                    <th className="px-6 py-3">No. Pinjaman</th>
+                                    <th className="px-6 py-3">Tanggal</th>
+                                    <th className="px-6 py-3">Jumlah</th>
+                                    <th className="px-6 py-3">Tenor</th>
+                                    <th className="px-6 py-3">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {loans.map((ln) => (
+                                    <tr key={ln.id} className="hover:bg-gray-50/50 transition-colors">
+                                        <td className="px-6 py-4">
+                                            <span className="text-sm font-bold text-gray-900">{ln.no_pinjaman}</span>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-600">
+                                            {new Date(ln.created_at).toLocaleDateString('id-ID', {
+                                                day: 'numeric',
+                                                month: 'short',
+                                                year: 'numeric'
+                                            })}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm font-semibold text-emerald-600">
+                                            Rp {parseFloat(ln.jumlah_pinjaman).toLocaleString('id-ID')}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-600">
+                                            {ln.tenor_bulan} Bulan
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${ln.status === 'PENGAJUAN' ? 'bg-amber-100 text-amber-700' :
+                                                ln.status === 'DISETUJUI' ? 'bg-blue-100 text-blue-700' :
+                                                    ln.status === 'DICAIRKAN' ? 'bg-emerald-100 text-emerald-700' :
+                                                        ln.status === 'LUNAS' ? 'bg-gray-100 text-gray-600' :
+                                                            'bg-red-100 text-red-700'
+                                                }`}>
+                                                {getStatusLabel(ln.status)}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             )}
         </div>

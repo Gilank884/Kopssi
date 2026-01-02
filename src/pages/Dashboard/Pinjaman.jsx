@@ -3,6 +3,8 @@ import { CreditCard, FileText } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 
 const Pinjaman = () => {
+    const [loans, setLoans] = useState([]);
+    const [selectedLoanId, setSelectedLoanId] = useState(null);
     const [loan, setLoan] = useState(null);
     const [summary, setSummary] = useState({
         totalPinjaman: 0,
@@ -82,58 +84,8 @@ const Pinjaman = () => {
                 if (loansError) console.error("Pinjaman: Error fetching loans ->", loansError);
 
                 if (loans && loans.length > 0) {
-                    const activeLoan = loans[0]; // Take the most recent active loan
-
-                    const { data: angsuran } = await supabase
-                        .from('angsuran')
-                        .select('*')
-                        .eq('pinjaman_id', activeLoan.id);
-
-                    const principal = parseFloat(activeLoan.jumlah_pinjaman);
-                    const rate = parseFloat(activeLoan.bunga?.persen || 0);
-                    const tenure = activeLoan.tenor_bulan;
-                    const totalBunga = principal * (rate / 100) * tenure;
-                    const totalBayar = principal + totalBunga;
-
-                    let pokokTerbayar = 0;
-                    let paidMonths = 0;
-                    let unpaidMonths = 0;
-                    let nextBill = 0;
-
-                    if (angsuran) {
-                        const sortedAngsuran = angsuran.sort((a, b) => a.bulan_ke - b.bulan_ke);
-                        const nextInstallment = sortedAngsuran.find(a => a.status !== 'PAID');
-
-                        if (nextInstallment) {
-                            nextBill = parseFloat(nextInstallment.amount);
-                        }
-
-                        sortedAngsuran.forEach(a => {
-                            if (a.status === 'PAID') {
-                                pokokTerbayar += parseFloat(a.amount);
-                                paidMonths++;
-                            } else {
-                                unpaidMonths++;
-                            }
-                        });
-                    }
-
-                    const sisaPokok = totalBayar - pokokTerbayar;
-                    const remainingMonths = Math.max(0, tenure - paidMonths);
-
-                    setLoan(activeLoan);
-                    setSummary({
-                        totalPinjaman: principal,
-                        totalBayar,
-                        totalBunga,
-                        pokokTerbayar,
-                        sisaPokok,
-                        paidMonths,
-                        unpaidMonths,
-                        remainingMonths,
-                        nextBill
-                    });
-                    setHasData(true);
+                    setLoans(loans);
+                    setSelectedLoanId(loans[0].id);
                 } else {
                     setHasData(false);
                 }
@@ -147,6 +99,72 @@ const Pinjaman = () => {
 
         fetchData();
     }, []);
+
+    useEffect(() => {
+        const updateLoanSummary = async () => {
+            if (!selectedLoanId) return;
+
+            const activeLoan = loans.find(l => l.id === selectedLoanId);
+            if (!activeLoan) return;
+
+            try {
+                const { data: angsuran } = await supabase
+                    .from('angsuran')
+                    .select('*')
+                    .eq('pinjaman_id', activeLoan.id);
+
+                const principal = parseFloat(activeLoan.jumlah_pinjaman);
+                const rate = parseFloat(activeLoan.bunga?.persen || 0);
+                const tenure = activeLoan.tenor_bulan;
+                const totalBunga = principal * (rate / 100) * tenure;
+                const totalBayar = principal + totalBunga;
+
+                let pokokTerbayar = 0;
+                let paidMonths = 0;
+                let unpaidMonths = 0;
+                let nextBill = 0;
+
+                if (angsuran) {
+                    const sortedAngsuran = angsuran.sort((a, b) => a.bulan_ke - b.bulan_ke);
+                    const nextInstallment = sortedAngsuran.find(a => a.status !== 'PAID');
+
+                    if (nextInstallment) {
+                        nextBill = parseFloat(nextInstallment.amount);
+                    }
+
+                    sortedAngsuran.forEach(a => {
+                        if (a.status === 'PAID') {
+                            pokokTerbayar += parseFloat(a.amount);
+                            paidMonths++;
+                        } else {
+                            unpaidMonths++;
+                        }
+                    });
+                }
+
+                const sisaPokok = totalBayar - pokokTerbayar;
+                const remainingMonths = Math.max(0, tenure - paidMonths);
+
+                setLoan(activeLoan);
+                setSummary({
+                    totalPinjaman: principal,
+                    totalBayar,
+                    totalBunga,
+                    pokokTerbayar,
+                    sisaPokok,
+                    paidMonths,
+                    unpaidMonths,
+                    remainingMonths,
+                    nextBill
+                });
+                setHasData(true);
+            } catch (err) {
+                console.error("Error updating loan summary:", err);
+            }
+        };
+
+        updateLoanSummary();
+    }, [selectedLoanId, loans]);
 
     const formatCurrency = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
     const formatDate = (dateString) => new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -177,6 +195,32 @@ const Pinjaman = () => {
 
     return (
         <div className="space-y-6">
+            {/* Loan Selector if multiple exist */}
+            {loans.length > 1 && (
+                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-blue-50 text-blue-600">
+                            <CreditCard size={20} />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-gray-800 text-sm">Pilih Pinjaman</h3>
+                            <p className="text-xs text-gray-500">Anda memiliki {loans.length} pinjaman aktif</p>
+                        </div>
+                    </div>
+                    <select
+                        value={selectedLoanId}
+                        onChange={(e) => setSelectedLoanId(e.target.value)}
+                        className="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none"
+                    >
+                        {loans.map(ln => (
+                            <option key={ln.id} value={ln.id}>
+                                {ln.no_pinjaman} - Rp {parseFloat(ln.jumlah_pinjaman).toLocaleString('id-ID')}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            )}
+
             <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-white shadow-lg">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div>
