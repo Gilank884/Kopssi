@@ -1,11 +1,13 @@
-import React, { useLayoutEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Menu, Bell, User } from 'lucide-react';
 import gsap from 'gsap';
 
 const Header = ({ sidebarOpen, setSidebarOpen, title, user, initials }) => {
     const headerRef = useRef(null);
 
-    useLayoutEffect(() => {
+    useEffect(() => {
+        if (!headerRef.current) return;
+
         const ctx = gsap.context(() => {
             gsap.from(headerRef.current, {
                 y: -20,

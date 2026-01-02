@@ -181,25 +181,36 @@ const Overview = () => {
     }, []);
 
 
-    useLayoutEffect(() => {
+    useEffect(() => {
+        if (!containerRef.current) return;
+
         const ctx = gsap.context(() => {
-            gsap.from(".card-anim", {
-                y: 30,
-                opacity: 0,
-                duration: 0.6,
-                stagger: 0.1,
-                ease: "back.out(1.5)"
-            });
-            gsap.from(".chart-anim", {
-                scale: 0.95,
-                opacity: 0,
-                duration: 0.8,
-                delay: 0.3,
-                ease: "power2.out"
-            });
+            // Only animate if elements exist
+            const cards = document.querySelectorAll(".card-anim");
+            if (cards.length > 0) {
+                gsap.from(cards, {
+                    y: 30,
+                    opacity: 0,
+                    duration: 0.6,
+                    stagger: 0.1,
+                    ease: "back.out(1.5)"
+                });
+            }
+
+            const charts = document.querySelectorAll(".chart-anim");
+            if (charts.length > 0) {
+                gsap.from(charts, {
+                    scale: 0.95,
+                    opacity: 0,
+                    duration: 0.8,
+                    delay: 0.3,
+                    ease: "power2.out"
+                });
+            }
         }, containerRef);
+
         return () => ctx.revert();
-    }, []);
+    }, [loading]); // Re-run when loading finishes to catch newly rendered elements
 
     const formatCurrency = (val) => {
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
@@ -240,9 +251,9 @@ const Overview = () => {
                         <TrendingUp className="text-emerald-500" size={20} />
                         Pertumbuhan Simpanan
                     </h3>
-                    <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
-                            {hasSimpanan ? (
+                    <div className="h-64 w-full">
+                        {hasSimpanan ? (
+                            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                                 <BarChart data={simpananChartData}>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
                                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 12 }} dy={10} />
@@ -254,12 +265,12 @@ const Overview = () => {
                                     />
                                     <Bar dataKey="amount" fill="#10B981" radius={[4, 4, 0, 0]} />
                                 </BarChart>
-                            ) : (
-                                <div className="flex items-center justify-center h-full text-gray-400 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
-                                    Data Simpanan Belum Ada
-                                </div>
-                            )}
-                        </ResponsiveContainer>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="flex items-center justify-center h-full text-gray-400 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+                                Data Simpanan Belum Ada
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -269,26 +280,26 @@ const Overview = () => {
                         <AlertCircle className="text-red-500" size={20} />
                         Status Pinjaman
                     </h3>
-                    <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
-                            {hasPinjaman ? (
+                    <div className="h-64 w-full">
+                        {hasPinjaman ? (
+                            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                                 <BarChart data={pinjamanChartData} layout="vertical">
                                     <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E5E7EB" />
                                     <XAxis type="number" hide />
                                     <YAxis dataKey="name" type="category" width={80} axisLine={false} tickLine={false} tick={{ fill: '#374151', fontSize: 12, fontWeight: 500 }} />
                                     <Tooltip
                                         cursor={{ fill: 'transparent' }}
-                                        contentStyle={{ backgroundColor: '#fff', borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                        contentStyle={{ backgroundColor: '#fff', borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
                                         formatter={(value) => formatCurrency(value)}
                                     />
                                     <Bar dataKey="sisa" fill="#EF4444" radius={[0, 4, 4, 0]} barSize={20} background={{ fill: '#F3F4F6' }} />
                                 </BarChart>
-                            ) : (
-                                <div className="flex items-center justify-center h-full text-gray-400 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
-                                    Tidak Ada Pinjaman Aktif
-                                </div>
-                            )}
-                        </ResponsiveContainer>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="flex items-center justify-center h-full text-gray-400 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+                                Tidak Ada Pinjaman Aktif
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

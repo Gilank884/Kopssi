@@ -12,6 +12,9 @@ const PengajuanHutang = () => {
         tenor_bulan: '',
     });
 
+    const [interestRate, setInterestRate] = useState(0);
+    const [bungaId, setBungaId] = useState(null);
+
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
@@ -79,7 +82,27 @@ const PengajuanHutang = () => {
             }
         };
 
+        const fetchInterestRate = async () => {
+            try {
+                const { data: bungaData, error: bungaError } = await supabase
+                    .from('bunga')
+                    .select('*')
+                    .eq('is_active', true)
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
+
+                if (bungaData) {
+                    setInterestRate(parseFloat(bungaData.persen));
+                    setBungaId(bungaData.id);
+                }
+            } catch (err) {
+                console.error("Error fetching interest rate:", err);
+            }
+        };
+
         fetchUserData();
+        fetchInterestRate();
     }, []);
 
     useLayoutEffect(() => {
@@ -136,14 +159,16 @@ const PengajuanHutang = () => {
         try {
             const noPinjaman = generateLoanNumber();
 
-            // Default values
-            const bungaPersen = 0;
-
+            // 1. Insert Pinjaman
             // Konversi jumlah pinjaman dari format string (contoh: 5.000.000) ke angka murni (5000000)
             const rawJumlahPinjaman = parseFloat(formData.jumlah_pinjaman.replace(/\./g, ''));
             const tenor = parseInt(formData.tenor_bulan);
 
-            // 1. Insert Pinjaman
+            // Calculate Interest (Simple Flat Rate)
+            const totalBunga = rawJumlahPinjaman * (interestRate / 100) * tenor;
+            const totalBayar = rawJumlahPinjaman + totalBunga;
+            const monthlyAmount = Math.ceil(totalBayar / tenor);
+
             const { data: insertedLoan, error: insertError } = await supabase
                 .from('pinjaman')
                 .insert([
@@ -152,7 +177,7 @@ const PengajuanHutang = () => {
                         no_pinjaman: noPinjaman,
                         jumlah_pinjaman: rawJumlahPinjaman,
                         tenor_bulan: tenor,
-                        bunga_persen: bungaPersen,
+                        bunga_id: bungaId,
                         status: 'PENGAJUAN',
                     }
                 ])
@@ -163,7 +188,6 @@ const PengajuanHutang = () => {
             if (!insertedLoan) throw new Error("Gagal menyimpan data pinjaman.");
 
             // 2. Generate & Insert Angsuran (Installments)
-            const monthlyAmount = Math.ceil(rawJumlahPinjaman / tenor); // Pembulatan ke atas agar tidak kurang bayar
             const installments = [];
             const today = new Date();
 

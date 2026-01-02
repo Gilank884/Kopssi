@@ -54,7 +54,12 @@ const Angsuran = () => {
                 // Fetch Active Loan (DICAIRKAN)
                 const { data: loans } = await supabase
                     .from('pinjaman')
-                    .select('*')
+                    .select(`
+                        *,
+                        bunga:bunga_id (
+                            persen
+                        )
+                    `)
                     .eq('personal_data_id', personalData.id)
                     .eq('status', 'DICAIRKAN')
                     .order('created_at', { ascending: false });
@@ -76,14 +81,25 @@ const Angsuran = () => {
                     console.log("Fetched Installments:", installments);
 
                     if (installments && installments.length > 0) {
-                        const generatedSchedule = installments.map(item => ({
-                            month: item.bulan_ke,
-                            date: new Date(item.tanggal_bayar).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
-                            pokok: item.amount,
-                            bunga: 0,
-                            total: item.amount,
-                            status: item.status || 'UNPAID' // Use DB status or default to UNPAID
-                        }));
+                        const generatedSchedule = installments.map(item => {
+                            const totalAmount = parseFloat(item.amount);
+                            const tenor = activeLoan.tenor_bulan;
+                            const interestRate = parseFloat(activeLoan.bunga?.persen || 0);
+                            const principal = parseFloat(activeLoan.jumlah_pinjaman);
+
+                            // Flat rate calculation
+                            const monthlyInterest = principal * (interestRate / 100);
+                            const monthlyPrincipal = totalAmount - monthlyInterest;
+
+                            return {
+                                month: item.bulan_ke,
+                                date: new Date(item.tanggal_bayar).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
+                                pokok: monthlyPrincipal,
+                                bunga: monthlyInterest,
+                                total: totalAmount,
+                                status: item.status || 'UNPAID'
+                            };
+                        });
 
                         setSchedule(generatedSchedule);
                         setHasData(true);

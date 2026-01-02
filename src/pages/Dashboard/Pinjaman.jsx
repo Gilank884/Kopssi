@@ -68,7 +68,12 @@ const Pinjaman = () => {
                 // In a real app with multiple loans, we'd list them. Here we focus on the primary active loan.
                 const { data: loans, error: loansError } = await supabase
                     .from('pinjaman')
-                    .select('*')
+                    .select(`
+                        *,
+                        bunga:bunga_id (
+                            persen
+                        )
+                    `)
                     .eq('personal_data_id', personalData.id)
                     .eq('status', 'DICAIRKAN')
                     .order('created_at', { ascending: false });
@@ -84,19 +89,20 @@ const Pinjaman = () => {
                         .select('*')
                         .eq('pinjaman_id', activeLoan.id);
 
-                    const totalPinjaman = parseFloat(activeLoan.jumlah_pinjaman);
+                    const principal = parseFloat(activeLoan.jumlah_pinjaman);
+                    const rate = parseFloat(activeLoan.bunga?.persen || 0);
+                    const tenure = activeLoan.tenor_bulan;
+                    const totalBunga = principal * (rate / 100) * tenure;
+                    const totalBayar = principal + totalBunga;
+
                     let pokokTerbayar = 0;
                     let paidMonths = 0;
                     let unpaidMonths = 0;
                     let nextBill = 0;
 
                     if (angsuran) {
-                        // Sort by bulan_ke to ensure order
                         const sortedAngsuran = angsuran.sort((a, b) => a.bulan_ke - b.bulan_ke);
-
-                        // Find first unpaid installment
                         const nextInstallment = sortedAngsuran.find(a => a.status !== 'PAID');
-                        console.log("DEBUG: Next Installment Candidate:", nextInstallment);
 
                         if (nextInstallment) {
                             nextBill = parseFloat(nextInstallment.amount);
@@ -107,19 +113,19 @@ const Pinjaman = () => {
                                 pokokTerbayar += parseFloat(a.amount);
                                 paidMonths++;
                             } else {
-                                // Assume 'UNPAID' or null is unpaid
                                 unpaidMonths++;
                             }
                         });
                     }
 
-                    const sisaPokok = totalPinjaman - pokokTerbayar;
-                    const tenor = activeLoan.tenor_bulan;
-                    const remainingMonths = Math.max(0, tenor - paidMonths);
+                    const sisaPokok = totalBayar - pokokTerbayar;
+                    const remainingMonths = Math.max(0, tenure - paidMonths);
 
                     setLoan(activeLoan);
                     setSummary({
-                        totalPinjaman,
+                        totalPinjaman: principal,
+                        totalBayar,
+                        totalBunga,
                         pokokTerbayar,
                         sisaPokok,
                         paidMonths,
@@ -174,8 +180,8 @@ const Pinjaman = () => {
             <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-white shadow-lg">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div>
-                        <p className="text-blue-200 text-sm font-medium mb-1">Total Pinjaman Aktif</p>
-                        <h2 className="text-4xl font-bold">{formatCurrency(summary.totalPinjaman)}</h2>
+                        <p className="text-blue-200 text-sm font-medium mb-1">Status Pembayaran</p>
+                        <h2 className="text-4xl font-bold">{formatCurrency(summary.pokokTerbayar)} / {formatCurrency(summary.totalBayar)}</h2>
                         <div className="mt-4 flex gap-4 text-sm">
                             <div>
                                 <p className="text-blue-200">Nomor Pinjaman</p>
@@ -211,7 +217,7 @@ const Pinjaman = () => {
                     <div className="space-y-4">
                         <div className="flex justify-between py-2 border-b border-gray-50">
                             <span className="text-gray-500">Plafon Pinjaman</span>
-                            <span className="font-medium text-gray-900">{summary.Pinjaman}</span>
+                            <span className="font-medium text-gray-900">{formatCurrency(summary.totalPinjaman)}</span>
                         </div>
                         <div className="flex justify-between py-2 border-b border-gray-50">
                             <span className="text-gray-500">Jangka Waktu</span>
@@ -219,7 +225,15 @@ const Pinjaman = () => {
                         </div>
                         <div className="flex justify-between py-2 border-b border-gray-50">
                             <span className="text-gray-500">Suku Bunga</span>
-                            <span className="font-medium text-gray-900">{loan.bunga_persen}% / Bulan</span>
+                            <span className="font-medium text-gray-900">{loan.bunga?.persen || 0}% / Bulan</span>
+                        </div>
+                        <div className="flex justify-between py-2 border-b border-gray-50">
+                            <span className="text-gray-500">Total Bunga</span>
+                            <span className="font-medium text-gray-900">{formatCurrency(summary.totalBunga || 0)}</span>
+                        </div>
+                        <div className="flex justify-between py-2 border-b border-gray-50">
+                            <span className="text-gray-500">Total Bayar</span>
+                            <span className="font-bold text-emerald-700">{formatCurrency(summary.totalBayar)}</span>
                         </div>
                         <div className="flex justify-between py-2 border-b border-gray-50">
                             <span className="text-gray-500">Estimasi Angsuran</span>
@@ -246,8 +260,8 @@ const Pinjaman = () => {
                             <span className="font-medium text-amber-600 font-bold">{summary.unpaidMonths} kali</span>
                         </div>
                         <div className="flex justify-between py-2 border-b border-gray-50">
-                            <span className="text-gray-500">Pokok Terbayar</span>
-                            <span className="font-medium text-emerald-600">{formatCurrency(summary.pokokTerbayar)}</span>
+                            <span className="text-gray-500">Total Sudah Dibayar</span>
+                            <span className="font-medium text-emerald-600 font-bold">{formatCurrency(summary.pokokTerbayar)}</span>
                         </div>
                         {/* 
                         <div className="flex justify-between py-2 border-b border-gray-50">
@@ -256,7 +270,7 @@ const Pinjaman = () => {
                         </div>
                         */}
                         <div className="flex justify-between py-2 border-b border-gray-50">
-                            <span className="text-gray-500">Sisa Pokok</span>
+                            <span className="text-gray-500">Sisa Kewajiban</span>
                             <span className="font-medium text-red-600">{formatCurrency(summary.sisaPokok)}</span>
                         </div>
                         <div className="mt-6 pt-4 bg-gray-50 p-4 rounded-lg">

@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 import gsap from 'gsap';
@@ -6,7 +6,9 @@ import gsap from 'gsap';
 const Sidebar = ({ isOpen, navItems, onLogout }) => {
     const sidebarRef = useRef(null);
 
-    useLayoutEffect(() => {
+    useEffect(() => {
+        if (!sidebarRef.current) return;
+
         const ctx = gsap.context(() => {
             gsap.from(sidebarRef.current, {
                 x: -40,

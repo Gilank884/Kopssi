@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { Search, Eye, X, CheckCircle, AlertCircle, User, Wallet, FileText, Check } from 'lucide-react';
 
-const AssesmentPinjaman = () => {
+const PencairanPinjaman = () => {
     const [loans, setLoans] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedLoan, setSelectedLoan] = useState(null);
@@ -27,6 +27,9 @@ const AssesmentPinjaman = () => {
                         phone,
                         company,
                         work_unit
+                    ),
+                    bunga:bunga_id (
+                        persen
                     )
                 `)
                 .eq('status', 'DISETUJUI')
@@ -93,8 +96,8 @@ const AssesmentPinjaman = () => {
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 text-left">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-800 text-left">Penyetujuan Pinjaman</h2>
-                    <p className="text-sm text-gray-500 mt-1 text-left">Tahap 1: Verifikasi dan setujui pengajuan anggota</p>
+                    <h2 className="text-2xl font-bold text-gray-800 text-left">Pencairan Pinjaman</h2>
+                    <p className="text-sm text-gray-500 mt-1 text-left">Tahap 2: Proses pencairan dana ke anggota</p>
                 </div>
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
@@ -188,8 +191,8 @@ const AssesmentPinjaman = () => {
                             >
                                 <X size={24} />
                             </button>
-                            <h2 className="text-xl font-black italic tracking-tight uppercase">VERIFIKASI PENGAJUAN</h2>
-                            <p className="text-emerald-100 text-xs mt-1 text-left font-medium opacity-80 uppercase tracking-widest text-left">Loan Review Process</p>
+                            <h2 className="text-xl font-black italic tracking-tight uppercase">PROSES PENCAIRAN</h2>
+                            <p className="text-emerald-100 text-xs mt-1 text-left font-medium opacity-80 uppercase tracking-widest text-left">Disbursement Process</p>
                         </div>
 
                         {/* Content */}
@@ -225,18 +228,39 @@ const AssesmentPinjaman = () => {
                                     </h3>
                                     <div className="space-y-4">
                                         <div className="text-left">
-                                            <label className="text-[10px] font-black text-emerald-400 block uppercase mb-1 italic text-left">Total Pengajuan</label>
+                                            <label className="text-[10px] font-black text-emerald-400 block uppercase mb-1 italic text-left">Plafon Pinjaman</label>
                                             <p className="text-xl font-black text-emerald-700 tracking-tighter italic text-left">Rp {parseFloat(selectedLoan.jumlah_pinjaman).toLocaleString('id-ID')}</p>
                                         </div>
                                         <div className="grid grid-cols-2 gap-3 text-left">
-                                            <div className="text-left">
-                                                <label className="text-[10px] font-black text-gray-400 block uppercase italic text-left">Tenor</label>
-                                                <p className="text-sm font-black text-gray-800 text-left">{selectedLoan.tenor_bulan} Bulan</p>
-                                            </div>
-                                            <div className="text-left">
-                                                <label className="text-[10px] font-black text-gray-400 block uppercase italic text-left">Cicilan/Bln</label>
-                                                <p className="text-sm font-black text-red-600 text-left">Rp {Math.ceil(selectedLoan.jumlah_pinjaman / selectedLoan.tenor_bulan).toLocaleString('id-ID')}</p>
-                                            </div>
+                                            {(() => {
+                                                const principal = parseFloat(selectedLoan.jumlah_pinjaman);
+                                                const tenor = selectedLoan.tenor_bulan;
+                                                const rate = parseFloat(selectedLoan.bunga?.persen || 0);
+                                                const totalBunga = principal * (rate / 100) * tenor;
+                                                const totalBayar = principal + totalBunga;
+                                                const cicilan = Math.ceil(totalBayar / tenor);
+
+                                                return (
+                                                    <>
+                                                        <div className="text-left">
+                                                            <label className="text-[10px] font-black text-gray-400 block uppercase italic text-left">Tenor</label>
+                                                            <p className="text-sm font-black text-gray-800 text-left">{tenor} Bulan</p>
+                                                        </div>
+                                                        <div className="text-left">
+                                                            <label className="text-[10px] font-black text-gray-400 block uppercase italic text-left">Bunga ({rate}%)</label>
+                                                            <p className="text-sm font-black text-gray-800 text-left">Rp {totalBunga.toLocaleString('id-ID')}</p>
+                                                        </div>
+                                                        <div className="text-left">
+                                                            <label className="text-[10px] font-black text-gray-400 block uppercase italic text-left">Total Bayar</label>
+                                                            <p className="text-sm font-black text-emerald-700 text-left">Rp {totalBayar.toLocaleString('id-ID')}</p>
+                                                        </div>
+                                                        <div className="text-left">
+                                                            <label className="text-[10px] font-black text-gray-400 block uppercase italic text-left">Cicilan/Bln</label>
+                                                            <p className="text-sm font-black text-red-600 text-left">Rp {cicilan.toLocaleString('id-ID')}</p>
+                                                        </div>
+                                                    </>
+                                                );
+                                            })()}
                                         </div>
                                     </div>
                                 </div>
@@ -282,7 +306,7 @@ const AssesmentPinjaman = () => {
                                         className="px-6 py-2 bg-emerald-600 text-white rounded-lg text-xs font-black uppercase hover:bg-emerald-700 transition-colors flex items-center gap-2 shadow-lg shadow-emerald-100 tracking-widest"
                                     >
                                         <Check size={14} />
-                                        Setujui Pengajuan
+                                        Cairkan Pinjaman
                                     </button>
                                 </div>
                             </div>
@@ -294,4 +318,4 @@ const AssesmentPinjaman = () => {
     );
 };
 
-export default AssesmentPinjaman;
+export default PencairanPinjaman;

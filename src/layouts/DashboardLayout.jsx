@@ -81,8 +81,10 @@ const DashboardLayout = () => {
     // =====================
     const adminNav = [
         { path: '/admin', label: 'Dashboard Admin', icon: <LayoutDashboard size={20} />, end: true },
-        { path: '/admin/users', label: 'Manajemen User', icon: <User size={20} /> },
-        { path: '/admin/approval', label: 'Approval', icon: <Shield size={20} /> },
+        { path: '/admin/pengajuan-anggota', label: 'Pengajuan Anggota', icon: <FileText size={20} /> },
+        { path: '/admin/members', label: 'Data Anggota', icon: <User size={20} /> },
+        { path: '/admin/assesment-pinjaman', label: 'Penyetujuan Pinjaman', icon: <Shield size={20} /> },
+        { path: '/admin/pencairan-pinjaman', label: 'Pencairan Pinjaman', icon: <CreditCard size={20} /> },
     ];
 
     const navItems = authUser.role === 'ADMIN' ? adminNav : memberNav;
@@ -108,7 +110,8 @@ const DashboardLayout = () => {
             )}
 
             {/* SIDEBAR COMPONENT */}
-            <div className={`fixed md:relative z-30 h-full transition-transform duration-300 md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+            <div className={`fixed md:relative z-30 h-full transition-all duration-300 md:translate-x-0 
+                ${isSidebarOpen ? 'w-72 translate-x-0' : 'w-20 -translate-x-full md:translate-x-0'}`}>
                 <Sidebar
                     isOpen={isSidebarOpen}
                     navItems={navItems}

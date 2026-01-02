@@ -27,6 +27,9 @@ const AssesmentPinjaman = () => {
                         phone,
                         company,
                         work_unit
+                    ),
+                    bunga:bunga_id (
+                        persen
                     )
                 `)
                 .eq('status', 'PENGAJUAN')
@@ -225,18 +228,39 @@ const AssesmentPinjaman = () => {
                                     </h3>
                                     <div className="space-y-4">
                                         <div className="text-left">
-                                            <label className="text-[10px] font-black text-emerald-400 block uppercase mb-1 italic text-left">Total Pengajuan</label>
+                                            <label className="text-[10px] font-black text-emerald-400 block uppercase mb-1 italic text-left">Plafon Pinjaman</label>
                                             <p className="text-xl font-black text-emerald-700 tracking-tighter italic text-left">Rp {parseFloat(selectedLoan.jumlah_pinjaman).toLocaleString('id-ID')}</p>
                                         </div>
                                         <div className="grid grid-cols-2 gap-3 text-left">
-                                            <div className="text-left">
-                                                <label className="text-[10px] font-black text-gray-400 block uppercase italic text-left">Tenor</label>
-                                                <p className="text-sm font-black text-gray-800 text-left">{selectedLoan.tenor_bulan} Bulan</p>
-                                            </div>
-                                            <div className="text-left">
-                                                <label className="text-[10px] font-black text-gray-400 block uppercase italic text-left">Cicilan/Bln</label>
-                                                <p className="text-sm font-black text-red-600 text-left">Rp {Math.ceil(selectedLoan.jumlah_pinjaman / selectedLoan.tenor_bulan).toLocaleString('id-ID')}</p>
-                                            </div>
+                                            {(() => {
+                                                const principal = parseFloat(selectedLoan.jumlah_pinjaman);
+                                                const tenor = selectedLoan.tenor_bulan;
+                                                const rate = parseFloat(selectedLoan.bunga?.persen || 0);
+                                                const totalBunga = principal * (rate / 100) * tenor;
+                                                const totalBayar = principal + totalBunga;
+                                                const cicilan = Math.ceil(totalBayar / tenor);
+
+                                                return (
+                                                    <>
+                                                        <div className="text-left">
+                                                            <label className="text-[10px] font-black text-gray-400 block uppercase italic text-left">Tenor</label>
+                                                            <p className="text-sm font-black text-gray-800 text-left">{tenor} Bulan</p>
+                                                        </div>
+                                                        <div className="text-left">
+                                                            <label className="text-[10px] font-black text-gray-400 block uppercase italic text-left">Bunga ({rate}%)</label>
+                                                            <p className="text-sm font-black text-gray-800 text-left">Rp {totalBunga.toLocaleString('id-ID')}</p>
+                                                        </div>
+                                                        <div className="text-left">
+                                                            <label className="text-[10px] font-black text-gray-400 block uppercase italic text-left">Total Bayar</label>
+                                                            <p className="text-sm font-black text-emerald-700 text-left">Rp {totalBayar.toLocaleString('id-ID')}</p>
+                                                        </div>
+                                                        <div className="text-left">
+                                                            <label className="text-[10px] font-black text-gray-400 block uppercase italic text-left">Cicilan/Bln</label>
+                                                            <p className="text-sm font-black text-red-600 text-left">Rp {cicilan.toLocaleString('id-ID')}</p>
+                                                        </div>
+                                                    </>
+                                                );
+                                            })()}
                                         </div>
                                     </div>
                                 </div>
