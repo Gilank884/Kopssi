@@ -16,6 +16,7 @@ import PencairanPinjaman from './pages/Admin/PencairanPinjaman';
 import MemberList from './pages/Admin/Members';
 import AdminReports from './pages/Admin/Reports';
 import AdminSettings from './pages/Admin/Settings';
+import MonitorSimpanan from './pages/Admin/MonitorSimpanan';
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
           <Route path="assesment-pinjaman" element={<AssesmentPinjaman />} />
           <Route path="pencairan-pinjaman" element={<PencairanPinjaman />} />
           <Route path="members" element={<MemberList />} />
+          <Route path="monitor-simpanan" element={<MonitorSimpanan />} />
           <Route path="reports" element={<AdminReports />} />
           <Route path="settings" element={<AdminSettings />} />
         </Route>

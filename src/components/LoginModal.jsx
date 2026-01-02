@@ -61,11 +61,17 @@ const LoginModal = ({ isOpen, onClose, onLogin }) => {
 
             // ================= ADMIN =================
             if (userData.role === 'ADMIN') {
+                const { data: personalData } = await supabase
+                    .from('personal_data')
+                    .select('full_name')
+                    .eq('user_id', userData.id)
+                    .single();
+
                 const adminPayload = {
                     id: userData.id,
                     phone: userData.phone,
                     role: 'ADMIN',
-                    name: 'Administrator'
+                    name: personalData?.full_name || 'Administrator'
                 };
 
                 localStorage.setItem('auth_user', JSON.stringify(adminPayload));

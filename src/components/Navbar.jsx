@@ -39,7 +39,7 @@ const Navbar = ({ onNavigate, onLoginClick, onRegisterClick, activeTab }) => {
                     <img src="/Logo.png" alt="KOPSSI Logo" className="w-10 h-10 object-contain drop-shadow-sm" />
                     <div className="flex flex-col">
                         <span className="text-xl font-extrabold text-slate-900 leading-none tracking-tight">KOPSSI</span>
-                        <span className="text-[10px] font-bold text-blue-900 tracking-widest uppercase">Koperasi Konsumen Swadharma</span>
+                        <span className="text-[10px] font-bold text-blue-900 tracking-widest uppercase">Koperasi Simpan Pinjam Swadharma</span>
                     </div>
                 </div>
 

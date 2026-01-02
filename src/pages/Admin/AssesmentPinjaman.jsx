@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabaseClient';
-import { Search, Eye, X, CheckCircle, AlertCircle, User, Wallet, FileText, Check } from 'lucide-react';
+import { Search, Eye, X, CheckCircle, AlertCircle, User, Wallet, FileText, Check, FileDown } from 'lucide-react';
+import { generateLoanAnalysisPDF } from '../../utils/loanAnalysisPdf';
 
 const AssesmentPinjaman = () => {
     const [loans, setLoans] = useState([]);
@@ -8,10 +9,39 @@ const AssesmentPinjaman = () => {
     const [selectedLoan, setSelectedLoan] = useState(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+    const [analystName, setAnalystName] = useState('Admin');
+    const [editingAmount, setEditingAmount] = useState('');
 
     useEffect(() => {
         fetchLoans();
+        fetchAnalystInfo();
     }, []);
+
+    const fetchAnalystInfo = async () => {
+        try {
+            const storedUser = localStorage.getItem('auth_user');
+            if (storedUser) {
+                const user = JSON.parse(storedUser);
+
+                // Fetch full name from personal_data using the ID from localStorage
+                const { data: profile } = await supabase
+                    .from('personal_data')
+                    .select('full_name')
+                    .eq('user_id', user.id)
+                    .single();
+
+                if (profile) {
+                    setAnalystName(profile.full_name);
+                } else {
+                    setAnalystName(user.name || 'Admin System');
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching analyst info:', error);
+        }
+    };
 
     const fetchLoans = async () => {
         try {
@@ -22,11 +52,7 @@ const AssesmentPinjaman = () => {
                 .select(`
                     *,
                     personal_data:personal_data_id (
-                        full_name,
-                        nik,
-                        phone,
-                        company,
-                        work_unit
+                        *
                     ),
                     bunga:bunga_id (
                         persen
@@ -47,7 +73,21 @@ const AssesmentPinjaman = () => {
 
     const handleRowClick = (loan) => {
         setSelectedLoan(loan);
+        setEditingAmount(loan.jumlah_pinjaman.toString());
         setIsDetailModalOpen(true);
+    };
+
+
+
+    const handleBatchDownload = async () => {
+        if (filteredLoans.length === 0) return;
+
+        const confirmBatch = window.confirm(`Unduh ${filteredLoans.length} analisa pinjaman sekaligus?`);
+        if (!confirmBatch) return;
+
+        for (const loan of filteredLoans) {
+            await generateLoanAnalysisPDF(loan, true, analystName);
+        }
     };
 
     const handleApprove = async () => {
@@ -58,9 +98,18 @@ const AssesmentPinjaman = () => {
         if (!confirmApprove) return;
 
         try {
+            const finalAmount = parseFloat(editingAmount);
+            if (isNaN(finalAmount) || finalAmount <= 0) {
+                alert('Nominal pinjaman tidak valid');
+                return;
+            }
+
             const { error } = await supabase
                 .from('pinjaman')
-                .update({ status: 'DISETUJUI' })
+                .update({
+                    status: 'DISETUJUI',
+                    jumlah_pinjaman: finalAmount
+                })
                 .eq('id', selectedLoan.id);
 
             if (error) throw error;
@@ -70,17 +119,26 @@ const AssesmentPinjaman = () => {
 
             setIsDetailModalOpen(false);
             setSelectedLoan(null);
-            alert('Pengajuan pinjaman telah DISETUJUI. Sekarang silakan proses di menu Pencairan.');
+            alert('Pengajuan pinjaman telah DISETUJUI dengan nominal Rp ' + finalAmount.toLocaleString('id-ID') + '. Sekarang silakan proses di menu Pencairan.');
         } catch (error) {
             console.error('Error updating status:', error);
             alert('Gagal menyetujui pinjaman');
         }
     };
 
-    const filteredLoans = loans.filter(loan =>
-        loan.personal_data?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        loan.no_pinjaman?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredLoans = loans.filter(loan => {
+        const matchesSearch =
+            loan.personal_data?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            loan.no_pinjaman?.toLowerCase().includes(searchTerm.toLowerCase());
+
+        const loanDate = new Date(loan.created_at).getTime();
+        const start = startDate ? new Date(startDate).setHours(0, 0, 0, 0) : 0;
+        const end = endDate ? new Date(endDate).setHours(23, 59, 59, 999) : Infinity;
+
+        const matchesDate = loanDate >= start && loanDate <= end;
+
+        return matchesSearch && matchesDate;
+    });
 
     const formatDate = (dateString) => {
         if (!dateString) return '-';
@@ -99,15 +157,50 @@ const AssesmentPinjaman = () => {
                     <h2 className="text-2xl font-bold text-gray-800 text-left">Penyetujuan Pinjaman</h2>
                     <p className="text-sm text-gray-500 mt-1 text-left">Tahap 1: Verifikasi dan setujui pengajuan anggota</p>
                 </div>
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                    <input
-                        type="text"
-                        placeholder="Cari nama peminjam..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-64 shadow-sm"
-                    />
+
+                <div className="flex flex-wrap gap-3 items-end">
+                    <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Cari</label>
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                            <input
+                                type="text"
+                                placeholder="Nama / No. Pinjaman..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-48 shadow-sm"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Dari</label>
+                        <input
+                            type="date"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm"
+                        />
+                    </div>
+
+                    <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Sampai</label>
+                        <input
+                            type="date"
+                            value={endDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                            className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm"
+                        />
+                    </div>
+
+                    <button
+                        onClick={handleBatchDownload}
+                        disabled={filteredLoans.length === 0}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition-all flex items-center gap-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed h-[38px]"
+                    >
+                        <FileDown size={18} />
+                        Download PDF ({filteredLoans.length})
+                    </button>
                 </div>
             </div>
 
@@ -131,6 +224,7 @@ const AssesmentPinjaman = () => {
                                 <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic">Tenor</th>
                                 <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic">No. Pinjaman</th>
                                 <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic">Tanggal</th>
+                                <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic text-center">Analisa</th>
                                 <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic text-center">Aksi</th>
                             </tr>
                         </thead>
@@ -158,6 +252,18 @@ const AssesmentPinjaman = () => {
                                     <td className="px-6 py-4 text-gray-700 text-sm font-semibold">{loan.tenor_bulan} bln</td>
                                     <td className="px-6 py-4 text-gray-400 text-[10px] font-mono">{loan.no_pinjaman}</td>
                                     <td className="px-6 py-4 text-gray-500 text-xs">{formatDate(loan.created_at)}</td>
+                                    <td className="px-6 py-4 text-center">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                generateLoanAnalysisPDF(loan, false, analystName);
+                                            }}
+                                            className="p-2 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition-all shadow-sm"
+                                            title="Pratinjau Analisa PDF"
+                                        >
+                                            <Eye size={18} />
+                                        </button>
+                                    </td>
                                     <td className="px-6 py-4 text-center">
                                         <button
                                             onClick={(e) => {
@@ -227,13 +333,21 @@ const AssesmentPinjaman = () => {
                                         DATA PINJAMAN
                                     </h3>
                                     <div className="space-y-4">
-                                        <div className="text-left">
-                                            <label className="text-[10px] font-black text-emerald-400 block uppercase mb-1 italic text-left">Plafon Pinjaman</label>
-                                            <p className="text-xl font-black text-emerald-700 tracking-tighter italic text-left">Rp {parseFloat(selectedLoan.jumlah_pinjaman).toLocaleString('id-ID')}</p>
+                                        <div className="text-left group">
+                                            <label className="text-[10px] font-black text-emerald-400 block uppercase mb-1 italic text-left">Plafon Pinjaman (Dapat Diubah)</label>
+                                            <div className="relative">
+                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-600 font-bold italic">Rp</span>
+                                                <input
+                                                    type="number"
+                                                    value={editingAmount}
+                                                    onChange={(e) => setEditingAmount(e.target.value)}
+                                                    className="w-full pl-10 pr-4 py-2 bg-emerald-50 border-2 border-emerald-100 rounded-xl text-xl font-black text-emerald-700 italic focus:outline-none focus:border-emerald-500 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                                />
+                                            </div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-3 text-left">
                                             {(() => {
-                                                const principal = parseFloat(selectedLoan.jumlah_pinjaman);
+                                                const principal = parseFloat(editingAmount) || 0;
                                                 const tenor = selectedLoan.tenor_bulan;
                                                 const rate = parseFloat(selectedLoan.bunga?.persen || 0);
                                                 const totalBunga = principal * (rate / 100) * tenor;
@@ -248,15 +362,15 @@ const AssesmentPinjaman = () => {
                                                         </div>
                                                         <div className="text-left">
                                                             <label className="text-[10px] font-black text-gray-400 block uppercase italic text-left">Bunga ({rate}%)</label>
-                                                            <p className="text-sm font-black text-gray-800 text-left">Rp {totalBunga.toLocaleString('id-ID')}</p>
+                                                            <p className="text-sm font-black text-gray-800 text-left">Rp {Math.round(totalBunga).toLocaleString('id-ID')}</p>
                                                         </div>
                                                         <div className="text-left">
                                                             <label className="text-[10px] font-black text-gray-400 block uppercase italic text-left">Total Bayar</label>
-                                                            <p className="text-sm font-black text-emerald-700 text-left">Rp {totalBayar.toLocaleString('id-ID')}</p>
+                                                            <p className="text-sm font-black text-emerald-700 text-left">Rp {Math.round(totalBayar).toLocaleString('id-ID')}</p>
                                                         </div>
                                                         <div className="text-left">
                                                             <label className="text-[10px] font-black text-gray-400 block uppercase italic text-left">Cicilan/Bln</label>
-                                                            <p className="text-sm font-black text-red-600 text-left">Rp {cicilan.toLocaleString('id-ID')}</p>
+                                                            <p className="text-sm font-black text-red-600 text-left">Rp {Math.round(cicilan).toLocaleString('id-ID')}</p>
                                                         </div>
                                                     </>
                                                 );
@@ -299,6 +413,18 @@ const AssesmentPinjaman = () => {
                                         className="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-xs font-black uppercase hover:bg-gray-50 transition-colors shadow-sm"
                                     >
                                         Batal
+                                    </button>
+
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            generateLoanAnalysisPDF(selectedLoan, false, analystName, editingAmount);
+                                        }}
+                                        className="px-6 py-2 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg text-xs font-black uppercase hover:bg-blue-100 transition-colors flex items-center gap-2 shadow-sm"
+                                        title="Pratinjau Analisa PDF dengan Nominal Baru"
+                                    >
+                                        <Eye size={14} />
+                                        Pratinjau PDF
                                     </button>
 
                                     <button

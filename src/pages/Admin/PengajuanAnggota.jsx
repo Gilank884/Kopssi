@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabaseClient';
-import { Search, Eye, X, CheckCircle, AlertCircle, User, MapPin, Building, Briefcase, Mail, Phone, FileText } from 'lucide-react';
+import { Search, Eye, X, CheckCircle, AlertCircle, User, MapPin, Building, Briefcase, Mail, Phone, FileText, Printer } from 'lucide-react';
+import { generateMemberApplicationPDF } from '../../utils/memberApplicationPdf';
 
 const PengajuanAnggota = () => {
     const [pendingMembers, setPendingMembers] = useState([]);
@@ -52,18 +53,75 @@ const PengajuanAnggota = () => {
         if (!selectedMember) return;
 
         try {
+            // const activatedAt = new Date().toISOString();
             const { error } = await supabase
                 .from('personal_data')
-                .update({ status: 'active' })
+                .update({
+                    status: 'active'
+                    // activated_at: activatedAt // Commented temporarily due to schema cache
+                })
                 .eq('id', selectedMember.id);
 
             if (error) throw error;
+
+            // Generate 12 months of billing records in simpanan table
+            const bills = [];
+            const startDate = new Date();
+
+            for (let i = 1; i <= 12; i++) {
+                let amountPokok = 0;
+                if (i === 1) amountPokok = 100000;
+                else if (i === 2 || i === 3) amountPokok = 50000;
+
+                const amountWajib = 75000;
+                const totalAmount = amountPokok + amountWajib;
+
+                const dueDate = new Date(startDate);
+                dueDate.setMonth(startDate.getMonth() + (i - 1));
+                dueDate.setDate(5); // 5th of each month
+
+                // Insert for Simpanan Wajib
+                bills.push({
+                    personal_data_id: selectedMember.id,
+                    type: 'WAJIB',
+                    transaction_type: 'SETOR',
+                    amount: amountWajib,
+                    status: 'UNPAID',
+                    bulan_ke: i,
+                    jatuh_tempo: dueDate.toISOString().split('T')[0],
+                    created_at: new Date().toISOString()
+                });
+
+                // Insert for Simpanan Pokok (only first 3 months)
+                if (amountPokok > 0) {
+                    bills.push({
+                        personal_data_id: selectedMember.id,
+                        type: 'POKOK',
+                        transaction_type: 'SETOR',
+                        amount: amountPokok,
+                        status: 'UNPAID',
+                        bulan_ke: i,
+                        jatuh_tempo: dueDate.toISOString().split('T')[0],
+                        created_at: new Date().toISOString()
+                    });
+                }
+            }
+
+            const { error: billError } = await supabase
+                .from('simpanan')
+                .insert(bills);
+
+            if (billError) {
+                console.error('Error generating bills:', billError);
+                alert('Anggota diaktifkan tapi gagal membuat tagihan: ' + billError.message);
+                return;
+            }
 
             // Update local state
             setPendingMembers(prev => prev.filter(m => m.id !== selectedMember.id));
             setIsDetailModalOpen(false);
             setSelectedMember(null);
-            alert('Status anggota berhasil diubah menjadi aktif!');
+            alert('Status anggota berhasil diaktifkan dan tagihan simpanan telah dibuat!');
         } catch (error) {
             console.error('Error updating status:', error);
             alert('Gagal mengubah status anggota');
@@ -148,16 +206,38 @@ const PengajuanAnggota = () => {
                                     <td className="px-6 py-4 text-gray-700">{member.company || '-'}</td>
                                     <td className="px-6 py-4 text-gray-700">{formatDate(member.created_at)}</td>
                                     <td className="px-6 py-4">
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleRowClick(member);
-                                            }}
-                                            className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors"
-                                        >
-                                            <Eye size={16} />
-                                            <span className="text-sm font-medium">Lihat Detail</span>
-                                        </button>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleRowClick(member);
+                                                }}
+                                                className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors"
+                                                title="Lihat Detail"
+                                            >
+                                                <Eye size={16} />
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    generateMemberApplicationPDF(member, true);
+                                                }}
+                                                className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100 transition-colors border border-amber-100"
+                                                title="Pratinjau PDF"
+                                            >
+                                                <Search size={16} />
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    generateMemberApplicationPDF(member);
+                                                }}
+                                                className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors border border-blue-100"
+                                                title="Cetak Formulir PDF"
+                                            >
+                                                <Printer size={16} />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -325,6 +405,20 @@ const PengajuanAnggota = () => {
                                     <div className={`px-4 py-2 rounded-lg ${selectedMember.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
                                         <span className="text-sm font-medium">Status: {selectedMember.status === 'pending' ? 'Menunggu Persetujuan' : 'Aktif'}</span>
                                     </div>
+                                    <button
+                                        onClick={() => generateMemberApplicationPDF(selectedMember)}
+                                        className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors border border-blue-100 font-bold text-sm"
+                                    >
+                                        <Printer size={18} />
+                                        Cetak PDF
+                                    </button>
+                                    <button
+                                        onClick={() => generateMemberApplicationPDF(selectedMember, true)}
+                                        className="flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100 transition-colors border border-amber-100 font-bold text-sm"
+                                    >
+                                        <Search size={18} />
+                                        Pratinjau PDF
+                                    </button>
                                 </div>
                                 <div className="flex items-center gap-4">
                                     <div className="flex items-center gap-3">
