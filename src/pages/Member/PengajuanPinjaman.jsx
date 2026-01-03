@@ -10,10 +10,10 @@ const PengajuanHutang = () => {
         no_npp: '',
         jumlah_pinjaman: '',
         tenor_bulan: '',
+        kategori: 'UANG',
+        jenis_pinjaman: 'BIASA',
+        keperluan: ''
     });
-
-    const [interestRate, setInterestRate] = useState(0);
-    const [bungaId, setBungaId] = useState(null);
 
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
@@ -79,27 +79,7 @@ const PengajuanHutang = () => {
             }
         };
 
-        const fetchInterestRate = async () => {
-            try {
-                const { data: bungaData, error: bungaError } = await supabase
-                    .from('bunga')
-                    .select('*')
-                    .eq('is_active', true)
-                    .order('created_at', { ascending: false })
-                    .limit(1)
-                    .maybeSingle();
-
-                if (bungaData) {
-                    setInterestRate(parseFloat(bungaData.persen));
-                    setBungaId(bungaData.id);
-                }
-            } catch (err) {
-                console.error("Error fetching interest rate:", err);
-            }
-        };
-
         fetchUserData();
-        fetchInterestRate();
     }, []);
 
     useLayoutEffect(() => {
@@ -125,6 +105,16 @@ const PengajuanHutang = () => {
             const rawValue = value.replace(/\D/g, '');
             // Tambahkan formatting ribuan dengan titik
             newValue = rawValue.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
+        // Auto-set jenis_pinjaman based on kategori
+        if (name === 'kategori') {
+            setFormData((prev) => ({
+                ...prev,
+                kategori: newValue,
+                jenis_pinjaman: newValue === 'UANG' ? 'BIASA' : 'BARANG'
+            }));
+            return;
         }
 
         setFormData((prev) => ({
@@ -156,15 +146,9 @@ const PengajuanHutang = () => {
         try {
             const noPinjaman = generateLoanNumber();
 
-            // 1. Insert Pinjaman
-            // Konversi jumlah pinjaman dari format string (contoh: 5.000.000) ke angka murni (5000000)
+            // Insert Pinjaman (without interest calculation)
             const rawJumlahPinjaman = parseFloat(formData.jumlah_pinjaman.replace(/\./g, ''));
             const tenor = parseInt(formData.tenor_bulan);
-
-            // Calculate Interest (Simple Flat Rate)
-            const totalBunga = rawJumlahPinjaman * (interestRate / 100) * tenor;
-            const totalBayar = rawJumlahPinjaman + totalBunga;
-            const monthlyAmount = Math.ceil(totalBayar / tenor);
 
             const { data: insertedLoan, error: insertError } = await supabase
                 .from('pinjaman')
@@ -174,8 +158,12 @@ const PengajuanHutang = () => {
                         no_pinjaman: noPinjaman,
                         jumlah_pinjaman: rawJumlahPinjaman,
                         tenor_bulan: tenor,
-                        bunga_id: bungaId,
                         status: 'PENGAJUAN',
+                        kategori: formData.kategori,
+                        jenis_pinjaman: formData.jenis_pinjaman,
+                        keperluan: formData.keperluan,
+                        tipe_bunga: null,
+                        nilai_bunga: 0
                     }
                 ])
                 .select()
@@ -184,37 +172,7 @@ const PengajuanHutang = () => {
             if (insertError) throw insertError;
             if (!insertedLoan) throw new Error("Gagal menyimpan data pinjaman.");
 
-            // 2. Generate & Insert Angsuran (Installments)
-            const installments = [];
-            const today = new Date();
-
-            for (let i = 1; i <= tenor; i++) {
-                // Set tanggal bayar bulan berikutnya (misal tgl 10 atau sesuai tgl pengajuan)
-                // Di sini kita set sesuai tanggal pengajuan di bulan berikutnya
-                const dueDate = new Date(today);
-                dueDate.setMonth(today.getMonth() + i);
-
-                installments.push({
-                    pinjaman_id: insertedLoan.id,
-                    bulan_ke: i,
-                    amount: monthlyAmount,
-                    tanggal_bayar: dueDate.toISOString(),
-                    status: 'UNPAID' // Default status saat generate
-                });
-            }
-
-            const { error: angsuranError } = await supabase
-                .from('angsuran')
-                .insert(installments);
-
-            if (angsuranError) {
-                console.error("Error creating installments:", angsuranError);
-                // Opsional: Hapus pinjaman jika gagal buat angsuran (simulate transaction rollback manually)
-                // await supabase.from('pinjaman').delete().eq('id', insertedLoan.id);
-                throw new Error("Gagal membuat jadwal angsuran: " + angsuranError.message);
-            }
-
-            // Refresh data pengajuan setelah submit
+            // Success - no angsuran generation hereh data pengajuan setelah submit
             const { data: updatedLoans } = await supabase
                 .from('pinjaman')
                 .select('*')
@@ -376,6 +334,58 @@ const PengajuanHutang = () => {
                             </select>
                             <p className="text-[11px] text-gray-400 mt-1">Pilih jangka waktu pengembalian pinjaman</p>
                         </div>
+                    </div>
+
+                    {/* Kategori & Jenis Pinjaman */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Kategori Pinjaman *
+                            </label>
+                            <select
+                                name="kategori"
+                                value={formData.kategori}
+                                onChange={handleChange}
+                                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                required
+                            >
+                                <option value="UANG">UANG</option>
+                                <option value="BARANG">BARANG</option>
+                                <option value="SEPATU">SEPATU</option>
+                                <option value="MOBIL">MOBIL</option>
+                            </select>
+                            <p className="text-[11px] text-gray-400 mt-1">Pilih kategori pinjaman yang sesuai</p>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Jenis Pinjaman
+                            </label>
+                            <input
+                                type="text"
+                                name="jenis_pinjaman"
+                                value={formData.jenis_pinjaman}
+                                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-gray-50"
+                                readOnly
+                            />
+                            <p className="text-[11px] text-gray-400 mt-1">Otomatis terisi berdasarkan kategori</p>
+                        </div>
+                    </div>
+
+                    {/* Keperluan */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Keperluan / Tujuan Pinjaman *
+                        </label>
+                        <textarea
+                            name="keperluan"
+                            value={formData.keperluan}
+                            onChange={handleChange}
+                            placeholder="Jelaskan keperluan pinjaman Anda..."
+                            rows="3"
+                            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                            required
+                        />
+                        <p className="text-[11px] text-gray-400 mt-1">Contoh: Renovasi rumah, modal usaha, dll.</p>
                     </div>
 
                     {/* Info Persetujuan */}

@@ -20,18 +20,16 @@ const PencairanPinjaman = () => {
             const { data, error } = await supabase
                 .from('pinjaman')
                 .select(`
-                    *,
-                    personal_data:personal_data_id (
-                        full_name,
-                        nik,
-                        phone,
-                        company,
-                        work_unit
-                    ),
-                    bunga:bunga_id (
-                        persen
-                    )
-                `)
+    *,
+    personal_data:personal_data_id (
+        full_name,
+        nik,
+        phone,
+        company,
+        work_unit
+    )
+`)
+
                 .eq('status', 'DISETUJUI')
                 .order('created_at', { ascending: false });
 
