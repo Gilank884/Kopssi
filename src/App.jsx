@@ -15,10 +15,11 @@ import AssesmentPinjaman from './pages/Admin/AssesmentPinjaman';
 import PencairanPinjaman from './pages/Admin/PencairanPinjaman';
 import MemberList from './pages/Admin/Members';
 import AdminReports from './pages/Admin/Reports';
-import AdminSettings from './pages/Admin/Settings';
 import MonitorSimpanan from './pages/Admin/MonitorSimpanan';
 import TransactionPage from './pages/Admin/Transaksi';
 import AssesmentDetail from './pages/Admin/AssesmentDetail';
+import UploadSimpanan from './pages/Admin/UploadSimpanan';
+import UploadPinjaman from './pages/Admin/UploadPinjaman';
 
 function App() {
   return (
@@ -47,8 +48,9 @@ function App() {
           <Route path="members" element={<MemberList />} />
           <Route path="monitor-simpanan" element={<MonitorSimpanan />} />
           <Route path="reports" element={<AdminReports />} />
-          <Route path="settings" element={<AdminSettings />} />
           <Route path="transaksi" element={<TransactionPage />} />
+          <Route path="upload-simpanan" element={<UploadSimpanan />} />
+          <Route path="upload-pinjaman" element={<UploadPinjaman />} />
         </Route>
       </Routes>
     </BrowserRouter>

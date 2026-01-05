@@ -13,7 +13,8 @@ import {
     FileBarChart,
     ChevronDown,
     BanknoteArrowUp,
-    ArrowLeftRight
+    ArrowLeftRight,
+    Upload
 } from 'lucide-react';
 import LogoutModal from '../components/LogoutModal';
 
@@ -57,14 +58,17 @@ const AdminLayout = () => {
             ]
         },
         {
+            label: 'Upload Pembayaran',
+            icon: <Upload size={20} />,
+            children: [
+                { path: '/admin/upload-simpanan', label: 'Upload Simpanan', icon: <Banknote size={18} /> },
+                { path: '/admin/upload-pinjaman', label: 'Upload angsuran', icon: <ClipboardCheck size={18} /> },
+            ]
+        },
+        {
             path: '/admin/reports',
             label: 'Laporan',
             icon: <FileBarChart size={20} />
-        },
-        {
-            path: '/admin/settings',
-            label: 'Pengaturan',
-            icon: <Settings size={20} />
         }
     ];
 

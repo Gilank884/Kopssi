@@ -25,7 +25,7 @@ const formatDate = (dateString) => {
     });
 };
 
-export const generateLoanAnalysisPDF = async (loan, isDownload = false, analystName = 'Admin', customAmount = null) => {
+export const generateLoanAnalysisPDF = async (loan, isDownload = false, analystName = 'Admin', customData = null) => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     const margin = 15;
@@ -55,7 +55,7 @@ export const generateLoanAnalysisPDF = async (loan, isDownload = false, analystN
         .from('pinjaman')
         .select('*, bunga:bunga_id(*)')
         .eq('personal_data_id', loan.personal_data_id)
-        .eq('status', 'DICAIRKAN');
+        .in('status', ['DICAIRKAN', 'DISETUJUI']);
 
     const outstandingData = [];
     let grandOutstanding = 0;
@@ -74,9 +74,15 @@ export const generateLoanAnalysisPDF = async (loan, isDownload = false, analystN
             const remainingCount = al.tenor_bulan - paidCount;
 
             const principal = parseFloat(al.jumlah_pinjaman);
-            const rate = parseFloat(al.bunga?.persen || 0);
             const tenor = al.tenor_bulan;
-            const totalBunga = principal * (rate / 100) * tenor;
+
+            let totalBunga = 0;
+            if (al.tipe_bunga === 'PERSENAN') {
+                totalBunga = principal * (parseFloat(al.nilai_bunga) / 100) * (tenor / 12);
+            } else if (al.tipe_bunga === 'NOMINAL') {
+                totalBunga = parseFloat(al.nilai_bunga);
+            }
+
             const totalBayar = principal + totalBunga;
             const angBln = Math.ceil(totalBayar / tenor);
 
@@ -86,7 +92,7 @@ export const generateLoanAnalysisPDF = async (loan, isDownload = false, analystN
 
             outstandingData.push([
                 al.no_pinjaman,
-                'BIASA',
+                (al.jenis_pinjaman || 'BIASA').toUpperCase(),
                 `${paidCount}/${tenor}`,
                 Math.round(remPrincipal).toLocaleString('id-ID'),
                 Math.round(remBunga).toLocaleString('id-ID'),
@@ -199,10 +205,34 @@ export const generateLoanAnalysisPDF = async (loan, isDownload = false, analystN
     doc.text('Analisa Permohonan Baru', leftColX, loanY);
     doc.setFont('helvetica', 'normal');
 
-    const principal = customAmount ? parseFloat(customAmount) : parseFloat(loan.jumlah_pinjaman);
+    // Use custom assessment data if provided, otherwise fallback to loan defaults
+    const principal = customData && customData.amount ? parseFloat(customData.amount) : parseFloat(loan.jumlah_pinjaman);
     const tenor = loan.tenor_bulan;
-    const rate = parseFloat(loan.bunga?.persen || 0);
-    const totalBunga = principal * (rate / 100) * tenor;
+
+    let totalBunga = 0;
+    let labelBunga = '0%';
+
+    if (customData && customData.useInterest) {
+        if (customData.interestType === 'PERSENAN') {
+            const rate = parseFloat(customData.interestValue || 0);
+            totalBunga = principal * (rate / 100) * (tenor / 12);
+            labelBunga = `${rate}% (Flat/Thn)`;
+        } else {
+            totalBunga = parseFloat(customData.interestValue || 0);
+            labelBunga = `Rp ${totalBunga.toLocaleString('id-ID')} (Nominal)`;
+        }
+    } else if (!customData && loan.tipe_bunga && loan.tipe_bunga !== 'NONE') {
+        // Fallback to loan saved state if no customData passed
+        if (loan.tipe_bunga === 'PERSENAN') {
+            const rate = parseFloat(loan.nilai_bunga || 0);
+            totalBunga = principal * (rate / 100) * (tenor / 12);
+            labelBunga = `${rate}% (Flat/Thn)`;
+        } else {
+            totalBunga = parseFloat(loan.nilai_bunga || 0);
+            labelBunga = `Rp ${totalBunga.toLocaleString('id-ID')} (Nominal)`;
+        }
+    }
+
     const totalBayar = principal + totalBunga;
     const cicilan = Math.ceil(totalBayar / tenor);
 
@@ -213,12 +243,12 @@ export const generateLoanAnalysisPDF = async (loan, isDownload = false, analystN
         body: [
             ['Permohonan Pinjaman', `Rp ${principal.toLocaleString('id-ID')} (${numberToWords(principal).toUpperCase()} RUPIAH)`],
             ['Jangka Waktu (Tenor)', `${tenor} Bulan`],
-            ['Suku Bunga', `${rate}%`],
-            ['Total Bunga', `Rp ${totalBunga.toLocaleString('id-ID')}`],
-            ['Total Kewajiban', `Rp ${totalBayar.toLocaleString('id-ID')}`],
+            ['Suku Bunga / Margin', labelBunga],
+            ['Total Bunga / Margin', `Rp ${Math.round(totalBunga).toLocaleString('id-ID')}`],
+            ['Total Kewajiban', `Rp ${Math.round(totalBayar).toLocaleString('id-ID')}`],
             ['Angsuran Per Bulan', `Rp ${cicilan.toLocaleString('id-ID')}`],
-            ['Jenis Pinjaman', 'BIASA'],
-            ['Keperluan', '-']
+            ['Jenis Pinjaman', (loan.jenis_pinjaman || 'BIASA').toUpperCase()],
+            ['Keperluan', loan.keperluan || '-']
         ],
         theme: 'plain',
         styles: { fontSize: 8, cellPadding: 2 },

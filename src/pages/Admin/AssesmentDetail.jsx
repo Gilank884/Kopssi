@@ -63,6 +63,11 @@ const AssesmentDetail = () => {
             if (data) {
                 setLoan(data);
                 setEditingAmount(data.jumlah_pinjaman.toString());
+                if (data.tipe_bunga && data.tipe_bunga !== 'NONE') {
+                    setUseInterest(true);
+                    setInterestType(data.tipe_bunga);
+                    setInterestValue(data.nilai_bunga.toString());
+                }
             }
         } catch (error) {
             console.error('Error fetching loan detail:', error);
@@ -70,6 +75,25 @@ const AssesmentDetail = () => {
             navigate('/admin/assesment-pinjaman');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleSaveDraft = async () => {
+        try {
+            const { error } = await supabase
+                .from('pinjaman')
+                .update({
+                    jumlah_pinjaman: parseFloat(editingAmount),
+                    tipe_bunga: useInterest ? interestType : 'NONE',
+                    nilai_bunga: useInterest ? parseFloat(interestValue) : 0
+                })
+                .eq('id', id);
+
+            if (error) throw error;
+            alert('Konfigurasi pinjaman & bunga berhasil ditetapkan!');
+        } catch (error) {
+            console.error('Error saving draft:', error);
+            alert('Gagal menetapkan bunga: ' + error.message);
         }
     };
 
@@ -227,7 +251,7 @@ const AssesmentDetail = () => {
 
                                     {/* Interest Configuration */}
                                     <div className="bg-amber-50 rounded-2xl border-2 border-amber-200 p-6 space-y-4">
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center justify-between gap-3">
                                             <div className="relative inline-flex items-center cursor-pointer">
                                                 <input
                                                     type="checkbox"
@@ -240,6 +264,14 @@ const AssesmentDetail = () => {
                                                     Gunakan Bunga / Margin?
                                                 </label>
                                             </div>
+
+                                            <button
+                                                onClick={handleSaveDraft}
+                                                className="px-4 py-1.5 bg-amber-500 text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-amber-600 transition-all shadow-md flex items-center gap-2"
+                                            >
+                                                <Check size={14} />
+                                                Tetapkan Bunga
+                                            </button>
                                         </div>
 
                                         {useInterest ? (
@@ -387,7 +419,12 @@ const AssesmentDetail = () => {
                         {/* Actions Card */}
                         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm space-y-4 sticky top-24">
                             <button
-                                onClick={() => generateLoanAnalysisPDF(loan, false, analystName, editingAmount)}
+                                onClick={() => generateLoanAnalysisPDF(loan, false, analystName, {
+                                    amount: parseFloat(editingAmount),
+                                    useInterest: useInterest,
+                                    interestType: interestType,
+                                    interestValue: parseFloat(interestValue)
+                                })}
                                 className="w-full py-4 bg-blue-50 text-blue-700 rounded-xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-blue-100 transition-all border border-blue-200"
                             >
                                 <Eye size={18} />
