@@ -44,14 +44,9 @@ const Angsuran = () => {
                 // Fetch All Active Loans (DICAIRKAN)
                 const { data: loans } = await supabase
                     .from('pinjaman')
-                    .select(`
-                        *,
-                        bunga:bunga_id (
-                            persen
-                        )
-                    `)
+                    .select('*')
                     .eq('personal_data_id', personalData.id)
-                    .eq('status', 'DICAIRKAN');
+                    .in('status', ['DISETUJUI', 'DICAIRKAN']);
 
                 if (loans && loans.length > 0) {
                     const loanIds = loans.map(l => l.id);
@@ -67,11 +62,18 @@ const Angsuran = () => {
                         const consolidatedSchedule = installments.map(item => {
                             const loan = loans.find(l => l.id === item.pinjaman_id);
                             const totalAmount = parseFloat(item.amount);
-                            const interestRate = parseFloat(loan?.bunga?.persen || 0);
                             const principal = parseFloat(loan?.jumlah_pinjaman || 0);
+                            const tenor = loan?.tenor_bulan || 1;
 
-                            // Flat rate calculation
-                            const monthlyInterest = principal * (interestRate / 100);
+                            // Calculate flat interest based on loan settings
+                            let monthlyInterest = 0;
+                            if (loan?.tipe_bunga === 'PERSENAN') {
+                                const annualRate = parseFloat(loan.nilai_bunga || 0);
+                                monthlyInterest = (principal * (annualRate / 100)) / 12;
+                            } else if (loan?.tipe_bunga === 'NOMINAL') {
+                                monthlyInterest = parseFloat(loan.nilai_bunga || 0) / tenor;
+                            }
+
                             const monthlyPrincipal = totalAmount - monthlyInterest;
 
                             return {

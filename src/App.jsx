@@ -17,6 +17,7 @@ import MemberList from './pages/Admin/Members';
 import AdminReports from './pages/Admin/Reports';
 import AdminSettings from './pages/Admin/Settings';
 import MonitorSimpanan from './pages/Admin/MonitorSimpanan';
+import TransactionPage from './pages/Admin/Transaksi';
 
 function App() {
   return (
@@ -45,6 +46,7 @@ function App() {
           <Route path="monitor-simpanan" element={<MonitorSimpanan />} />
           <Route path="reports" element={<AdminReports />} />
           <Route path="settings" element={<AdminSettings />} />
+          <Route path="transaksi" element={<TransactionPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

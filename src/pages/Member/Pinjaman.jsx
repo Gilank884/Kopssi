@@ -70,14 +70,9 @@ const Pinjaman = () => {
                 // In a real app with multiple loans, we'd list them. Here we focus on the primary active loan.
                 const { data: loans, error: loansError } = await supabase
                     .from('pinjaman')
-                    .select(`
-                        *,
-                        bunga:bunga_id (
-                            persen
-                        )
-                    `)
+                    .select('*')
                     .eq('personal_data_id', personalData.id)
-                    .eq('status', 'DICAIRKAN')
+                    .in('status', ['DISETUJUI', 'DICAIRKAN'])
                     .order('created_at', { ascending: false });
 
                 console.log("Pinjaman: Loans fetch result ->", loans);
@@ -114,9 +109,16 @@ const Pinjaman = () => {
                     .eq('pinjaman_id', activeLoan.id);
 
                 const principal = parseFloat(activeLoan.jumlah_pinjaman);
-                const rate = parseFloat(activeLoan.bunga?.persen || 0);
                 const tenure = activeLoan.tenor_bulan;
-                const totalBunga = principal * (rate / 100) * tenure;
+
+                let totalBunga = 0;
+                if (activeLoan.tipe_bunga === 'PERSENAN') {
+                    // Match AssesmentPinjaman.jsx logic (Annual Flat Rate)
+                    totalBunga = principal * (parseFloat(activeLoan.nilai_bunga) / 100) * (tenor / 12);
+                } else if (activeLoan.tipe_bunga === 'NOMINAL') {
+                    totalBunga = parseFloat(activeLoan.nilai_bunga);
+                }
+
                 const totalBayar = principal + totalBunga;
 
                 let pokokTerbayar = 0;
@@ -269,7 +271,10 @@ const Pinjaman = () => {
                         </div>
                         <div className="flex justify-between py-2 border-b border-gray-50">
                             <span className="text-gray-500">Suku Bunga</span>
-                            <span className="font-medium text-gray-900">{loan.bunga?.persen || 0}% / Bulan</span>
+                            <span className="font-medium text-gray-900">
+                                {loan.tipe_bunga === 'PERSENAN' ? `${loan.nilai_bunga}% / Tahun` :
+                                    loan.tipe_bunga === 'NOMINAL' ? `Rp ${parseFloat(loan.nilai_bunga).toLocaleString('id-ID')}` : '0%'}
+                            </span>
                         </div>
                         <div className="flex justify-between py-2 border-b border-gray-50">
                             <span className="text-gray-500">Total Bunga</span>
