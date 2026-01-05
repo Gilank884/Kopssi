@@ -6,6 +6,7 @@ const PencairanPinjaman = () => {
     const [loans, setLoans] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedLoan, setSelectedLoan] = useState(null);
+    const [installments, setInstallments] = useState([]);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -16,20 +17,18 @@ const PencairanPinjaman = () => {
     const fetchLoans = async () => {
         try {
             setLoading(true);
-            // Hanya ambil data yang statusnya PENGAJUAN
             const { data, error } = await supabase
                 .from('pinjaman')
                 .select(`
-    *,
-    personal_data:personal_data_id (
-        full_name,
-        nik,
-        phone,
-        company,
-        work_unit
-    )
-`)
-
+                    *,
+                    personal_data:personal_data_id (
+                        full_name,
+                        nik,
+                        phone,
+                        company,
+                        work_unit
+                    )
+                `)
                 .eq('status', 'DISETUJUI')
                 .order('created_at', { ascending: false });
 
@@ -43,8 +42,24 @@ const PencairanPinjaman = () => {
         }
     };
 
+    const fetchInstallments = async (loanId) => {
+        try {
+            const { data, error } = await supabase
+                .from('angsuran')
+                .select('*')
+                .eq('pinjaman_id', loanId)
+                .order('bulan_ke', { ascending: true });
+
+            if (error) throw error;
+            setInstallments(data || []);
+        } catch (error) {
+            console.error('Error fetching installments:', error);
+        }
+    };
+
     const handleRowClick = (loan) => {
         setSelectedLoan(loan);
+        fetchInstallments(loan.id);
         setIsDetailModalOpen(true);
     };
 
@@ -233,10 +248,16 @@ const PencairanPinjaman = () => {
                                             {(() => {
                                                 const principal = parseFloat(selectedLoan.jumlah_pinjaman);
                                                 const tenor = selectedLoan.tenor_bulan;
-                                                const rate = parseFloat(selectedLoan.bunga?.persen || 0);
-                                                const totalBunga = principal * (rate / 100) * tenor;
+
+                                                let totalBunga = 0;
+                                                if (selectedLoan.tipe_bunga === 'PERSENAN') {
+                                                    totalBunga = principal * (parseFloat(selectedLoan.nilai_bunga) / 100) * (tenor / 12);
+                                                } else if (selectedLoan.tipe_bunga === 'NOMINAL') {
+                                                    totalBunga = parseFloat(selectedLoan.nilai_bunga);
+                                                }
+
                                                 const totalBayar = principal + totalBunga;
-                                                const cicilan = Math.ceil(totalBayar / tenor);
+                                                const cicilan = installments.length > 0 ? parseFloat(installments[0].amount) : (totalBayar / tenor);
 
                                                 return (
                                                     <>
@@ -245,16 +266,18 @@ const PencairanPinjaman = () => {
                                                             <p className="text-sm font-black text-gray-800 text-left">{tenor} Bulan</p>
                                                         </div>
                                                         <div className="text-left">
-                                                            <label className="text-[10px] font-black text-gray-400 block uppercase italic text-left">Bunga ({rate}%)</label>
-                                                            <p className="text-sm font-black text-gray-800 text-left">Rp {totalBunga.toLocaleString('id-ID')}</p>
+                                                            <label className="text-[10px] font-black text-gray-400 block uppercase italic text-left">
+                                                                Bunga ({selectedLoan.tipe_bunga === 'PERSENAN' ? `${selectedLoan.nilai_bunga}%` : 'Nominal'})
+                                                            </label>
+                                                            <p className="text-sm font-black text-gray-800 text-left">Rp {Math.round(totalBunga).toLocaleString('id-ID')}</p>
                                                         </div>
                                                         <div className="text-left">
                                                             <label className="text-[10px] font-black text-gray-400 block uppercase italic text-left">Total Bayar</label>
-                                                            <p className="text-sm font-black text-emerald-700 text-left">Rp {totalBayar.toLocaleString('id-ID')}</p>
+                                                            <p className="text-sm font-black text-emerald-700 text-left">Rp {Math.round(totalBayar).toLocaleString('id-ID')}</p>
                                                         </div>
                                                         <div className="text-left">
                                                             <label className="text-[10px] font-black text-gray-400 block uppercase italic text-left">Cicilan/Bln</label>
-                                                            <p className="text-sm font-black text-red-600 text-left">Rp {cicilan.toLocaleString('id-ID')}</p>
+                                                            <p className="text-sm font-black text-red-600 text-left">Rp {Math.round(cicilan).toLocaleString('id-ID')}</p>
                                                         </div>
                                                     </>
                                                 );

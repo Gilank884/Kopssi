@@ -18,6 +18,7 @@ import AdminReports from './pages/Admin/Reports';
 import AdminSettings from './pages/Admin/Settings';
 import MonitorSimpanan from './pages/Admin/MonitorSimpanan';
 import TransactionPage from './pages/Admin/Transaksi';
+import AssesmentDetail from './pages/Admin/AssesmentDetail';
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
           <Route index element={<AdminOverview />} />
           <Route path="pengajuan-anggota" element={<PengajuanAnggota />} />
           <Route path="assesment-pinjaman" element={<AssesmentPinjaman />} />
+          <Route path="assesment-pinjaman/:id" element={<AssesmentDetail />} />
           <Route path="pencairan-pinjaman" element={<PencairanPinjaman />} />
           <Route path="members" element={<MemberList />} />
           <Route path="monitor-simpanan" element={<MonitorSimpanan />} />
