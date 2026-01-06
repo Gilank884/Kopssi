@@ -14,7 +14,8 @@ import {
     ChevronDown,
     BanknoteArrowUp,
     ArrowLeftRight,
-    Upload
+    Upload,
+    BadgeCent
 } from 'lucide-react';
 import LogoutModal from '../components/LogoutModal';
 
@@ -52,6 +53,7 @@ const AdminLayout = () => {
             icon: <Banknote size={20} />,
             children: [
                 { path: '/admin/monitor-simpanan', label: 'Monitoring Simpanan', icon: <Banknote size={18} /> },
+                { path: '/admin/monitor-pinjaman', label: 'Monitoring Pinjaman', icon: <BadgeCent size={18} /> },
                 { path: '/admin/assesment-pinjaman', label: 'Penyetujuan Pinjaman', icon: <ClipboardCheck size={18} /> },
                 { path: '/admin/pencairan-pinjaman', label: 'Pencairan Pinjaman', icon: <BanknoteArrowUp size={18} /> },
                 { path: '/admin/transaksi', label: 'Transaksi', icon: <ArrowLeftRight size={18} /> },
@@ -149,7 +151,7 @@ const AdminLayout = () => {
                                     className={`
                                         ml-9 overflow-hidden transition-all duration-300 ease-in-out
                                         ${openMenus[idx] && isSidebarOpen
-                                            ? 'max-h-40 opacity-100 mt-1'
+                                            ? 'max-h-64 opacity-100 mt-1'
                                             : 'max-h-0 opacity-0'}
                                     `}
                                 >

@@ -20,6 +20,7 @@ import TransactionPage from './pages/Admin/Transaksi';
 import AssesmentDetail from './pages/Admin/AssesmentDetail';
 import UploadSimpanan from './pages/Admin/UploadSimpanan';
 import UploadPinjaman from './pages/Admin/UploadPinjaman';
+import MonitorPinjaman from './pages/Admin/MonitorPinjaman';
 
 function App() {
   return (
@@ -47,6 +48,7 @@ function App() {
           <Route path="pencairan-pinjaman" element={<PencairanPinjaman />} />
           <Route path="members" element={<MemberList />} />
           <Route path="monitor-simpanan" element={<MonitorSimpanan />} />
+          <Route path="monitor-pinjaman" element={<MonitorPinjaman />} />
           <Route path="reports" element={<AdminReports />} />
           <Route path="transaksi" element={<TransactionPage />} />
           <Route path="upload-simpanan" element={<UploadSimpanan />} />
