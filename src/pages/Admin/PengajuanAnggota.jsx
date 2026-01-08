@@ -20,7 +20,7 @@ const PengajuanAnggota = () => {
             const { data, error } = await supabase
                 .from('personal_data')
                 .select('*')
-                .eq('status', 'pending')
+                .eq('status', 'DONE VERIFIKASI')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -53,16 +53,28 @@ const PengajuanAnggota = () => {
         if (!selectedMember) return;
 
         try {
-            // const activatedAt = new Date().toISOString();
-            const { error } = await supabase
+            setLoading(true);
+
+            // 1. Manage User account (Updating password to full name)
+            const { error: userUpdateError } = await supabase
+                .from('users')
+                .update({
+                    password: selectedMember.full_name,
+                    role: 'MEMBER'
+                })
+                .eq('id', selectedMember.user_id);
+
+            if (userUpdateError) throw userUpdateError;
+
+            // 2. Update Personal Data
+            const { error: personalUpdateError } = await supabase
                 .from('personal_data')
                 .update({
                     status: 'active'
-                    // activated_at: activatedAt // Commented temporarily due to schema cache
                 })
                 .eq('id', selectedMember.id);
 
-            if (error) throw error;
+            if (personalUpdateError) throw personalUpdateError;
 
             // Generate 12 months of billing records in simpanan table
             const bills = [];
@@ -148,8 +160,8 @@ const PengajuanAnggota = () => {
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-800">Pengajuan Anggota</h2>
-                    <p className="text-sm text-gray-500 mt-1">Kelola pengajuan anggota yang menunggu persetujuan</p>
+                    <h2 className="text-2xl font-bold text-gray-800">Persetujuan Keanggotaan</h2>
+                    <p className="text-sm text-gray-500 mt-1">Lakukan verifikasi akhir untuk anggota yang telah menandatangani formulir</p>
                 </div>
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
@@ -169,9 +181,10 @@ const PengajuanAnggota = () => {
                     <p className="mt-4 text-gray-500">Memuat data...</p>
                 </div>
             ) : filteredMembers.length === 0 ? (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
-                    <AlertCircle className="mx-auto text-gray-400" size={48} />
-                    <p className="mt-4 text-gray-500 font-medium">Tidak ada pengajuan anggota yang menunggu</p>
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center text-left">
+                    <AlertCircle className="mx-auto text-gray-400 mb-2" size={48} />
+                    <p className="mt-4 text-gray-500 font-black uppercase tracking-widest text-xs italic">Tidak ada anggota yang menunggu verifikasi akhir</p>
+                    <p className="text-[10px] text-gray-400 mt-1 italic">Anggota harus melakukan "Cek Keanggotaan" dan tanda tangan terlebih dahulu</p>
                 </div>
             ) : (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -421,18 +434,7 @@ const PengajuanAnggota = () => {
                                     </button>
                                 </div>
                                 <div className="flex items-center gap-4">
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-sm font-medium text-gray-700">Geser untuk Aktifkan:</span>
-                                        <label className="relative inline-flex items-center cursor-pointer">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedMember.status === 'active'}
-                                                onChange={handleToggleStatus}
-                                                className="sr-only peer"
-                                            />
-                                            <div className="w-16 h-8 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-7 after:w-7 after:transition-all peer-checked:bg-emerald-600"></div>
-                                        </label>
-                                    </div>
+
                                     <button
                                         onClick={handleToggleStatus}
                                         disabled={selectedMember.status === 'active'}

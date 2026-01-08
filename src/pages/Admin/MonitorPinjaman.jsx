@@ -1,29 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabaseClient';
-import { Search, Filter, CheckCircle, Clock, Banknote, User, BadgeCent, CalendarDays } from 'lucide-react';
+import { Search, Filter, CheckCircle, Clock, Banknote, User, BadgeCent, CalendarDays, Download } from 'lucide-react';
 
 const MonitorPinjaman = () => {
     const [loans, setLoans] = useState([]);
     const [installments, setInstallments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [filterMonth, setFilterMonth] = useState(new Date().toISOString().substring(0, 7)); // Default to current month
+    const [startDate, setStartDate] = useState(() => {
+        const d = new Date();
+        return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().substring(0, 7);
+    });
+    const [endDate, setEndDate] = useState(() => {
+        const d = new Date();
+        return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().substring(0, 7);
+    });
     const [activeTab, setActiveTab] = useState('LOANS'); // 'LOANS' or 'INSTALLMENTS'
     const [updatingId, setUpdatingId] = useState(null);
 
     useEffect(() => {
         fetchData();
-    }, [filterMonth]);
+    }, [startDate, endDate]);
 
     const fetchData = async () => {
         try {
             setLoading(true);
 
-            const [year, month] = filterMonth.split('-');
-            const startDate = `${year}-${month}-01`;
-            const endDate = new Date(year, month, 0).toISOString().split('T')[0];
+            const [sYear, sMonth] = startDate.split('-');
+            const startD = `${sYear}-${sMonth}-01`;
+            const [eYear, eMonth] = endDate.split('-');
+            const endD = new Date(eYear, eMonth, 0).toISOString().split('T')[0];
 
-            // Fetch Loans created in this month
+            // Fetch Loans created in this range
             const { data: loanData, error: loanError } = await supabase
                 .from('pinjaman')
                 .select(`
@@ -35,22 +43,14 @@ const MonitorPinjaman = () => {
                         company
                     )
                 `)
-                .gte('created_at', `${startDate}T00:00:00`)
-                .lte('created_at', `${endDate}T23:59:59`)
+                .gte('created_at', `${startD}T00:00:00`)
+                .lte('created_at', `${endD}T23:59:59`)
                 .order('created_at', { ascending: false });
 
             if (loanError) throw loanError;
             setLoans(loanData || []);
 
-            // Fetch Installments due this month (using created_at or some date if available, 
-            // but usually we can infer from created_at of angsuran if they are generated for a specific month)
-            // If angsuran doesn't have a due date, we might need a different logic or use its created_at
-            // based on how it's generated. Looking at previous code, let's try searching for installments.
-
-            // For now, let's fetch UNPAID installments that were created or expected this month.
-            // Since we might not have a "due_date" (jatuh_tempo) in angsuran table (based on AssesmentDetail.jsx check),
-            // let's see if we can use created_at or if there's a better way.
-
+            // Fetch UNPAID installments
             const { data: instData, error: instError } = await supabase
                 .from('angsuran')
                 .select(`
@@ -66,14 +66,18 @@ const MonitorPinjaman = () => {
                     )
                 `)
                 .eq('status', 'UNPAID')
-                .order('id', { ascending: true }); // We'll filter by month locally if needed or by created_at
+                .order('id', { ascending: true });
 
             if (instError) throw instError;
 
-            // Filter installments by month locally if they don't have a due date
-            // or if we want to show all UNPAID but highlighted/filtered.
-            // Let's assume some field exists or we just show them based on search.
-            setInstallments(instData || []);
+            // Filter installments by month range locally based on created_at or due date if available
+            const filteredInst = (instData || []).filter(inst => {
+                const instDate = new Date(inst.created_at);
+                const instMonthPath = instDate.toISOString().substring(0, 7);
+                return instMonthPath >= startDate && instMonthPath <= endDate;
+            });
+
+            setInstallments(filteredInst);
 
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -111,6 +115,19 @@ const MonitorPinjaman = () => {
         }
     };
 
+    const handleExportExcel = async () => {
+        try {
+            const { exportMonitoringPinjaman, exportMonitoringAngsuran } = await import('../../utils/reportExcel');
+            if (activeTab === 'LOANS') {
+                exportMonitoringPinjaman(filteredLoans, { startDate, endDate });
+            } else {
+                exportMonitoringAngsuran(filteredInstallments, { startDate, endDate });
+            }
+        } catch (err) {
+            console.error('Excel export error:', err);
+        }
+    };
+
     const filteredLoans = loans.filter(loan =>
         loan.personal_data?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         loan.personal_data?.nik?.includes(searchTerm) ||
@@ -127,13 +144,13 @@ const MonitorPinjaman = () => {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 text-left">
                 <div className="text-left">
                     <h2 className="text-3xl font-black text-gray-900 italic uppercase tracking-tight">Monitoring Pinjaman</h2>
-                    <p className="text-sm text-gray-500 mt-1 font-medium italic uppercase tracking-wider">Lacak pencairan baru & tagihan angsuran bulan ini</p>
+                    <p className="text-sm text-gray-500 mt-1 font-medium italic uppercase tracking-wider">Lacak pencairan baru & tagihan angsuran periode ini</p>
                 </div>
 
-                <div className="flex flex-col md:flex-row gap-3">
+                <div className="flex flex-wrap gap-3">
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                         <input
@@ -144,12 +161,27 @@ const MonitorPinjaman = () => {
                             className="pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-64 text-sm shadow-sm"
                         />
                     </div>
-                    <input
-                        type="month"
-                        value={filterMonth}
-                        onChange={(e) => setFilterMonth(e.target.value)}
-                        className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white shadow-sm font-bold"
-                    />
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="month"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white shadow-sm font-bold"
+                        />
+                        <span className="text-gray-400 font-bold">s/d</span>
+                        <input
+                            type="month"
+                            value={endDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                            className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white shadow-sm font-bold"
+                        />
+                    </div>
+                    <button
+                        onClick={handleExportExcel}
+                        className="flex items-center gap-2 px-4 py-2 bg-white text-emerald-600 border-2 border-emerald-100 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-emerald-50 transition-all shadow-sm"
+                    >
+                        <Download size={16} /> Export
+                    </button>
                 </div>
             </div>
 
@@ -158,8 +190,8 @@ const MonitorPinjaman = () => {
                 <button
                     onClick={() => setActiveTab('LOANS')}
                     className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'LOANS'
-                            ? 'bg-white text-emerald-600 shadow-sm'
-                            : 'text-gray-500 hover:text-gray-700'
+                        ? 'bg-white text-emerald-600 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700'
                         }`}
                 >
                     Pinjaman Baru ({filteredLoans.length})
@@ -167,8 +199,8 @@ const MonitorPinjaman = () => {
                 <button
                     onClick={() => setActiveTab('INSTALLMENTS')}
                     className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'INSTALLMENTS'
-                            ? 'bg-white text-emerald-600 shadow-sm'
-                            : 'text-gray-500 hover:text-gray-700'
+                        ? 'bg-white text-emerald-600 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700'
                         }`}
                 >
                     Tagihan Angsuran ({filteredInstallments.length})
@@ -237,8 +269,8 @@ const MonitorPinjaman = () => {
                                             </td>
                                             <td className="px-6 py-4 text-center">
                                                 <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter border ${loan.status === 'DICAIRKAN'
-                                                        ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
-                                                        : 'bg-amber-100 text-amber-700 border-amber-200'
+                                                    ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
+                                                    : 'bg-amber-100 text-amber-700 border-amber-200'
                                                     }`}>
                                                     {loan.status}
                                                 </span>

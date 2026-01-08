@@ -54,6 +54,7 @@ const AdminLayout = () => {
             children: [
                 { path: '/admin/monitor-simpanan', label: 'Monitoring Simpanan', icon: <Banknote size={18} /> },
                 { path: '/admin/monitor-pinjaman', label: 'Monitoring Pinjaman', icon: <BadgeCent size={18} /> },
+                { path: '/admin/monitor-angsuran', label: 'Monitoring Angsuran', icon: <ClipboardCheck size={18} /> },
                 { path: '/admin/assesment-pinjaman', label: 'Penyetujuan Pinjaman', icon: <ClipboardCheck size={18} /> },
                 { path: '/admin/pencairan-pinjaman', label: 'Pencairan Pinjaman', icon: <BanknoteArrowUp size={18} /> },
                 { path: '/admin/transaksi', label: 'Transaksi', icon: <ArrowLeftRight size={18} /> },

@@ -27,8 +27,26 @@ const UploadPinjaman = () => {
                 const workbook = XLSX.read(data, { type: 'array' });
                 const sheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[sheetName];
-                const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
+                // Try to find the header row (containing 'NIK')
+                const range = XLSX.utils.decode_range(worksheet['!ref']);
+                let headerRowIndex = 0;
+                for (let r = range.s.r; r <= range.e.r; r++) {
+                    let isHeader = false;
+                    for (let c = range.s.c; c <= range.e.c; c++) {
+                        const cell = worksheet[XLSX.utils.encode_cell({ r, c })];
+                        if (cell && String(cell.v).toUpperCase() === 'NIK') {
+                            isHeader = true;
+                            break;
+                        }
+                    }
+                    if (isHeader) {
+                        headerRowIndex = r;
+                        break;
+                    }
+                }
+
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, { range: headerRowIndex });
                 await matchWithDatabase(jsonData);
             };
             reader.readAsArrayBuffer(file);
@@ -60,22 +78,25 @@ const UploadPinjaman = () => {
             if (error) throw error;
 
             const results = excelData.map(row => {
-                // Try to find match by NIK + No Pinjaman
-                // Assuming Excel columns: NIK, Nama, No Pinjaman, Angsuran Ke
+                // Try to find match by NIK + No Pinjaman + Angsuran Ke
                 const excelNIK = String(row.NIK || row.nik || '').trim();
                 const excelNoPinj = String(row['No Pinjaman'] || row.no_pinjaman || '').trim();
                 const excelBulan = String(row['Angsuran Ke'] || row.bulan_ke || '').trim();
+                const excelStatus = String(row.Status || row.status || '').toUpperCase();
 
-                const match = unpaidAngsuran.find(db =>
+                // Only match if the status in Excel is PAID or LUNAS
+                const isPaidInExcel = excelStatus === 'PAID' || excelStatus === 'LUNAS';
+
+                const match = isPaidInExcel ? unpaidAngsuran.find(db =>
                     String(db.pinjaman?.personal_data?.nik).trim() === excelNIK &&
                     String(db.pinjaman?.no_pinjaman).trim() === excelNoPinj &&
                     (excelBulan === '' || String(db.bulan_ke).trim() === excelBulan)
-                );
+                ) : null;
 
                 return {
                     excelData: row,
                     dbMatch: match,
-                    status: match ? 'MATCHED' : 'UNMATCHED'
+                    status: match ? 'MATCHED' : (isPaidInExcel ? 'UNMATCHED' : 'SKIPPED')
                 };
             });
 
@@ -99,17 +120,13 @@ const UploadPinjaman = () => {
         try {
             setProcessing(true);
             const now = new Date().toISOString();
-
-            // Perform updates one by one or in batch if possible. 
-            // In Supabase, update().in('id', ids) works.
             const idsToUpdate = matchedItems.map(m => m.dbMatch.id);
 
             const { error } = await supabase
                 .from('angsuran')
                 .update({
                     status: 'PAID',
-                    tanggal_bayar: now,
-                    updated_at: now
+                    tanggal_bayar: now
                 })
                 .in('id', idsToUpdate);
 
@@ -145,7 +162,7 @@ const UploadPinjaman = () => {
                     <p className="text-lg font-bold text-gray-900">
                         {file ? file.name : 'Pilih file Excel untuk diunggah'}
                     </p>
-                    <p className="text-sm text-gray-400">Pastikan format kolom sesuai (NIK, Nama, No Pinjaman, Angsuran Ke)</p>
+                    <p className="text-sm text-gray-400">Pastikan format kolom sesuai (NIK, Nama, No Pinjaman, Angsuran Ke, Status)</p>
                 </div>
                 <input
                     type="file"
@@ -164,14 +181,17 @@ const UploadPinjaman = () => {
 
             {/* Guidance */}
             {!previewData.length && (
-                <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl flex gap-3 text-blue-800">
-                    <Info size={20} className="shrink-0" />
-                    <div className="text-xs space-y-1">
-                        <p className="font-bold uppercase tracking-tight italic">Petunjuk Format Excel:</p>
-                        <ul className="list-disc ml-4 space-y-1 opacity-80">
-                            <li>Gunakan kolom <strong>NIK</strong> (wajib sesuai data anggota)</li>
-                            <li>Gunakan kolom <strong>No Pinjaman</strong> (wajib sesuai ID pinjaman di sistem)</li>
-                            <li>Sistem akan mencari angsuran yang statusnya masih <strong>UNPAID</strong></li>
+                <div className="bg-blue-50 border border-blue-100 p-6 rounded-2xl flex gap-4 text-blue-900 shadow-sm shadow-blue-100/50">
+                    <Info size={24} className="shrink-0" />
+                    <div className="text-xs space-y-2">
+                        <p className="font-black uppercase tracking-tight italic text-sm">💡 Tips: Gunakan File Monitoring</p>
+                        <p className="font-medium leading-relaxed opacity-90">
+                            Anda dapat mengunduh data dari menu <strong>Monitoring Angsuran</strong>, mengubah kolom <strong>Status</strong> menjadi <strong>PAID</strong> atau <strong>LUNAS</strong> untuk baris yang ingin dibayar, lalu unggah kembali file tersebut di sini.
+                        </p>
+                        <ul className="list-disc ml-4 space-y-1 font-bold opacity-80 mt-2">
+                            <li>Kolom Wajib: <strong>NIK</strong>, <strong>No Pinjaman</strong>, <strong>Angsuran Ke</strong>, <strong>Status</strong></li>
+                            <li>Hanya baris dengan Status <strong>PAID</strong> / <strong>LUNAS</strong> yang akan diproses</li>
+                            <li>Hanya data yang saat ini berstatus <strong>UNPAID</strong> di sistem yang dapat diperbarui</li>
                         </ul>
                     </div>
                 </div>

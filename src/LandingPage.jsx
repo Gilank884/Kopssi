@@ -1,7 +1,7 @@
 import React, { useRef, useState, useLayoutEffect } from 'react';
 import Navbar from './components/Navbar';
 import LoginModal from './components/LoginModal';
-import RegistrationModal from './components/RegistrationModal';
+import MembershipCheckModal from './components/MembershipCheckModal';
 import Home from './sections/Home';
 import About from './sections/About';
 import Pengurus from './sections/Pengurus';
@@ -81,12 +81,6 @@ const LandingPage = () => {
         setIsRegisterOpen(false);
     };
 
-    const handleRegisterSubmit = (data) => {
-        console.log('Submitted registration data:', data);
-        // TODO: integrate with backend API
-        setIsRegisterOpen(false);
-    };
-
     const handleLogin = (loginData) => {
         setIsLoginOpen(false);
         setTimeout(() => {
@@ -121,11 +115,11 @@ const LandingPage = () => {
                 isOpen={isLoginOpen}
                 onClose={() => setIsLoginOpen(false)}
                 onLogin={handleLogin}
+                onRegisterClick={handleRegisterOpen}
             />
-            <RegistrationModal
+            <MembershipCheckModal
                 isOpen={isRegisterOpen}
                 onClose={handleRegisterClose}
-                onSubmit={handleRegisterSubmit}
             />
 
             <Footer />

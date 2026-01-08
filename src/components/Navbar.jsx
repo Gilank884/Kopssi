@@ -64,7 +64,7 @@ const Navbar = ({ onNavigate, onLoginClick, onRegisterClick, activeTab }) => {
                         onClick={onRegisterClick}
                         className="ml-2 px-6 py-2.5 rounded-full bg-blue-900 text-white font-bold hover:bg-blue-800 transition-all shadow-lg hover:shadow-blue-900/30 text-sm"
                     >
-                        Register
+                        Cek Keanggotaan
                     </button>
                 </div>
 
@@ -105,7 +105,7 @@ const Navbar = ({ onNavigate, onLoginClick, onRegisterClick, activeTab }) => {
                                 }}
                                 className="w-full px-6 py-3 rounded-full bg-blue-900 text-white font-bold shadow-lg hover:bg-blue-800 transition-all"
                             >
-                                Register
+                                Cek Keanggotaan
                             </button>
                         </div>
                     </div>

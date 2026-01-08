@@ -3,7 +3,7 @@ import gsap from 'gsap';
 import { supabase } from '../lib/supabaseClient';
 import { Phone, Lock, X, ArrowRight } from 'lucide-react';
 
-const LoginModal = ({ isOpen, onClose, onLogin }) => {
+const LoginModal = ({ isOpen, onClose, onLogin, onRegisterClick }) => {
     const modalRef = useRef(null);
     const contentRef = useRef(null);
     const formRef = useRef(null);
@@ -204,7 +204,13 @@ const LoginModal = ({ isOpen, onClose, onLogin }) => {
                     <div className="mt-8 text-center">
                         <p className="text-sm text-gray-500">
                             Belum menjadi anggota?{' '}
-                            <button onClick={onClose} className="text-emerald-600 font-bold hover:underline">
+                            <button
+                                onClick={() => {
+                                    onClose();
+                                    onRegisterClick();
+                                }}
+                                className="text-emerald-600 font-bold hover:underline"
+                            >
                                 Daftar disini
                             </button>
                         </p>

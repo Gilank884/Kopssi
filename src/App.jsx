@@ -21,6 +21,7 @@ import AssesmentDetail from './pages/Admin/AssesmentDetail';
 import UploadSimpanan from './pages/Admin/UploadSimpanan';
 import UploadPinjaman from './pages/Admin/UploadPinjaman';
 import MonitorPinjaman from './pages/Admin/MonitorPinjaman';
+import MonitorAngsuran from './pages/Admin/MonitorAngsuran';
 
 function App() {
   return (
@@ -49,6 +50,7 @@ function App() {
           <Route path="members" element={<MemberList />} />
           <Route path="monitor-simpanan" element={<MonitorSimpanan />} />
           <Route path="monitor-pinjaman" element={<MonitorPinjaman />} />
+          <Route path="monitor-angsuran" element={<MonitorAngsuran />} />
           <Route path="reports" element={<AdminReports />} />
           <Route path="transaksi" element={<TransactionPage />} />
           <Route path="upload-simpanan" element={<UploadSimpanan />} />

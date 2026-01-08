@@ -54,3 +54,84 @@ export const exportNewMembersExcel = (members) => {
 
     XLSX.writeFile(wb, `Daftar_Anggota_Baru_${new Date().toISOString().slice(0, 10)}.xlsx`);
 };
+
+export const exportMonitoringSimpanan = (data, range, mode = 'DATA') => {
+    let headers;
+    let rows;
+    let filename;
+
+    if (mode === 'TEMPLATE') {
+        // Template for bulk upload: NIK, Nama, Simpanan Pokok, Simpanan Wajib
+        headers = [['NIK', 'Nama Lengkap', 'Simpanan Pokok', 'Simpanan Wajib']];
+        rows = data.map(member => [
+            member.nik || '-',
+            member.full_name || '-',
+            '', // Empty for user to fill
+            ''  // Empty for user to fill
+        ]);
+        filename = `Template_Upload_Simpanan_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    } else {
+        // Columns synchronized with historical view - MUST keep original format
+        headers = [['NIK', 'Nama', 'Referensi', 'Status', 'Bulan Ke', 'Jatuh Tempo', 'Simp. Pokok', 'Simp. Wajib', 'Total']];
+        rows = data.map(bill => {
+            const total = parseFloat(bill.amount_pokok || 0) + parseFloat(bill.amount_wajib || 0);
+            return [
+                bill.personal_data?.nik || '-',
+                bill.personal_data?.full_name || '-',
+                bill.id,
+                bill.status,
+                bill.bulan_ke,
+                bill.jatuh_tempo,
+                bill.amount_pokok,
+                bill.amount_wajib,
+                total
+            ];
+        });
+        filename = `Monitoring_Simpanan_${range.startDate}_${range.endDate}.xlsx`;
+    }
+
+    const ws = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Simpanan');
+
+    XLSX.writeFile(wb, filename);
+};
+
+export const exportMonitoringPinjaman = (data, range) => {
+    const headers = [['NIK', 'Nama', 'No Pinjaman', 'Plafon', 'Tenor', 'Tgl Pengajuan', 'Status']];
+    const rows = data.map(loan => [
+        loan.personal_data?.nik || '-',
+        loan.personal_data?.full_name || '-',
+        loan.no_pinjaman,
+        loan.jumlah_pinjaman,
+        loan.tenor_bulan,
+        new Date(loan.created_at).toLocaleDateString('id-ID'),
+        loan.status
+    ]);
+
+    const ws = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Pinjaman');
+
+    XLSX.writeFile(wb, `Monitoring_Pinjaman_${range.startDate}_${range.endDate}.xlsx`);
+};
+
+export const exportMonitoringAngsuran = (data, range) => {
+    // Columns synchronized with UploadPinjaman.jsx: NIK, Nama, No Pinjaman, Angsuran Ke, Status
+    const headers = [['NIK', 'Nama', 'No Pinjaman', 'Angsuran Ke', 'Status', 'Nominal', 'Tgl Bayar']];
+    const rows = data.map(inst => [
+        inst.pinjaman?.personal_data?.nik || '-',
+        inst.pinjaman?.personal_data?.full_name || '-',
+        inst.pinjaman?.no_pinjaman || '-',
+        inst.bulan_ke,
+        inst.status,
+        inst.amount,
+        inst.tanggal_bayar ? new Date(inst.tanggal_bayar).toLocaleDateString('id-ID') : '-'
+    ]);
+
+    const ws = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Angsuran');
+
+    XLSX.writeFile(wb, `Monitoring_Angsuran_${range.startDate}_${range.endDate}.xlsx`);
+};
