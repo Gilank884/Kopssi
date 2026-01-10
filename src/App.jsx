@@ -22,6 +22,7 @@ import UploadSimpanan from './pages/Admin/UploadSimpanan';
 import UploadPinjaman from './pages/Admin/UploadPinjaman';
 import MonitorPinjaman from './pages/Admin/MonitorPinjaman';
 import MonitorAngsuran from './pages/Admin/MonitorAngsuran';
+import AddMember from './pages/Admin/AddMember';
 
 function App() {
   return (
@@ -48,6 +49,7 @@ function App() {
           <Route path="assesment-pinjaman/:id" element={<AssesmentDetail />} />
           <Route path="pencairan-pinjaman" element={<PencairanPinjaman />} />
           <Route path="members" element={<MemberList />} />
+          <Route path="add-member" element={<AddMember />} />
           <Route path="monitor-simpanan" element={<MonitorSimpanan />} />
           <Route path="monitor-pinjaman" element={<MonitorPinjaman />} />
           <Route path="monitor-angsuran" element={<MonitorAngsuran />} />
