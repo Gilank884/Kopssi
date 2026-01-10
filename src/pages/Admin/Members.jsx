@@ -186,13 +186,7 @@ const MemberList = () => {
                             className="pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 w-full md:w-64 text-sm font-medium"
                         />
                     </div>
-                    <button
-                        onClick={() => navigate('/admin/add-member')}
-                        className="bg-blue-600 text-white font-black uppercase tracking-widest text-[10px] px-6 py-2 rounded-xl shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all flex items-center gap-2"
-                    >
-                        <Plus size={16} />
-                        Tambah Anggota
-                    </button>
+
                 </div>
             </div>
 

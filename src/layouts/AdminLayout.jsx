@@ -46,6 +46,7 @@ const AdminLayout = () => {
             children: [
                 { path: '/admin/pengajuan-anggota', label: 'Pengajuan Anggota', icon: <UserPlus size={18} /> },
                 { path: '/admin/members', label: 'Data Anggota', icon: <Users size={18} /> },
+                { path: '/admin/add-member', label: 'Tambah Anggota', icon: <UserPlus size={18} /> },
             ]
         },
         {
