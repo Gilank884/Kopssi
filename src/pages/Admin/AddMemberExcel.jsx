@@ -11,10 +11,10 @@ const AddMemberExcel = ({ onSave, isProcessing }) => {
     const handleDownloadTemplate = () => {
         const title = ['NEW MEMBER KOPSSI'];
         const headers = [
-            'Tgl Masuk (YYYY-MM-DD)', 'Nama Lengkap', 'Status Simp. Anggota', 'NPP', 'Unit Kerja',
+            'Nama Lengkap', 'Status Simp. Anggota', 'NPP', 'Unit Kerja',
             'Jabatan', 'PT', 'OPS', 'Lokasi', 'Tagihan Parkir (Y/N)',
             'Tempat Lahir', 'Tgl Lahir (YYYY-MM-DD)', 'Alamat', 'Alamat Tinggal',
-            'No KTP', 'Telp Rumah 1', 'Telp Rumah 2', 'Email', 'Hp 1', 'Hp 2',
+            'NIK', 'Telp Rumah 1', 'Telp Rumah 2', 'Email', 'Hp 1', 'Hp 2',
             'Rek Pribadi', 'Rek Gaji', 'Bank Gaji', 'Jenis Kelamin (Laki-laki/Perempuan)',
             'Keluar Anggota (Y/N)', 'Tgl Keluar (YYYY-MM-DD)', 'Sebab Keluar', 'Keterangan'
         ];
@@ -137,7 +137,8 @@ const AddMemberExcel = ({ onSave, isProcessing }) => {
 
         try {
             for (const row of previewData) {
-                const joinDate = row['Tgl Masuk (YYYY-MM-DD)'] || new Date().toISOString().split('T')[0];
+                // Always use current upload date
+                const joinDate = new Date().toISOString().split('T')[0];
 
                 const date = new Date(joinDate);
                 const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -175,7 +176,7 @@ const AddMemberExcel = ({ onSave, isProcessing }) => {
                     'tanggal_lahir': row['Tgl Lahir (YYYY-MM-DD)'],
                     'address': row['Alamat'],
                     'alamat_tinggal': row['Alamat Tinggal'],
-                    'no_ktp': String(row['No KTP'] || ''),
+                    'no_ktp': String(row['NIK'] || ''),
                     'telp_rumah_1': String(row['Telp Rumah 1'] || ''),
                     'telp_rumah_2': String(row['Telp Rumah 2'] || ''),
                     'email': row['Email'],
@@ -314,7 +315,7 @@ const AddMemberExcel = ({ onSave, isProcessing }) => {
                 </div>
                 <div className="space-y-1">
                     <p className="text-xs font-black text-amber-800 uppercase tracking-wide">Penting</p>
-                    <p className="text-xs text-amber-700/80 leading-relaxed font-medium">Pastikan Tgl Masuk diisi dengan format YYYY-MM-DD (contoh: 2024-01-25) agar sistem dapat membuat No. Anggota secara otomatis. Kolom yang kosong akan diisi dengan default.</p>
+                    <p className="text-xs text-amber-700/80 leading-relaxed font-medium">Tanggal masuk anggota akan otomatis menggunakan tanggal saat upload. No. Anggota akan dibuat secara otomatis berdasarkan bulan dan tahun upload (format: KS[MM][YY][XXXX]). Kolom yang kosong akan diisi dengan default.</p>
                 </div>
             </div>
         </div>
