@@ -231,7 +231,9 @@ const MemberList = () => {
                                                         ? 'bg-blue-50 text-blue-600'
                                                         : 'bg-amber-50 text-amber-600'
                                                 }`}>
-                                                {member.status || 'PENDING'}
+                                                {member.status?.toLowerCase() === 'pending' || !member.status
+                                                    ? 'BELUM TERVERIFIKASI'
+                                                    : member.status.toUpperCase()}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-center">

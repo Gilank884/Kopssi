@@ -20,7 +20,7 @@ const PengajuanAnggota = () => {
             const { data, error } = await supabase
                 .from('personal_data')
                 .select('*')
-                .eq('status', 'DONE VERIFIKASI')
+                .in('status', ['pending', 'DONE VERIFIKASI'])
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -195,6 +195,7 @@ const PengajuanAnggota = () => {
                                 <th className="px-6 py-4 font-semibold text-gray-600">NIK</th>
                                 <th className="px-6 py-4 font-semibold text-gray-600">No. Telepon</th>
                                 <th className="px-6 py-4 font-semibold text-gray-600">Perusahaan</th>
+                                <th className="px-6 py-4 font-semibold text-gray-600">Status</th>
                                 <th className="px-6 py-4 font-semibold text-gray-600">Tanggal Pengajuan</th>
                                 <th className="px-6 py-4 font-semibold text-gray-600">Aksi</th>
                             </tr>
@@ -217,6 +218,14 @@ const PengajuanAnggota = () => {
                                     <td className="px-6 py-4 text-gray-700">{member.nik || '-'}</td>
                                     <td className="px-6 py-4 text-gray-700">{member.phone || '-'}</td>
                                     <td className="px-6 py-4 text-gray-700">{member.company || '-'}</td>
+                                    <td className="px-6 py-4">
+                                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${member.status?.toLowerCase() === 'pending'
+                                                ? 'bg-amber-100 text-amber-700'
+                                                : 'bg-blue-100 text-blue-700'
+                                            }`}>
+                                            {member.status?.toLowerCase() === 'pending' ? 'Belum Terverifikasi' : 'Menunggu Verifikasi Akhir'}
+                                        </span>
+                                    </td>
                                     <td className="px-6 py-4 text-gray-700">{formatDate(member.created_at)}</td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-2">
