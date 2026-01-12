@@ -134,7 +134,8 @@ const Angsuran = () => {
                     <h3 className="font-bold text-gray-800 text-lg uppercase italic tracking-tighter">Seluruh Daftar Angsuran</h3>
                     <p className="text-gray-500 text-sm font-medium uppercase tracking-widest text-[10px]">Data angsuran yang sedang berjalan</p>
                 </div>
-                <div className="overflow-x-auto">
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-left bg-white">
                         <thead className="bg-gray-50 text-gray-400 text-[10px] font-black uppercase tracking-widest border-b border-gray-100">
                             <tr>
@@ -153,7 +154,7 @@ const Angsuran = () => {
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-2">
                                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                                            <span className="text-xs font-black text-gray-700 font-mono">{item.loanNo}</span>
+                                            <span className="text-xs font-black text-gray-700 font-mono italic">{item.loanNo}</span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-center">
@@ -167,11 +168,11 @@ const Angsuran = () => {
                                         {item.bunga.toLocaleString('id-ID', { maximumFractionDigits: 0 })}
                                     </td>
                                     <td className="px-6 py-4 text-right">
-                                        <span className="text-sm font-black text-emerald-700 font-mono">
+                                        <span className="text-sm font-black text-emerald-700 font-mono italic">
                                             Rp {item.total.toLocaleString('id-ID', { maximumFractionDigits: 0 })}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-center">
+                                    <td className="px-6 py-4 text-center text-left">
                                         {item.status === 'PAID' ? (
                                             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-700 uppercase tracking-tighter shadow-sm border border-emerald-200">
                                                 <CheckCircle size={10} /> TERBAYAR
@@ -186,6 +187,45 @@ const Angsuran = () => {
                             ))}
                         </tbody>
                     </table>
+                </div>
+
+                {/* Mobile Card View */}
+                <div className="md:hidden divide-y divide-gray-50 text-left">
+                    {schedule.map((item) => (
+                        <div key={item.id} className="p-4 space-y-3 active:bg-gray-50 transition-colors">
+                            <div className="flex justify-between items-start">
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs font-black text-gray-900 font-mono uppercase italic tracking-tighter">{item.loanNo}</span>
+                                        <span className="text-[9px] font-bold text-gray-400 font-mono"># Bulan {item.month}</span>
+                                    </div>
+                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest italic">{item.date}</p>
+                                </div>
+                                {item.status === 'PAID' ? (
+                                    <span className="px-2 py-0.5 rounded-full text-[8px] font-black bg-emerald-100 text-emerald-700 uppercase tracking-tighter border border-emerald-200">
+                                        TERBAYAR
+                                    </span>
+                                ) : (
+                                    <span className="px-2 py-0.5 rounded-full text-[8px] font-black bg-amber-100 text-amber-700 uppercase tracking-tighter border border-amber-200">
+                                        HARUS DIBAYAR
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="bg-gray-50/50 rounded-xl p-3 flex justify-between items-center text-left">
+                                <div>
+                                    <label className="text-[8px] font-black text-gray-400 uppercase tracking-widest block">Total Tagihan</label>
+                                    <span className="text-sm font-black text-emerald-700 italic">
+                                        Rp {item.total.toLocaleString('id-ID', { maximumFractionDigits: 0 })}
+                                    </span>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-[8px] font-bold text-gray-400">P {item.pokok.toLocaleString('id-ID', { maximumFractionDigits: 0 })}</p>
+                                    <p className="text-[8px] font-bold text-gray-400">B {item.bunga.toLocaleString('id-ID', { maximumFractionDigits: 0 })}</p>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>

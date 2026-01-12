@@ -118,6 +118,9 @@ const DashboardLayout = () => {
                     isOpen={isSidebarOpen}
                     navItems={navItems}
                     onLogout={handleLogoutClick}
+                    onNavItemClick={() => {
+                        if (window.innerWidth < 768) setSidebarOpen(false);
+                    }}
                 />
             </div>
 

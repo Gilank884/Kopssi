@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 import gsap from 'gsap';
 
-const Sidebar = ({ isOpen, navItems, onLogout }) => {
+const Sidebar = ({ isOpen, navItems, onLogout, onNavItemClick }) => {
     const sidebarRef = useRef(null);
 
     // Entrance animation (mount)
@@ -47,6 +47,7 @@ const Sidebar = ({ isOpen, navItems, onLogout }) => {
                         key={item.path}
                         to={item.path}
                         end={item.end}
+                        onClick={onNavItemClick}
                         className={({ isActive }) =>
                             `
                             group relative flex items-center gap-3

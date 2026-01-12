@@ -126,56 +126,103 @@ const PencairanPinjaman = () => {
                 </div>
             ) : (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden text-left">
-                    <table className="w-full text-left border-collapse">
-                        <thead className="bg-emerald-50 border-b border-emerald-100">
-                            <tr>
-                                <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic">Peminjam</th>
-                                <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic">Nominal</th>
-                                <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic">Tenor</th>
-                                <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic">No. Pinjaman</th>
-                                <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic">Tanggal</th>
-                                <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic text-center">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {filteredLoans.map((loan) => (
-                                <tr
-                                    key={loan.id}
-                                    onClick={() => handleRowClick(loan)}
-                                    className="hover:bg-emerald-50/30 transition-colors cursor-pointer"
-                                >
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-9 h-9 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold text-xs">
-                                                {loan.personal_data?.full_name?.charAt(0) || '?'}
-                                            </div>
-                                            <div className="text-left">
-                                                <p className="font-bold text-gray-900 text-sm">{loan.personal_data?.full_name || '-'}</p>
-                                                <p className="text-[10px] text-gray-500 font-mono tracking-tighter">{loan.personal_data?.nik || '-'}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 font-black text-emerald-700 text-sm">
-                                        Rp {parseFloat(loan.jumlah_pinjaman).toLocaleString('id-ID')}
-                                    </td>
-                                    <td className="px-6 py-4 text-gray-700 text-sm font-semibold">{loan.tenor_bulan} bln</td>
-                                    <td className="px-6 py-4 text-gray-400 text-[10px] font-mono">{loan.no_pinjaman}</td>
-                                    <td className="px-6 py-4 text-gray-500 text-xs">{formatDate(loan.created_at)}</td>
-                                    <td className="px-6 py-4 text-center">
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleRowClick(loan);
-                                            }}
-                                            className="px-3 py-1 bg-emerald-600 text-white rounded text-[10px] font-black hover:bg-emerald-700 transition-all uppercase tracking-wider shadow-sm"
-                                        >
-                                            Verifikasi
-                                        </button>
-                                    </td>
+                    {/* Desktop Table View */}
+                    <div className="hidden md:block">
+                        <table className="w-full text-left border-collapse">
+                            <thead className="bg-emerald-50 border-b border-emerald-100">
+                                <tr>
+                                    <th className="px-6 py-4 font-black text-emerald-800 text-[11px] uppercase tracking-widest italic">Peminjam</th>
+                                    <th className="px-6 py-4 font-black text-emerald-800 text-[11px] uppercase tracking-widest italic text-center">Nominal</th>
+                                    <th className="px-6 py-4 font-black text-emerald-800 text-[11px] uppercase tracking-widest italic text-center">Tenor</th>
+                                    <th className="px-6 py-4 font-black text-emerald-800 text-[11px] uppercase tracking-widest italic text-center">No. Pinjaman</th>
+                                    <th className="px-6 py-4 font-black text-emerald-800 text-[11px] uppercase tracking-widest italic text-center">Tanggal</th>
+                                    <th className="px-6 py-4 text-center"></th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100 italic">
+                                {filteredLoans.map((loan) => (
+                                    <tr
+                                        key={loan.id}
+                                        onClick={() => handleRowClick(loan)}
+                                        className="hover:bg-emerald-50/20 transition-colors cursor-pointer group"
+                                    >
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-9 h-9 rounded-full bg-emerald-600 flex items-center justify-center text-white font-black text-[10px]">
+                                                    {loan.personal_data?.full_name?.charAt(0) || '?'}
+                                                </div>
+                                                <div className="text-left">
+                                                    <p className="font-black text-gray-900 text-sm uppercase tracking-tight">{loan.personal_data?.full_name || '-'}</p>
+                                                    <p className="text-[10px] text-gray-400 font-mono tracking-tighter">{loan.personal_data?.nik || '-'}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-sm font-black text-emerald-700 italic">
+                                                Rp {parseFloat(loan.jumlah_pinjaman).toLocaleString('id-ID')}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <span className="text-xs font-bold text-gray-700 italic">
+                                                {loan.tenor_bulan} bln
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-center font-mono font-bold text-[10px] text-gray-400">
+                                            {loan.no_pinjaman}
+                                        </td>
+                                        <td className="px-6 py-4 text-center text-xs font-bold text-gray-500 italic">
+                                            {formatDate(loan.created_at)}
+                                        </td>
+                                        <td className="px-6 py-4 text-right pr-8">
+                                            <div className="p-2 rounded-lg text-emerald-400 group-hover:bg-emerald-50 transition-all opacity-0 group-hover:opacity-100 inline-block">
+                                                <ChevronRight size={18} />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Mobile Card View */}
+                    <div className="md:hidden divide-y divide-gray-50 text-left">
+                        {filteredLoans.map((loan) => (
+                            <div
+                                key={loan.id}
+                                onClick={() => handleRowClick(loan)}
+                                className="p-4 active:bg-gray-50 transition-colors flex items-center justify-between"
+                            >
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-7 h-7 rounded-full bg-emerald-600 flex items-center justify-center text-white font-black text-[8px]">
+                                            {loan.personal_data?.full_name?.charAt(0) || '?'}
+                                        </div>
+                                        <div className="text-left">
+                                            <span className="text-xs font-black text-gray-900 uppercase tracking-tighter italic block">
+                                                {loan.personal_data?.full_name || '-'}
+                                            </span>
+                                            <span className="text-[8px] text-gray-400 font-mono tracking-widest uppercase">
+                                                {loan.no_pinjaman}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                                        <div>
+                                            <label className="text-[8px] font-black text-gray-400 uppercase tracking-widest block">Nominal</label>
+                                            <span className="text-sm font-black text-emerald-600 italic">
+                                                Rp {parseFloat(loan.jumlah_pinjaman).toLocaleString('id-ID')}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <label className="text-[8px] font-black text-gray-400 uppercase tracking-widest block">Tenor</label>
+                                            <span className="text-xs font-black text-gray-700 italic">{loan.tenor_bulan} Bln</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <ChevronRight size={20} className="text-gray-300" />
+                            </div>
+                        ))}
+                    </div>
                 </div>
             )}
 
