@@ -23,6 +23,7 @@ import UploadPinjaman from './pages/Admin/UploadPinjaman';
 import MonitorPinjaman from './pages/Admin/MonitorPinjaman';
 import MonitorAngsuran from './pages/Admin/MonitorAngsuran';
 import AddMember from './pages/Admin/AddMember';
+import MasterData from './pages/Admin/MasterData';
 
 function App() {
   return (
@@ -57,6 +58,7 @@ function App() {
           <Route path="transaksi" element={<TransactionPage />} />
           <Route path="upload-simpanan" element={<UploadSimpanan />} />
           <Route path="upload-pinjaman" element={<UploadPinjaman />} />
+          <Route path="master-data" element={<MasterData />} />
         </Route>
       </Routes>
     </BrowserRouter>

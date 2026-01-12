@@ -37,15 +37,46 @@ const AddMemberForm = ({ onSave, isSubmitting }) => {
         keterangan: ''
     });
 
-    // Valid options
-    const [options] = useState({
-        companies: ['PT. KOPSSI', 'PT. OTHER'],
-        units: ['Admin Ops Pusat', 'Marketing', 'Finance', 'IT'],
+    // Valid options (initial static, then fetched)
+    const [options, setOptions] = useState({
+        companies: [],
+        units: [],
         positions: ['Staff', 'Supervisor', 'Manager', 'Director'],
         ops: ['Pilih Ops', 'OPS A', 'OPS B'],
-        locations: ['AMBON - AMB', 'JAKARTA - JKT', 'SURABAYA - SBY'],
+        locations: [],
         banks: ['BNI 46', 'BCA', 'MANDIRI', 'BRI']
     });
+
+    const fetchDropdowns = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('master_data')
+                .select('category, value');
+
+            if (error) throw error;
+
+            if (data) {
+                const grouped = data.reduce((acc, item) => {
+                    if (!acc[item.category]) acc[item.category] = [];
+                    acc[item.category].push(item.value);
+                    return acc;
+                }, {});
+
+                setOptions(prev => ({
+                    ...prev,
+                    companies: grouped['company'] || [],
+                    units: grouped['work_unit'] || [],
+                    locations: grouped['lokasi'] || []
+                }));
+            }
+        } catch (err) {
+            console.error("Error fetching dropdown data:", err);
+        }
+    };
+
+    useEffect(() => {
+        fetchDropdowns();
+    }, []);
 
     // Auto-generate No Anggota when join_date changes
     useEffect(() => {

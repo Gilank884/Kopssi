@@ -19,6 +19,22 @@ const Transaksi = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('ALL');
+    const [filterCompany, setFilterCompany] = useState('ALL');
+    const [companies, setCompanies] = useState([]);
+
+    const fetchCompanies = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('master_data')
+                .select('value')
+                .eq('category', 'company')
+                .order('value', { ascending: true });
+            if (error) throw error;
+            setCompanies(data?.map(c => c.value) || []);
+        } catch (err) {
+            console.error("Error fetching companies:", err);
+        }
+    };
 
     // Default to current month
     const now = new Date();
@@ -27,6 +43,7 @@ const Transaksi = () => {
 
     useEffect(() => {
         fetchAllTransactions();
+        fetchCompanies();
     }, [filterMonth]);
 
     const fetchAllTransactions = async () => {
@@ -40,7 +57,8 @@ const Transaksi = () => {
                     *,
                     personal_data:personal_data_id (
                         full_name,
-                        nik
+                        nik,
+                        company
                     )
                 `)
                 .order('jatuh_tempo', { ascending: false });
@@ -56,7 +74,8 @@ const Transaksi = () => {
                         no_pinjaman,
                         personal_data:personal_data_id (
                             full_name,
-                            nik
+                            nik,
+                            company
                         )
                     )
                 `)
@@ -75,6 +94,7 @@ const Transaksi = () => {
                     date: s.jatuh_tempo,
                     member: s.personal_data?.full_name || '-',
                     nik: s.personal_data?.nik || '-',
+                    company: s.personal_data?.company || '-',
                     reference: 'Iuran Anggota'
                 })),
                 ...(angsuran || []).map(a => ({
@@ -86,6 +106,7 @@ const Transaksi = () => {
                     date: a.tanggal_bayar,
                     member: a.pinjaman?.personal_data?.full_name || '-',
                     nik: a.pinjaman?.personal_data?.nik || '-',
+                    company: a.pinjaman?.personal_data?.company || '-',
                     reference: a.pinjaman?.no_pinjaman || '-'
                 }))
             ];
@@ -108,6 +129,7 @@ const Transaksi = () => {
             trx.reference.toLowerCase().includes(searchTerm.toLowerCase());
 
         const matchesStatus = filterStatus === 'ALL' || trx.status === filterStatus;
+        const matchesCompany = filterCompany === 'ALL' || trx.company === filterCompany;
 
         // Month filter
         let matchesMonth = true;
@@ -119,7 +141,7 @@ const Transaksi = () => {
             matchesMonth = trxYear === parseInt(year) && trxMonth === parseInt(month);
         }
 
-        return matchesSearch && matchesStatus && matchesMonth;
+        return matchesSearch && matchesStatus && matchesMonth && matchesCompany;
     });
 
     const formatCurrency = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
@@ -149,6 +171,16 @@ const Transaksi = () => {
                         onChange={(e) => setFilterMonth(e.target.value)}
                         className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white"
                     />
+                    <select
+                        value={filterCompany}
+                        onChange={(e) => setFilterCompany(e.target.value)}
+                        className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white font-bold uppercase tracking-tight italic"
+                    >
+                        <option value="ALL">SEMUA PT</option>
+                        {companies.map(c => (
+                            <option key={c} value={c}>{c}</option>
+                        ))}
+                    </select>
                     <select
                         value={filterStatus}
                         onChange={(e) => setFilterStatus(e.target.value)}

@@ -10,12 +10,29 @@ const AssesmentPinjaman = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+    const [filterCompany, setFilterCompany] = useState('ALL');
+    const [companies, setCompanies] = useState([]);
     const [analystName, setAnalystName] = useState('Admin');
     const navigate = useNavigate();
+
+    const fetchCompanies = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('master_data')
+                .select('value')
+                .eq('category', 'company')
+                .order('value', { ascending: true });
+            if (error) throw error;
+            setCompanies(data?.map(c => c.value) || []);
+        } catch (err) {
+            console.error("Error fetching companies:", err);
+        }
+    };
 
     useEffect(() => {
         fetchLoans();
         fetchAnalystInfo();
+        fetchCompanies();
     }, []);
 
     const fetchAnalystInfo = async () => {
@@ -95,8 +112,9 @@ const AssesmentPinjaman = () => {
         const end = endDate ? new Date(endDate).setHours(23, 59, 59, 999) : Infinity;
 
         const matchesDate = loanDate >= start && loanDate <= end;
+        const matchesCompany = filterCompany === 'ALL' || loan.personal_data?.company === filterCompany;
 
-        return matchesSearch && matchesDate;
+        return matchesSearch && matchesDate && matchesCompany;
     });
 
     const formatDate = (dateString) => {
@@ -150,6 +168,20 @@ const AssesmentPinjaman = () => {
                             onChange={(e) => setEndDate(e.target.value)}
                             className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm"
                         />
+                    </div>
+
+                    <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">PT / Perusahaan</label>
+                        <select
+                            value={filterCompany}
+                            onChange={(e) => setFilterCompany(e.target.value)}
+                            className="px-3 py-2 border border-gray-200 rounded-lg text-xs font-black uppercase italic focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm bg-white"
+                        >
+                            <option value="ALL">SEMUA PT</option>
+                            {companies.map(c => (
+                                <option key={c} value={c}>{c}</option>
+                            ))}
+                        </select>
                     </div>
 
                     <button

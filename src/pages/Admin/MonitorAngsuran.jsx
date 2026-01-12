@@ -16,9 +16,26 @@ const MonitorAngsuran = () => {
     });
     const [filterStatus, setFilterStatus] = useState('ALL');
     const [updatingId, setUpdatingId] = useState(null);
+    const [filterCompany, setFilterCompany] = useState('ALL');
+    const [companies, setCompanies] = useState([]);
+
+    const fetchCompanies = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('master_data')
+                .select('value')
+                .eq('category', 'company')
+                .order('value', { ascending: true });
+            if (error) throw error;
+            setCompanies(data?.map(c => c.value) || []);
+        } catch (err) {
+            console.error("Error fetching companies:", err);
+        }
+    };
 
     useEffect(() => {
         fetchInstallments();
+        fetchCompanies();
     }, [startDate, endDate, filterStatus]);
 
     const fetchInstallments = async () => {
@@ -107,11 +124,15 @@ const MonitorAngsuran = () => {
         }
     };
 
-    const filteredInstallments = installments.filter(inst =>
-        inst.pinjaman?.personal_data?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        inst.pinjaman?.personal_data?.nik?.includes(searchTerm) ||
-        inst.pinjaman?.no_pinjaman?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredInstallments = installments.filter(inst => {
+        const matchesSearch = inst.pinjaman?.personal_data?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            inst.pinjaman?.personal_data?.nik?.includes(searchTerm) ||
+            inst.pinjaman?.no_pinjaman?.toLowerCase().includes(searchTerm.toLowerCase());
+
+        const matchesCompany = filterCompany === 'ALL' || inst.pinjaman?.personal_data?.company === filterCompany;
+
+        return matchesSearch && matchesCompany;
+    });
 
     const formatCurrency = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
 
@@ -148,6 +169,18 @@ const MonitorAngsuran = () => {
                             onChange={(e) => setEndDate(e.target.value)}
                             className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white shadow-sm font-bold"
                         />
+                    </div>
+                    <div className="relative">
+                        <select
+                            value={filterCompany}
+                            onChange={(e) => setFilterCompany(e.target.value)}
+                            className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white shadow-sm font-bold uppercase tracking-tight italic"
+                        >
+                            <option value="ALL">SEMUA PT</option>
+                            {companies.map(c => (
+                                <option key={c} value={c}>{c}</option>
+                            ))}
+                        </select>
                     </div>
                     <select
                         value={filterStatus}

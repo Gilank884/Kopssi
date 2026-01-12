@@ -9,9 +9,26 @@ const PengajuanAnggota = () => {
     const [selectedMember, setSelectedMember] = useState(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [filterCompany, setFilterCompany] = useState('ALL');
+    const [companies, setCompanies] = useState([]);
+
+    const fetchCompanies = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('master_data')
+                .select('value')
+                .eq('category', 'company')
+                .order('value', { ascending: true });
+            if (error) throw error;
+            setCompanies(data?.map(c => c.value) || []);
+        } catch (err) {
+            console.error("Error fetching companies:", err);
+        }
+    };
 
     useEffect(() => {
         fetchPendingMembers();
+        fetchCompanies();
     }, []);
 
     const fetchPendingMembers = async () => {
@@ -59,7 +76,6 @@ const PengajuanAnggota = () => {
             const { error: userUpdateError } = await supabase
                 .from('users')
                 .update({
-                    password: selectedMember.full_name,
                     role: 'MEMBER'
                 })
                 .eq('id', selectedMember.user_id);
@@ -140,11 +156,15 @@ const PengajuanAnggota = () => {
         }
     };
 
-    const filteredMembers = pendingMembers.filter(member =>
-        member.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        member.nik?.includes(searchTerm) ||
-        member.phone?.includes(searchTerm)
-    );
+    const filteredMembers = pendingMembers.filter(member => {
+        const matchesSearch = member.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            member.nik?.includes(searchTerm) ||
+            member.phone?.includes(searchTerm);
+
+        const matchesCompany = filterCompany === 'ALL' || member.company === filterCompany;
+
+        return matchesSearch && matchesCompany;
+    });
 
     const formatDate = (dateString) => {
         if (!dateString) return '-';
@@ -163,15 +183,29 @@ const PengajuanAnggota = () => {
                     <h2 className="text-2xl font-bold text-gray-800">Persetujuan Keanggotaan</h2>
                     <p className="text-sm text-gray-500 mt-1">Lakukan verifikasi akhir untuk anggota yang telah menandatangani formulir</p>
                 </div>
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                    <input
-                        type="text"
-                        placeholder="Cari nama, NIK, atau telepon..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-64"
-                    />
+                <div className="flex gap-2">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                        <input
+                            type="text"
+                            placeholder="Cari nama, NIK, atau telepon..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-64"
+                        />
+                    </div>
+                    <div className="relative">
+                        <select
+                            value={filterCompany}
+                            onChange={(e) => setFilterCompany(e.target.value)}
+                            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white font-bold uppercase tracking-tight italic"
+                        >
+                            <option value="ALL">SEMUA PT</option>
+                            {companies.map(c => (
+                                <option key={c} value={c}>{c}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -204,15 +238,25 @@ const PengajuanAnggota = () => {
                             {filteredMembers.map((member) => (
                                 <tr
                                     key={member.id}
-                                    onClick={() => handleRowClick(member)}
-                                    className="hover:bg-emerald-50/50 transition-colors cursor-pointer"
+                                    onClick={() => {
+                                        if (member.status?.toLowerCase() === 'done verifikasi') {
+                                            handleRowClick(member);
+                                        }
+                                    }}
+                                    className={`transition-colors ${member.status?.toLowerCase() === 'done verifikasi'
+                                        ? 'hover:bg-emerald-50/50 cursor-pointer'
+                                        : 'opacity-60 cursor-not-allowed bg-gray-50/30'
+                                        }`}
                                 >
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold text-sm">
+                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${member.status?.toLowerCase() === 'done verifikasi'
+                                                ? 'bg-emerald-100 text-emerald-600'
+                                                : 'bg-gray-200 text-gray-500'
+                                                }`}>
                                                 {member.full_name?.charAt(0) || '?'}
                                             </div>
-                                            <span className="font-medium text-gray-900">{member.full_name || '-'}</span>
+                                            <span className={`font-medium ${member.status?.toLowerCase() === 'done verifikasi' ? 'text-gray-900' : 'text-gray-500'}`}>{member.full_name || '-'}</span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-gray-700">{member.nik || '-'}</td>
@@ -220,25 +264,32 @@ const PengajuanAnggota = () => {
                                     <td className="px-6 py-4 text-gray-700">{member.company || '-'}</td>
                                     <td className="px-6 py-4">
                                         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${member.status?.toLowerCase() === 'pending'
-                                                ? 'bg-amber-100 text-amber-700'
-                                                : 'bg-blue-100 text-blue-700'
+                                            ? 'bg-amber-100 text-amber-700'
+                                            : 'bg-emerald-500 text-white shadow-sm'
                                             }`}>
-                                            {member.status?.toLowerCase() === 'pending' ? 'Belum Terverifikasi' : 'Menunggu Verifikasi Akhir'}
+                                            {member.status?.toLowerCase() === 'pending' ? 'Belum Terverifikasi' : 'AKTIFKAN'}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-gray-700">{formatDate(member.created_at)}</td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-2">
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleRowClick(member);
-                                                }}
-                                                className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors"
-                                                title="Lihat Detail"
-                                            >
-                                                <Eye size={16} />
-                                            </button>
+                                            {member.status?.toLowerCase() === 'done verifikasi' ? (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleRowClick(member);
+                                                    }}
+                                                    className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors"
+                                                    title="Lihat Detail & Aktifkan"
+                                                >
+                                                    <Eye size={16} />
+                                                </button>
+                                            ) : (
+                                                <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed" title="Menunggu Verifikasi User">
+                                                    <AlertCircle size={16} />
+                                                    <span className="text-[10px] font-bold uppercase">Pending</span>
+                                                </div>
+                                            )}
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();

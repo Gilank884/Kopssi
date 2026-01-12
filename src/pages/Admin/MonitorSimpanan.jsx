@@ -15,10 +15,27 @@ const MonitorSimpanan = () => {
         const d = new Date();
         return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().substring(0, 7);
     });
+    const [filterCompany, setFilterCompany] = useState('ALL');
+    const [companies, setCompanies] = useState([]);
     const [showExportMenu, setShowExportMenu] = useState(false);
+
+    const fetchCompanies = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('master_data')
+                .select('value')
+                .eq('category', 'company')
+                .order('value', { ascending: true });
+            if (error) throw error;
+            setCompanies(data?.map(c => c.value) || []);
+        } catch (err) {
+            console.error("Error fetching companies:", err);
+        }
+    };
 
     useEffect(() => {
         fetchBills();
+        fetchCompanies();
     }, [startDate, endDate]);
 
     const fetchBills = async () => {
@@ -107,7 +124,9 @@ const MonitorSimpanan = () => {
         const matchesSearch = bill.personal_data?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             bill.personal_data?.nik?.includes(searchTerm);
 
-        return matchesSearch;
+        const matchesCompany = filterCompany === 'ALL' || bill.personal_data?.company === filterCompany;
+
+        return matchesSearch && matchesCompany;
     });
 
     const formatCurrency = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
@@ -144,6 +163,19 @@ const MonitorSimpanan = () => {
                             onChange={(e) => setEndDate(e.target.value)}
                             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white"
                         />
+                    </div>
+                    <div className="relative">
+                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                        <select
+                            value={filterCompany}
+                            onChange={(e) => setFilterCompany(e.target.value)}
+                            className="pl-9 pr-8 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white appearance-none font-bold uppercase tracking-tight italic"
+                        >
+                            <option value="ALL">SEMUA PT</option>
+                            {companies.map(c => (
+                                <option key={c} value={c}>{c}</option>
+                            ))}
+                        </select>
                     </div>
                     <div className="relative">
                         <button

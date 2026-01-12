@@ -70,6 +70,13 @@ const AdminLayout = () => {
             ]
         },
         {
+            label: 'Database',
+            icon: <Settings size={20} />,
+            children: [
+                { path: '/admin/master-data', label: 'Master Data', icon: <ClipboardCheck size={18} /> },
+            ]
+        },
+        {
             path: '/admin/reports',
             label: 'Laporan',
             icon: <FileBarChart size={20} />

@@ -111,11 +111,6 @@ const MemberDetailModal = ({ member, onClose }) => {
                     >
                         Tutup
                     </button>
-                    {member.status === 'pending' && (
-                        <button className="px-6 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 shadow-sm transition-colors">
-                            Verifikasi Sekarang
-                        </button>
-                    )}
                 </div>
             </div>
         </div>
@@ -127,8 +122,24 @@ const MemberList = () => {
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [filterCompany, setFilterCompany] = useState('ALL');
+    const [companies, setCompanies] = useState([]);
     const [selectedMember, setSelectedMember] = useState(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+    const fetchCompanies = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('master_data')
+                .select('value')
+                .eq('category', 'company')
+                .order('value', { ascending: true });
+            if (error) throw error;
+            setCompanies(data?.map(c => c.value) || []);
+        } catch (err) {
+            console.error("Error fetching companies:", err);
+        }
+    };
 
     const fetchMembers = async () => {
         try {
@@ -149,13 +160,20 @@ const MemberList = () => {
 
     useEffect(() => {
         fetchMembers();
+        fetchCompanies();
     }, []);
 
-    const filteredMembers = members.filter(m =>
-        m.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        m.no_npp?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        m.nik?.includes(searchTerm)
-    );
+
+
+    const filteredMembers = members.filter(m => {
+        const matchesSearch = m.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            m.no_npp?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            m.nik?.includes(searchTerm);
+
+        const matchesCompany = filterCompany === 'ALL' || m.company === filterCompany;
+
+        return matchesSearch && matchesCompany;
+    });
 
     const handleRowClick = (member) => {
         setSelectedMember(member);
@@ -187,6 +205,21 @@ const MemberList = () => {
                         />
                     </div>
 
+                    <div className="flex items-center gap-2">
+                        <div className="relative">
+                            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                            <select
+                                value={filterCompany}
+                                onChange={(e) => setFilterCompany(e.target.value)}
+                                className="pl-9 pr-10 py-2 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-[11px] font-black uppercase tracking-tight italic appearance-none"
+                            >
+                                <option value="ALL">SEMUA PERUSAHAAN</option>
+                                {companies.map(c => (
+                                    <option key={c} value={c}>{c}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
 

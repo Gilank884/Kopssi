@@ -17,9 +17,26 @@ const MonitorPinjaman = () => {
     });
     const [activeTab, setActiveTab] = useState('LOANS'); // 'LOANS' or 'INSTALLMENTS'
     const [updatingId, setUpdatingId] = useState(null);
+    const [filterCompany, setFilterCompany] = useState('ALL');
+    const [companies, setCompanies] = useState([]);
+
+    const fetchCompanies = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('master_data')
+                .select('value')
+                .eq('category', 'company')
+                .order('value', { ascending: true });
+            if (error) throw error;
+            setCompanies(data?.map(c => c.value) || []);
+        } catch (err) {
+            console.error("Error fetching companies:", err);
+        }
+    };
 
     useEffect(() => {
         fetchData();
+        fetchCompanies();
     }, [startDate, endDate]);
 
     const fetchData = async () => {
@@ -128,17 +145,21 @@ const MonitorPinjaman = () => {
         }
     };
 
-    const filteredLoans = loans.filter(loan =>
-        loan.personal_data?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        loan.personal_data?.nik?.includes(searchTerm) ||
-        loan.no_pinjaman?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredLoans = loans.filter(loan => {
+        const matchesSearch = loan.personal_data?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            loan.personal_data?.nik?.includes(searchTerm) ||
+            loan.no_pinjaman?.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesCompany = filterCompany === 'ALL' || loan.personal_data?.company === filterCompany;
+        return matchesSearch && matchesCompany;
+    });
 
-    const filteredInstallments = installments.filter(inst =>
-        inst.pinjaman?.personal_data?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        inst.pinjaman?.personal_data?.nik?.includes(searchTerm) ||
-        inst.pinjaman?.no_pinjaman?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredInstallments = installments.filter(inst => {
+        const matchesSearch = inst.pinjaman?.personal_data?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            inst.pinjaman?.personal_data?.nik?.includes(searchTerm) ||
+            inst.pinjaman?.no_pinjaman?.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesCompany = filterCompany === 'ALL' || inst.pinjaman?.personal_data?.company === filterCompany;
+        return matchesSearch && matchesCompany;
+    });
 
     const formatCurrency = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
 
@@ -175,6 +196,19 @@ const MonitorPinjaman = () => {
                             onChange={(e) => setEndDate(e.target.value)}
                             className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white shadow-sm font-bold"
                         />
+                    </div>
+                    <div className="relative">
+                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                        <select
+                            value={filterCompany}
+                            onChange={(e) => setFilterCompany(e.target.value)}
+                            className="pl-9 pr-8 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white shadow-sm font-bold uppercase tracking-tight italic appearance-none"
+                        >
+                            <option value="ALL">SEMUA PT</option>
+                            {companies.map(c => (
+                                <option key={c} value={c}>{c}</option>
+                            ))}
+                        </select>
                     </div>
                     <button
                         onClick={handleExportExcel}

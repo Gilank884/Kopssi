@@ -13,6 +13,7 @@ const MembershipCheckModal = ({ isOpen, onClose }) => {
     const [error, setError] = useState('');
     const [signature, setSignature] = useState(null);
     const [photoFile, setPhotoFile] = useState(null);
+    const [newPassword, setNewPassword] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [success, setSuccess] = useState(false);
 
@@ -47,6 +48,7 @@ const MembershipCheckModal = ({ isOpen, onClose }) => {
         setError('');
         setSignature(null);
         setPhotoFile(null);
+        setNewPassword('');
         setSuccess(false);
     };
 
@@ -198,15 +200,30 @@ const MembershipCheckModal = ({ isOpen, onClose }) => {
             return;
         }
 
+        if (!newPassword || newPassword.length < 6) {
+            alert('Password baru wajib diisi dan minimal 6 karakter');
+            return;
+        }
+
         setSubmitting(true);
         try {
-            // 1. Upload signature
+            // 1. Update Password in users table
+            if (member.user_id) {
+                const { error: passwordError } = await supabase
+                    .from('users')
+                    .update({ password: newPassword })
+                    .eq('id', member.user_id);
+
+                if (passwordError) throw passwordError;
+            }
+
+            // 2. Upload signature
             const signatureUrl = await uploadFile(signature, 'signatures', `sig_${member.nik || member.phone}`);
 
-            // 2. Upload photo
+            // 3. Upload photo
             const photoUrl = await uploadFile(photoFile, 'photos', `photo_${member.nik || member.phone}`);
 
-            // 3. Update database
+            // 4. Update database personal_data
             const { error } = await supabase
                 .from('personal_data')
                 .update({
@@ -222,7 +239,7 @@ const MembershipCheckModal = ({ isOpen, onClose }) => {
                 onClose();
             }, 3000);
         } catch (err) {
-            console.error('Error updating signature:', err);
+            console.error('Error updating verification data:', err);
             alert('Gagal mengirim verifikasi: ' + err.message);
         } finally {
             setSubmitting(false);
@@ -367,44 +384,62 @@ const MembershipCheckModal = ({ isOpen, onClose }) => {
                                         </div>
                                     </div>
 
-                                    {/* Photo Upload */}
-                                    <div className="space-y-3">
-                                        <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest italic flex items-center gap-2">
-                                            <User size={14} className="text-blue-500" /> Pas Foto 3x4 *
-                                        </p>
-                                        <div className="relative group">
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={(e) => setPhotoFile(e.target.files[0])}
-                                                className="hidden"
-                                                id="photo-upload"
-                                            />
-                                            <label
-                                                htmlFor="photo-upload"
-                                                className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-200 rounded-3xl bg-gray-50/50 hover:bg-white hover:border-blue-400 hover:shadow-xl hover:shadow-blue-50 cursor-pointer transition-all duration-300 overflow-hidden relative"
-                                            >
-                                                {photoFile ? (
-                                                    <div className="relative w-full h-full group">
-                                                        <img
-                                                            src={URL.createObjectURL(photoFile)}
-                                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                                            alt="Preview"
-                                                        />
-                                                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                            <p className="text-white font-black text-[10px] uppercase tracking-widest italic">Klik untuk ganti</p>
+                                    {/* Pas Foto & Password Step */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-3">
+                                            <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest italic flex items-center gap-2">
+                                                <User size={14} className="text-blue-500" /> Pas Foto 3x4 *
+                                            </p>
+                                            <div className="relative group">
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={(e) => setPhotoFile(e.target.files[0])}
+                                                    className="hidden"
+                                                    id="photo-upload"
+                                                />
+                                                <label
+                                                    htmlFor="photo-upload"
+                                                    className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-200 rounded-3xl bg-gray-50/50 hover:bg-white hover:border-blue-400 hover:shadow-xl hover:shadow-blue-50 cursor-pointer transition-all duration-300 overflow-hidden relative"
+                                                >
+                                                    {photoFile ? (
+                                                        <div className="relative w-full h-full group">
+                                                            <img
+                                                                src={URL.createObjectURL(photoFile)}
+                                                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                                                alt="Preview"
+                                                            />
+                                                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                                <p className="text-white font-black text-[10px] uppercase tracking-widest italic">Klik untuk ganti</p>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex flex-col items-center transform transition-transform duration-300 group-hover:-translate-y-1">
-                                                        <div className="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-3 text-gray-400 group-hover:text-blue-500 group-hover:shadow-blue-100 transition-all border border-gray-100 group-hover:border-blue-100">
-                                                            <Briefcase size={24} />
+                                                    ) : (
+                                                        <div className="flex flex-col items-center transform transition-transform duration-300 group-hover:-translate-y-1">
+                                                            <div className="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-3 text-gray-400 group-hover:text-blue-500 group-hover:shadow-blue-100 transition-all border border-gray-100 group-hover:border-blue-100">
+                                                                <User size={24} />
+                                                            </div>
+                                                            <p className="text-[10px] font-bold text-gray-500 group-hover:text-blue-700 transition-colors">Upload Pas Foto</p>
+                                                            <p className="text-[8px] font-medium text-gray-300 uppercase tracking-tight mt-1">Format: JPG, PNG</p>
                                                         </div>
-                                                        <p className="text-xs font-bold text-gray-500 group-hover:text-blue-700 transition-colors">Klik untuk upload Pas Foto</p>
-                                                        <p className="text-[9px] font-medium text-gray-300 uppercase tracking-tight mt-1">Format: JPG, PNG (3x4)</p>
-                                                    </div>
-                                                )}
-                                            </label>
+                                                    )}
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-3">
+                                            <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest italic flex items-center gap-2">
+                                                <Edit3 size={14} className="text-blue-500" /> Atur Password Baru *
+                                            </p>
+                                            <div className="p-6 bg-blue-50 border border-blue-100 rounded-3xl h-40 flex flex-col justify-center">
+                                                <input
+                                                    type="password"
+                                                    value={newPassword}
+                                                    onChange={(e) => setNewPassword(e.target.value)}
+                                                    placeholder="Minimal 6 karakter"
+                                                    className="w-full px-4 py-3 bg-white border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-bold italic"
+                                                />
+                                                <p className="text-[9px] text-blue-400 font-bold mt-3 italic">* Password ini akan digunakan untuk login setelah akun aktif.</p>
+                                            </div>
                                         </div>
                                     </div>
 

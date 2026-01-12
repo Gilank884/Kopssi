@@ -9,9 +9,26 @@ const PencairanPinjaman = () => {
     const [installments, setInstallments] = useState([]);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [filterCompany, setFilterCompany] = useState('ALL');
+    const [companies, setCompanies] = useState([]);
+
+    const fetchCompanies = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('master_data')
+                .select('value')
+                .eq('category', 'company')
+                .order('value', { ascending: true });
+            if (error) throw error;
+            setCompanies(data?.map(c => c.value) || []);
+        } catch (err) {
+            console.error("Error fetching companies:", err);
+        }
+    };
 
     useEffect(() => {
         fetchLoans();
+        fetchCompanies();
     }, []);
 
     const fetchLoans = async () => {
@@ -90,10 +107,14 @@ const PencairanPinjaman = () => {
         }
     };
 
-    const filteredLoans = loans.filter(loan =>
-        loan.personal_data?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        loan.no_pinjaman?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredLoans = loans.filter(loan => {
+        const matchesSearch = loan.personal_data?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            loan.no_pinjaman?.toLowerCase().includes(searchTerm.toLowerCase());
+
+        const matchesCompany = filterCompany === 'ALL' || loan.personal_data?.company === filterCompany;
+
+        return matchesSearch && matchesCompany;
+    });
 
     const formatDate = (dateString) => {
         if (!dateString) return '-';
@@ -112,15 +133,29 @@ const PencairanPinjaman = () => {
                     <h2 className="text-2xl font-bold text-gray-800 text-left">Pencairan Pinjaman</h2>
                     <p className="text-sm text-gray-500 mt-1 text-left">Tahap 2: Proses pencairan dana ke anggota</p>
                 </div>
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                    <input
-                        type="text"
-                        placeholder="Cari nama peminjam..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-64 shadow-sm"
-                    />
+                <div className="flex gap-2">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                        <input
+                            type="text"
+                            placeholder="Cari nama peminjam..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-64 shadow-sm"
+                        />
+                    </div>
+                    <div className="relative">
+                        <select
+                            value={filterCompany}
+                            onChange={(e) => setFilterCompany(e.target.value)}
+                            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white font-bold uppercase tracking-tight italic"
+                        >
+                            <option value="ALL">SEMUA PT</option>
+                            {companies.map(c => (
+                                <option key={c} value={c}>{c}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
             </div>
 
