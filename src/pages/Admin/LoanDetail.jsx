@@ -26,6 +26,7 @@ const LoanDetail = () => {
     const [installments, setInstallments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         if (id) {
@@ -36,27 +37,41 @@ const LoanDetail = () => {
     const fetchLoanDetail = async () => {
         try {
             setLoading(true);
+
+            // Ambil data pinjaman + orangnya
             const { data, error } = await supabase
                 .from('pinjaman')
                 .select(`
-                    *,
-                    personal_data:personal_data_id (*)
-                `)
+                *,
+                personal_data:personal_data_id (*)
+            `)
                 .eq('id', id)
                 .single();
 
             if (error) throw error;
             setLoan(data);
 
-            // Fetch installments
+            // ================================
+            // REVISI: ambil angsuran berdasarkan ORANG, bukan cuma 1 pinjaman
+            // ================================
+            const personId = data.personal_data_id;
+
             const { data: instData, error: instError } = await supabase
                 .from('angsuran')
-                .select('*')
-                .eq('pinjaman_id', id)
-                .order('bulan_ke', { ascending: true });
+                .select(`
+                *,
+                pinjaman:pinjaman_id (
+                    id,
+                    no_pinjaman,
+                    personal_data_id
+                )
+            `)
+                .eq('pinjaman.personal_data_id', personId)
+                .order('tanggal_bayar', { ascending: true });
 
             if (instError) throw instError;
             setInstallments(instData || []);
+
         } catch (error) {
             console.error('Error fetching loan detail:', error);
             alert('Gagal memuat detail pinjaman');
@@ -99,6 +114,71 @@ const LoanDetail = () => {
             alert('Gagal mengupload dokumen: ' + error.message);
         } finally {
             setUploading(false);
+        }
+    };
+
+    const handleCairkan = async () => {
+        if (!loan) return;
+
+        const confirmApprove = window.confirm(`Setujui pencairan pinjaman sebesar Rp ${parseFloat(loan.jumlah_pinjaman).toLocaleString('id-ID')} untuk ${loan.personal_data?.full_name}?`);
+
+        if (!confirmApprove) return;
+
+        try {
+            setSubmitting(true);
+            const { error: updateError } = await supabase
+                .from('pinjaman')
+                .update({
+                    status: 'DICAIRKAN',
+                    disbursed_at: new Date().toISOString()
+                })
+                .eq('id', loan.id);
+
+            if (updateError) throw updateError;
+
+            // Generate Installments after disbursement
+            const principal = parseFloat(loan.jumlah_pinjaman);
+            const tenor = loan.tenor_bulan;
+            let totalBunga = 0;
+
+            if (loan.tipe_bunga === 'PERSENAN') {
+                totalBunga = principal * (parseFloat(loan.nilai_bunga) / 100) * (tenor / 12);
+            } else if (loan.tipe_bunga === 'NOMINAL') {
+                totalBunga = parseFloat(loan.nilai_bunga);
+            }
+
+            const totalBayar = principal + totalBunga;
+            const monthlyAmount = Math.ceil(totalBayar / tenor);
+
+            const installmentsToCreate = [];
+            const today = new Date();
+
+            for (let i = 1; i <= tenor; i++) {
+                const dueDate = new Date(today);
+                dueDate.setMonth(today.getMonth() + i);
+
+                installmentsToCreate.push({
+                    pinjaman_id: loan.id,
+                    bulan_ke: i,
+                    amount: monthlyAmount,
+                    tanggal_bayar: dueDate.toISOString(),
+                    status: 'UNPAID'
+                });
+            }
+
+            const { error: angsuranError } = await supabase
+                .from('angsuran')
+                .insert(installmentsToCreate);
+
+            if (angsuranError) throw angsuranError;
+
+            alert('Pinjaman berhasil DICAIRKAN! Dana telah dilepaskan ke anggota.');
+            fetchLoanDetail();
+        } catch (err) {
+            console.error('Error updating status:', err);
+            alert('Gagal mencairkan pinjaman: ' + err.message);
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -145,8 +225,8 @@ const LoanDetail = () => {
                     </div>
                 </div>
                 <div className={`px-4 py-2 rounded-xl font-black text-xs uppercase tracking-widest italic border ${loan.status === 'DICAIRKAN' ? 'bg-emerald-50 text-emerald-700 border-emerald-100 shadow-sm shadow-emerald-50' :
-                        loan.status === 'DISETUJUI' ? 'bg-blue-50 text-blue-700 border-blue-100 shadow-sm shadow-blue-50' :
-                            'bg-amber-50 text-amber-700 border-amber-100 shadow-sm shadow-amber-50'
+                    loan.status === 'DISETUJUI' ? 'bg-blue-50 text-blue-700 border-blue-100 shadow-sm shadow-blue-50' :
+                        'bg-amber-50 text-amber-700 border-amber-100 shadow-sm shadow-amber-50'
                     }`}>
                     Status: {loan.status}
                 </div>
@@ -265,6 +345,30 @@ const LoanDetail = () => {
 
                 {/* Sidebar Areas */}
                 <div className="space-y-6">
+                    {/* Action Card - NEW: Cairkan Sekarang */}
+                    {loan.status === 'DISETUJUI' && (
+                        <div className="bg-white rounded-2xl border border-gray-100 shadow-lg p-6 text-left space-y-4">
+                            <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest border-b pb-3 italic">Panel Aksi</h3>
+                            <button
+                                onClick={handleCairkan}
+                                disabled={submitting}
+                                className={`w-full py-4 rounded-xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg ${submitting
+                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
+                                    : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-100 active:translate-y-0.5'
+                                    }`}
+                            >
+                                {submitting ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle size={20} />}
+                                {submitting ? 'MEMPROSES...' : 'Cairkan Sekarang'}
+                            </button>
+                            <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl flex gap-3">
+                                <AlertCircle size={20} className="text-blue-500 shrink-0" />
+                                <p className="text-[10px] font-black text-blue-700 leading-relaxed uppercase italic">
+                                    Pastikan dokumen SPK telah diverifikasi sebelum melakukan pencairan dana.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
                     {/* SPK Management Card */}
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden text-left">
                         <div className="bg-gray-800 px-6 py-4 flex items-center gap-3">

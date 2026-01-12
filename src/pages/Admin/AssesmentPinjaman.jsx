@@ -306,11 +306,19 @@ const AssesmentPinjaman = () => {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4 bg-gray-50/50 p-3 rounded-xl border border-gray-100/50">
                                     <div>
-                                        <label className="text-[8px] font-black text-gray-400 uppercase tracking-widest block">Nominal</label>
+                                        <label className="text-[8px] font-black text-gray-400 uppercase tracking-widest block">Pengajuan</label>
+                                        <span className="text-[11px] font-bold text-gray-500 italic">
+                                            Rp {parseFloat(loan.jumlah_pengajuan || loan.jumlah_pinjaman).toLocaleString('id-ID')}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <label className="text-[8px] font-black text-emerald-600 uppercase tracking-widest block">Disetujui</label>
                                         <span className="text-sm font-black text-emerald-700 italic">
                                             Rp {parseFloat(loan.jumlah_pinjaman).toLocaleString('id-ID')}
                                         </span>
                                     </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4 px-3">
                                     <div>
                                         <label className="text-[8px] font-black text-gray-400 uppercase tracking-widest block">Tenor</label>
                                         <span className="text-xs font-black text-gray-700 italic">{loan.tenor_bulan} Bln</span>

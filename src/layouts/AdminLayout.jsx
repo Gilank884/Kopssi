@@ -15,7 +15,8 @@ import {
     BanknoteArrowUp,
     ArrowLeftRight,
     Upload,
-    BadgeCent
+    BadgeCent,
+    Send
 } from 'lucide-react';
 import LogoutModal from '../components/LogoutModal';
 
@@ -58,6 +59,7 @@ const AdminLayout = () => {
                 { path: '/admin/monitor-angsuran', label: 'Monitoring Angsuran', icon: <ClipboardCheck size={18} /> },
                 { path: '/admin/assesment-pinjaman', label: 'Penyetujuan Pinjaman', icon: <ClipboardCheck size={18} /> },
                 { path: '/admin/pencairan-pinjaman', label: 'Pencairan Pinjaman', icon: <BanknoteArrowUp size={18} /> },
+                { path: '/admin/disbursement-delivery', label: 'Pencairan (Delivery)', icon: <Send size={18} /> },
                 { path: '/admin/transaksi', label: 'Transaksi', icon: <ArrowLeftRight size={18} /> },
             ]
         },

@@ -6,12 +6,13 @@ export const numberToWords = (num) => {
     const units = ['', 'Satu', 'Dua', 'Tiga', 'Empat', 'Lima', 'Enam', 'Tujuh', 'Delapan', 'Sembilan', 'Sepuluh', 'Sebelas'];
     if (num < 12) return units[num];
     if (num < 20) return numberToWords(num - 10) + ' Belas';
-    if (num < 100) return numberToWords(Math.floor(num / 10)) + ' Puluh ' + numberToWords(num % 10);
+    if (num < 100) return (numberToWords(Math.floor(num / 10)) + ' Puluh ' + numberToWords(num % 10)).trim();
     if (num < 200) return 'Seratus ' + numberToWords(num - 100);
     if (num < 1000) return numberToWords(Math.floor(num / 100)) + ' Ratus ' + numberToWords(num % 100);
     if (num < 2000) return 'Seribu ' + numberToWords(num - 1000);
     if (num < 1000000) return numberToWords(Math.floor(num / 1000)) + ' Ribu ' + numberToWords(num % 1000);
-    if (num < 1000000000) return numberToWords(Math.floor(num / 1000000)) + ' Juta ' + numberToWords(num % 1000000);
+    if (num < 1000000000) return (numberToWords(Math.floor(num / 1000000)) + ' Juta ' + numberToWords(num % 1000000)).trim();
+    if (num < 1000000000000) return (numberToWords(Math.floor(num / 1000000000)) + ' Miliar ' + numberToWords(num % 1000000000)).trim();
     return num.toString();
 };
 
@@ -233,19 +234,21 @@ export const generateLoanAnalysisPDF = async (loan, isDownload = false, analystN
         }
     }
 
-    const totalBayar = principal + totalBunga;
-    const cicilan = Math.ceil(totalBayar / tenor);
+    const roundedBunga = Math.round(totalBunga);
+    const totalKewajiban = principal + roundedBunga;
+    const cicilan = Math.ceil(totalKewajiban / tenor);
 
     autoTable(doc, {
         startY: loanY + 2,
         margin: { left: margin, right: margin },
         head: [['Keterangan Analisa', 'Detail Nilai']],
         body: [
-            ['Permohonan Pinjaman', `Rp ${principal.toLocaleString('id-ID')} (${numberToWords(principal).toUpperCase()} RUPIAH)`],
+            ['Permohonan Pinjaman (Member)', `Rp ${parseFloat(loan.jumlah_pengajuan || loan.jumlah_pinjaman).toLocaleString('id-ID')}`],
+            ['Nominal Pinjaman (Analisa)', `Rp ${principal.toLocaleString('id-ID')} (${numberToWords(principal).toUpperCase()} RUPIAH)`],
             ['Jangka Waktu (Tenor)', `${tenor} Bulan`],
             ['Suku Bunga / Margin', labelBunga],
-            ['Total Bunga / Margin', `Rp ${Math.round(totalBunga).toLocaleString('id-ID')}`],
-            ['Total Kewajiban', `Rp ${Math.round(totalBayar).toLocaleString('id-ID')}`],
+            ['Total Bunga / Margin', `Rp ${roundedBunga.toLocaleString('id-ID')}`],
+            ['Total Kewajiban', `Rp ${totalKewajiban.toLocaleString('id-ID')} (${numberToWords(totalKewajiban).toUpperCase()} RUPIAH)`],
             ['Angsuran Per Bulan', `Rp ${cicilan.toLocaleString('id-ID')}`],
             ['Jenis Pinjaman', (loan.jenis_pinjaman || 'BIASA').toUpperCase()],
             ['Keperluan', loan.keperluan || '-']

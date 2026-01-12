@@ -28,6 +28,7 @@ import MonitorAngsuran from './pages/Admin/MonitorAngsuran';
 import AddMember from './pages/Admin/AddMember';
 import MasterData from './pages/Admin/MasterData';
 import LoanDetail from './pages/Admin/LoanDetail';
+import DisbursementDelivery from './pages/Admin/DisbursementDelivery';
 
 function App() {
   return (
@@ -56,6 +57,7 @@ function App() {
           <Route path="assesment-pinjaman/:id" element={<AssesmentDetail />} />
           <Route path="pencairan-pinjaman" element={<PencairanPinjaman />} />
           <Route path="pencairan-pinjaman/:id" element={<PencairanDetail />} />
+          <Route path="disbursement-delivery" element={<DisbursementDelivery />} />
           <Route path="members" element={<MemberList />} />
           <Route path="add-member" element={<AddMember />} />
           <Route path="monitor-simpanan" element={<MonitorSimpanan />} />

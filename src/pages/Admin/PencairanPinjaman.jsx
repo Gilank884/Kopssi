@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
-import { Search, AlertCircle } from 'lucide-react';
+import { Search, AlertCircle, ChevronRight } from 'lucide-react';
 
 const PencairanPinjaman = () => {
     const navigate = useNavigate();

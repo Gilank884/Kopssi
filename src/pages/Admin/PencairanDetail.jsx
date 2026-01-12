@@ -20,7 +20,6 @@ const PencairanDetail = () => {
     const [loan, setLoan] = useState(null);
     const [installments, setInstallments] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState(null);
 
     useEffect(() => {
@@ -68,31 +67,6 @@ const PencairanDetail = () => {
         }
     };
 
-    const handleCairkan = async () => {
-        if (!loan) return;
-
-        const confirmApprove = window.confirm(`Setujui pencairan pinjaman sebesar Rp ${parseFloat(loan.jumlah_pinjaman).toLocaleString('id-ID')} untuk ${loan.personal_data?.full_name}?`);
-
-        if (!confirmApprove) return;
-
-        try {
-            setSubmitting(true);
-            const { error } = await supabase
-                .from('pinjaman')
-                .update({ status: 'DICAIRKAN' })
-                .eq('id', loan.id);
-
-            if (error) throw error;
-
-            alert('Pinjaman berhasil DICAIRKAN! Dana telah dilepaskan ke anggota.');
-            navigate('/admin/pencairan-pinjaman');
-        } catch (err) {
-            console.error('Error updating status:', err);
-            alert('Gagal mencairkan pinjaman: ' + err.message);
-        } finally {
-            setSubmitting(false);
-        }
-    };
 
     const formatDate = (dateString) => {
         if (!dateString) return '-';
@@ -281,15 +255,11 @@ const PencairanDetail = () => {
 
                         <div className="space-y-3">
                             <button
-                                onClick={handleCairkan}
-                                disabled={submitting || loan.status === 'DICAIRKAN'}
-                                className={`w-full py-4 rounded-xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg ${submitting || loan.status === 'DICAIRKAN'
-                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
-                                        : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-100 active:translate-y-0.5'
-                                    }`}
+                                onClick={() => navigate(`/admin/loan-detail/${loan.id}`)}
+                                className="w-full py-4 bg-emerald-600 text-white rounded-xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100 active:translate-y-0.5"
                             >
-                                {submitting ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle size={20} />}
-                                {loan.status === 'DICAIRKAN' ? 'Telah Dicairkan' : 'Cairkan Sekarang'}
+                                <Eye size={18} />
+                                Kelola Pencairan
                             </button>
 
                             <button

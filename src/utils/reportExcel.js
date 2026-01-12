@@ -135,3 +135,22 @@ export const exportMonitoringAngsuran = (data, range) => {
 
     XLSX.writeFile(wb, `Monitoring_Angsuran_${range.startDate}_${range.endDate}.xlsx`);
 };
+
+export const exportDisbursementDelivery = (data) => {
+    const headers = [['NIK', 'Nama', 'No Pinjaman', 'Nominal', 'Tgl Cair (Sistem)', 'Status Kirim', 'Tgl Kirim']];
+    const rows = data.map(loan => [
+        loan.personal_data?.nik || '-',
+        loan.personal_data?.full_name || '-',
+        loan.no_pinjaman,
+        loan.jumlah_pinjaman,
+        loan.disbursed_at ? new Date(loan.disbursed_at).toLocaleDateString('id-ID') : '-',
+        loan.delivery_status === 'SENT' ? 'TERKIRIM' : 'BELUM TERKIRIM',
+        loan.delivery_date ? new Date(loan.delivery_date).toLocaleDateString('id-ID') : '-'
+    ]);
+
+    const ws = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Pencairan-Delivery');
+
+    XLSX.writeFile(wb, `Pencairan_Delivery_${new Date().toISOString().slice(0, 10)}.xlsx`);
+};

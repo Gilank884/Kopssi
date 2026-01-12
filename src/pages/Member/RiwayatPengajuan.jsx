@@ -52,13 +52,16 @@ const RiwayatPengajuan = () => {
 
     useLayoutEffect(() => {
         const ctx = gsap.context(() => {
-            gsap.from('.anim-up', {
-                y: 20,
-                opacity: 0,
-                duration: 0.6,
-                stagger: 0.1,
-                ease: 'power2.out',
-            });
+            const targets = gsap.utils.toArray('.anim-up');
+            if (targets.length > 0) {
+                gsap.from(targets, {
+                    y: 20,
+                    opacity: 0,
+                    duration: 0.6,
+                    stagger: 0.1,
+                    ease: 'power2.out',
+                });
+            }
         }, containerRef);
         return () => ctx.revert();
     }, [loading]);

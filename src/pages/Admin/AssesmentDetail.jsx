@@ -181,28 +181,6 @@ const AssesmentDetail = () => {
 
             if (updateError) throw updateError;
 
-            const installments = [];
-            const today = new Date();
-
-            for (let i = 1; i <= tenor; i++) {
-                const dueDate = new Date(today);
-                dueDate.setMonth(today.getMonth() + i);
-
-                installments.push({
-                    pinjaman_id: loan.id,
-                    bulan_ke: i,
-                    amount: monthlyAmount,
-                    tanggal_bayar: dueDate.toISOString(),
-                    status: 'UNPAID'
-                });
-            }
-
-            const { error: angsuranError } = await supabase
-                .from('angsuran')
-                .insert(installments);
-
-            if (angsuranError) throw angsuranError;
-
             alert('Pengajuan pinjaman telah DISETUJUI!');
             navigate('/admin/assesment-pinjaman');
         } catch (error) {
@@ -262,7 +240,7 @@ const AssesmentDetail = () => {
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="text-left group">
-                                            <label className="text-[10px] font-black text-gray-400 block uppercase mb-1 italic">Nominal Pengajuan (Fixed)</label>
+                                            <label className="text-[10px] font-black text-gray-400 block uppercase mb-1 italic">Permohonan Pinjaman (Fixed)</label>
                                             <div className="relative">
                                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-black italic text-xl">Rp</span>
                                                 <input
