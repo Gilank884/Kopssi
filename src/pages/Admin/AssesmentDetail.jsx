@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import { X, User, Wallet, FileText, Check, Eye, ChevronLeft, AlertCircle } from 'lucide-react';
 import { generateLoanAnalysisPDF } from '../../utils/loanAnalysisPdf';
@@ -9,6 +9,7 @@ const AssesmentDetail = () => {
     const navigate = useNavigate();
 
     const [loan, setLoan] = useState(null);
+    const [runningLoans, setRunningLoans] = useState([]);
     const [loading, setLoading] = useState(true);
     const [analystName, setAnalystName] = useState('Admin');
     const [editingAmount, setEditingAmount] = useState('');
@@ -62,12 +63,17 @@ const AssesmentDetail = () => {
             if (error) throw error;
             if (data) {
                 setLoan(data);
-                setEditingAmount(data.jumlah_pinjaman.toString());
+                // format with dots
+                const formatted = data.jumlah_pinjaman.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                setEditingAmount(formatted);
                 if (data.tipe_bunga && data.tipe_bunga !== 'NONE') {
                     setUseInterest(true);
                     setInterestType(data.tipe_bunga);
                     setInterestValue(data.nilai_bunga.toString());
                 }
+
+                // Fetch running loans for this member
+                fetchRunningLoans(data.personal_data_id, data.id);
             }
         } catch (error) {
             console.error('Error fetching loan detail:', error);
@@ -78,12 +84,28 @@ const AssesmentDetail = () => {
         }
     };
 
+    const fetchRunningLoans = async (memberId, currentLoanId) => {
+        try {
+            const { data, error } = await supabase
+                .from('pinjaman')
+                .select('*')
+                .eq('personal_data_id', memberId)
+                .in('status', ['DISETUJUI', 'DICAIRKAN'])
+                .neq('id', currentLoanId);
+
+            if (data) setRunningLoans(data);
+        } catch (error) {
+            console.error('Error fetching running loans:', error);
+        }
+    };
+
     const handleSaveDraft = async () => {
         try {
+            const rawAmount = parseFloat(editingAmount.replace(/\./g, ''));
             const { error } = await supabase
                 .from('pinjaman')
                 .update({
-                    jumlah_pinjaman: parseFloat(editingAmount),
+                    jumlah_pinjaman: rawAmount,
                     tipe_bunga: useInterest ? interestType : 'NONE',
                     nilai_bunga: useInterest ? parseFloat(interestValue) : 0
                 })
@@ -100,7 +122,9 @@ const AssesmentDetail = () => {
     const handleApprove = async () => {
         if (!loan) return;
 
-        const finalAmount = parseFloat(editingAmount);
+        const rawAmountString = typeof editingAmount === 'string' ? editingAmount : String(editingAmount);
+        const finalAmount = parseFloat(rawAmountString.replace(/\./g, ''));
+
         if (isNaN(finalAmount) || finalAmount <= 0) {
             alert('Nominal pinjaman tidak valid');
             return;
@@ -236,16 +260,34 @@ const AssesmentDetail = () => {
 
                             <div className="p-6 space-y-6">
                                 <div className="space-y-4">
-                                    <div className="text-left group">
-                                        <label className="text-[10px] font-black text-emerald-400 block uppercase mb-1 italic">Plafon Pinjaman (Dapat Diubah)</label>
-                                        <div className="relative">
-                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 font-black italic text-xl">Rp</span>
-                                            <input
-                                                type="number"
-                                                value={editingAmount}
-                                                onChange={(e) => setEditingAmount(e.target.value)}
-                                                className="w-full pl-12 pr-6 py-4 bg-emerald-50 border-2 border-emerald-100 rounded-2xl text-2xl font-black text-emerald-800 italic focus:outline-none focus:border-emerald-500 transition-all shadow-inner"
-                                            />
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="text-left group">
+                                            <label className="text-[10px] font-black text-gray-400 block uppercase mb-1 italic">Nominal Pengajuan (Fixed)</label>
+                                            <div className="relative">
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-black italic text-xl">Rp</span>
+                                                <input
+                                                    type="text"
+                                                    value={parseFloat(loan.jumlah_pengajuan || loan.jumlah_pinjaman).toLocaleString('id-ID')}
+                                                    className="w-full pl-12 pr-6 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl text-2xl font-black text-gray-400 italic focus:outline-none transition-all shadow-inner"
+                                                    disabled
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="text-left group">
+                                            <label className="text-[10px] font-black text-emerald-400 block uppercase mb-1 italic">Nominal Disetujui (Dapat Diubah)</label>
+                                            <div className="relative">
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 font-black italic text-xl">Rp</span>
+                                                <input
+                                                    type="text"
+                                                    value={editingAmount}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value.replace(/\D/g, '');
+                                                        const formatted = val.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                                                        setEditingAmount(formatted);
+                                                    }}
+                                                    className="w-full pl-12 pr-6 py-4 bg-emerald-50 border-2 border-emerald-100 rounded-2xl text-2xl font-black text-emerald-800 italic focus:outline-none focus:border-emerald-500 transition-all shadow-inner"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
 
@@ -316,7 +358,7 @@ const AssesmentDetail = () => {
                                                     <div className="bg-white/60 p-4 rounded-xl border border-amber-200">
                                                         <p className="text-[9px] font-black text-gray-400 uppercase italic mb-1">Estimasi Bunga</p>
                                                         {(() => {
-                                                            const principal = parseFloat(editingAmount) || 0;
+                                                            const principal = parseFloat(editingAmount.toString().replace(/\./g, '')) || 0;
                                                             const tenor = loan.tenor_bulan;
                                                             let totalBunga = 0;
                                                             if (interestType === 'PERSENAN') {
@@ -330,7 +372,7 @@ const AssesmentDetail = () => {
                                                     <div className="bg-white/60 p-4 rounded-xl border border-emerald-200">
                                                         <p className="text-[9px] font-black text-gray-400 uppercase italic mb-1">Angsuran / Bulan</p>
                                                         {(() => {
-                                                            const principal = parseFloat(editingAmount) || 0;
+                                                            const principal = parseFloat(editingAmount.toString().replace(/\./g, '')) || 0;
                                                             const tenor = loan.tenor_bulan;
                                                             let totalBunga = 0;
                                                             if (interestType === 'PERSENAN') {
@@ -390,29 +432,45 @@ const AssesmentDetail = () => {
 
                     {/* Sidebar Area */}
                     <div className="space-y-6">
-                        {/* Member Card */}
+                        {/* Running Loans Card */}
                         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                             <div className="bg-gray-800 px-6 py-4 flex items-center gap-3">
-                                <User size={18} className="text-white" />
-                                <h3 className="font-black italic uppercase tracking-widest text-xs text-white">Profil Anggota</h3>
+                                <Wallet size={18} className="text-white" />
+                                <h3 className="font-black italic uppercase tracking-widest text-xs text-white">Pinjaman Berjalan</h3>
                             </div>
-                            <div className="p-6 text-center">
-                                <div className="w-20 h-20 rounded-full bg-emerald-600 flex items-center justify-center text-white text-3xl font-black mx-auto mb-4 border-4 border-emerald-50 shadow-lg">
-                                    {loan.personal_data?.full_name?.charAt(0) || '?'}
-                                </div>
-                                <h4 className="text-lg font-black text-gray-900 leading-tight">{loan.personal_data?.full_name}</h4>
-                                <p className="text-xs font-mono font-bold text-gray-400 mt-1">{loan.personal_data?.nik}</p>
-
-                                <div className="mt-6 pt-6 border-t border-gray-100 space-y-4 text-left">
-                                    <div>
-                                        <label className="text-[9px] font-black text-gray-400 uppercase italic block">Perusahaan / Unit</label>
-                                        <p className="text-xs font-bold text-gray-700 uppercase">{loan.personal_data?.company} / {loan.personal_data?.work_unit}</p>
+                            <div className="p-0">
+                                {runningLoans.length === 0 ? (
+                                    <div className="p-8 text-center">
+                                        <AlertCircle className="mx-auto text-gray-300 mb-2" size={32} />
+                                        <p className="text-xs font-bold text-gray-400 italic">Tidak ada pinjaman berjalan lain</p>
                                     </div>
-                                    <div>
-                                        <label className="text-[9px] font-black text-gray-400 uppercase italic block">No. HP</label>
-                                        <p className="text-xs font-bold text-gray-700">{loan.personal_data?.phone || '-'}</p>
+                                ) : (
+                                    <div className="divide-y divide-gray-100">
+                                        {runningLoans.map((rl) => (
+                                            <Link
+                                                key={rl.id}
+                                                to={`/admin/loan-detail/${rl.id}`}
+                                                className="p-4 hover:bg-emerald-50 transition-colors block border-b border-gray-100 last:border-0"
+                                            >
+                                                <div className="flex justify-between items-start mb-1">
+                                                    <span className="text-[10px] font-black text-emerald-600 uppercase italic bg-emerald-50 px-2 py-0.5 rounded">
+                                                        {rl.status}
+                                                    </span>
+                                                    <span className="text-[10px] font-mono font-bold text-gray-400">{rl.no_pinjaman}</span>
+                                                </div>
+                                                <p className="text-sm font-black text-gray-800 italic">
+                                                    Rp {rl.jumlah_pinjaman.toLocaleString('id-ID')}
+                                                </p>
+                                                <div className="flex justify-between items-center mt-1">
+                                                    <p className="text-[10px] font-bold text-gray-500 uppercase">
+                                                        Tenor: {rl.tenor_bulan} Bulan
+                                                    </p>
+                                                    <ChevronLeft size={12} className="text-emerald-400 rotate-180" />
+                                                </div>
+                                            </Link>
+                                        ))}
                                     </div>
-                                </div>
+                                )}
                             </div>
                         </div>
 

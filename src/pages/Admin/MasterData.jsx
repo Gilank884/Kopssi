@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Loader2, Building2, Briefcase, MapPin, Search } from 'lucide-react';
+import { Plus, Trash2, Loader2, Building2, Briefcase, MapPin, Search, FileText } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 
 const MasterData = () => {
@@ -13,6 +13,7 @@ const MasterData = () => {
         { id: 'company', label: 'Perusahaan/PT', icon: <Building2 size={18} /> },
         { id: 'work_unit', label: 'Unit Kerja', icon: <Briefcase size={18} /> },
         { id: 'lokasi', label: 'Lokasi', icon: <MapPin size={18} /> },
+        { id: 'loan_category', label: 'Kategori Pinjaman', icon: <FileText size={18} /> },
     ];
 
     useEffect(() => {
@@ -120,7 +121,7 @@ const MasterData = () => {
                                     type="text"
                                     value={newValue}
                                     onChange={(e) => setNewValue(e.target.value)}
-                                    placeholder={`Contoh: PT. KOPSSI GLOBAL`}
+                                    placeholder={`Contoh: Unit`}
                                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm font-bold"
                                     required
                                 />

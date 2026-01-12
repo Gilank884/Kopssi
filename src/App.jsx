@@ -8,11 +8,14 @@ import Pinjaman from './pages/Member/Pinjaman';
 import Angsuran from './pages/Member/Angsuran';
 import Profil from './pages/Member/Profil';
 import PengajuanPinjaman from './pages/Member/PengajuanPinjaman';
+import DetailPengajuan from './pages/Member/DetailPengajuan';
+import RiwayatPengajuan from './pages/Member/RiwayatPengajuan';
 import AdminLayout from './layouts/AdminLayout';
 import AdminOverview from './pages/Admin/Dashboard';
 import PengajuanAnggota from './pages/Admin/PengajuanAnggota';
 import AssesmentPinjaman from './pages/Admin/AssesmentPinjaman';
 import PencairanPinjaman from './pages/Admin/PencairanPinjaman';
+import PencairanDetail from './pages/Admin/PencairanDetail';
 import MemberList from './pages/Admin/Members';
 import AdminReports from './pages/Admin/Reports';
 import MonitorSimpanan from './pages/Admin/MonitorSimpanan';
@@ -24,6 +27,7 @@ import MonitorPinjaman from './pages/Admin/MonitorPinjaman';
 import MonitorAngsuran from './pages/Admin/MonitorAngsuran';
 import AddMember from './pages/Admin/AddMember';
 import MasterData from './pages/Admin/MasterData';
+import LoanDetail from './pages/Admin/LoanDetail';
 
 function App() {
   return (
@@ -39,6 +43,8 @@ function App() {
           <Route path="angsuran" element={<Angsuran />} />
 
           <Route path="pengajuan-pinjaman" element={<PengajuanPinjaman />} />
+          <Route path="riwayat-pengajuan" element={<RiwayatPengajuan />} />
+          <Route path="pengajuan-pinjaman/:id" element={<DetailPengajuan />} />
           <Route path="profil" element={<Profil />} />
         </Route>
 
@@ -49,6 +55,7 @@ function App() {
           <Route path="assesment-pinjaman" element={<AssesmentPinjaman />} />
           <Route path="assesment-pinjaman/:id" element={<AssesmentDetail />} />
           <Route path="pencairan-pinjaman" element={<PencairanPinjaman />} />
+          <Route path="pencairan-pinjaman/:id" element={<PencairanDetail />} />
           <Route path="members" element={<MemberList />} />
           <Route path="add-member" element={<AddMember />} />
           <Route path="monitor-simpanan" element={<MonitorSimpanan />} />
@@ -59,6 +66,7 @@ function App() {
           <Route path="upload-simpanan" element={<UploadSimpanan />} />
           <Route path="upload-pinjaman" element={<UploadPinjaman />} />
           <Route path="master-data" element={<MasterData />} />
+          <Route path="loan-detail/:id" element={<LoanDetail />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import { Search, Filter, CheckCircle, Clock, Banknote, User, BadgeCent, CalendarDays, Download } from 'lucide-react';
 
 const MonitorPinjaman = () => {
+    const navigate = useNavigate();
     const [loans, setLoans] = useState([]);
     const [installments, setInstallments] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -249,7 +251,8 @@ const MonitorPinjaman = () => {
                                 <tr className="bg-gray-50/50 border-b border-gray-100 italic font-black text-[10px] uppercase tracking-widest text-gray-400">
                                     <th className="px-6 py-4">Anggota</th>
                                     <th className="px-6 py-4">No Pinjaman</th>
-                                    <th className="px-6 py-4 text-right">Plafon</th>
+                                    <th className="px-6 py-4 text-right">Pengajuan</th>
+                                    <th className="px-6 py-4 text-right">Disetujui</th>
                                     <th className="px-6 py-4 text-center">Tenor</th>
                                     <th className="px-6 py-4">Tanggal Pengajuan</th>
                                     <th className="px-6 py-4 text-center">Status</th>
@@ -272,7 +275,11 @@ const MonitorPinjaman = () => {
                                     </tr>
                                 ) : (
                                     filteredLoans.map((loan) => (
-                                        <tr key={loan.id} className="hover:bg-emerald-50/20 transition-colors group">
+                                        <tr
+                                            key={loan.id}
+                                            onClick={() => navigate(`/admin/loan-detail/${loan.id}`)}
+                                            className="hover:bg-emerald-50 transition-colors group cursor-pointer"
+                                        >
                                             <td className="px-6 py-4">
                                                 <div className="flex flex-col">
                                                     <span className="text-sm font-black text-gray-900 uppercase italic tracking-tight">
@@ -286,6 +293,11 @@ const MonitorPinjaman = () => {
                                             <td className="px-6 py-4">
                                                 <span className="text-[10px] font-black font-mono text-gray-400 uppercase tracking-widest">
                                                     {loan.no_pinjaman}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <span className="text-xs font-bold text-gray-400 font-mono italic">
+                                                    {formatCurrency(loan.jumlah_pengajuan || loan.jumlah_pinjaman)}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 text-right">

@@ -211,7 +211,8 @@ const AssesmentPinjaman = () => {
                         <thead className="bg-emerald-50 border-b border-emerald-100">
                             <tr>
                                 <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic">Peminjam</th>
-                                <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic">Nominal</th>
+                                <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic">Nominal Pengajuan</th>
+                                <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic">Nominal Disetujui</th>
                                 <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic">Tenor</th>
                                 <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic">No. Pinjaman</th>
                                 <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic">Tanggal</th>
@@ -236,6 +237,9 @@ const AssesmentPinjaman = () => {
                                                 <p className="text-[10px] text-gray-500 font-mono tracking-tighter">{loan.personal_data?.nik || '-'}</p>
                                             </div>
                                         </div>
+                                    </td>
+                                    <td className="px-6 py-4 font-bold text-gray-400 text-sm">
+                                        Rp {parseFloat(loan.jumlah_pengajuan || loan.jumlah_pinjaman).toLocaleString('id-ID')}
                                     </td>
                                     <td className="px-6 py-4 font-black text-emerald-700 text-sm">
                                         Rp {parseFloat(loan.jumlah_pinjaman).toLocaleString('id-ID')}

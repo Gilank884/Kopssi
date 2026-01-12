@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { CreditCard, FileText } from 'lucide-react';
+import { CreditCard, FileText, Download, Upload, Loader2, Check } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
+import { generateLoanAgreementPDF } from '../../utils/loanAgreementPdf';
+import { generateLoanAnalysisPDF } from '../../utils/loanAnalysisPdf';
 
 const Pinjaman = () => {
     const [loans, setLoans] = useState([]);
@@ -17,6 +19,7 @@ const Pinjaman = () => {
     });
     const [loading, setLoading] = useState(true);
     const [hasData, setHasData] = useState(false);
+    const [uploading, setUploading] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -72,7 +75,7 @@ const Pinjaman = () => {
                     .from('pinjaman')
                     .select('*')
                     .eq('personal_data_id', personalData.id)
-                    .in('status', ['DISETUJUI', 'DICAIRKAN'])
+                    .eq('status', 'DICAIRKAN')
                     .order('created_at', { ascending: false });
 
                 console.log("Pinjaman: Loans fetch result ->", loans);
@@ -114,7 +117,7 @@ const Pinjaman = () => {
                 let totalBunga = 0;
                 if (activeLoan.tipe_bunga === 'PERSENAN') {
                     // Match AssesmentPinjaman.jsx logic (Annual Flat Rate)
-                    totalBunga = principal * (parseFloat(activeLoan.nilai_bunga) / 100) * (tenor / 12);
+                    totalBunga = principal * (parseFloat(activeLoan.nilai_bunga) / 100) * (tenure / 12);
                 } else if (activeLoan.tipe_bunga === 'NOMINAL') {
                     totalBunga = parseFloat(activeLoan.nilai_bunga);
                 }
@@ -170,6 +173,44 @@ const Pinjaman = () => {
 
     const formatCurrency = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
     const formatDate = (dateString) => new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    const handleUploadSPK = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setUploading(true);
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `spk_${loan.no_pinjaman}_${Date.now()}.${fileExt}`;
+            const filePath = `spk/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('documents')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('documents')
+                .getPublicUrl(filePath);
+
+            const { error: updateError } = await supabase
+                .from('pinjaman')
+                .update({ link_spk_signed: publicUrl })
+                .eq('id', loan.id);
+
+            if (updateError) throw updateError;
+
+            // Refresh loan data
+            setLoan(prev => ({ ...prev, link_spk_signed: publicUrl }));
+            alert('SPK Berhasil diupload! Silakan tunggu verifikasi admin.');
+        } catch (error) {
+            console.error('Error uploading SPK:', error);
+            alert('Gagal mengupload SPK: ' + error.message);
+        } finally {
+            setUploading(false);
+        }
+    };
 
     if (loading) return <div>Loading...</div>;
 
@@ -241,8 +282,8 @@ const Pinjaman = () => {
                     </div>
                     <div className="bg-white/10 backdrop-blur-sm p-4 rounded-xl border border-white/20 min-w-[200px]">
                         <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm">Sisa Tenor</span>
-                            <span className="font-bold">{summary.unpaidMonths} Bulan</span>
+                            <span className="text-sm">Status Pinjaman</span>
+                            <span className="font-bold uppercase tracking-widest text-sm">{loan.status}</span>
                         </div>
                         <div className="w-full bg-blue-900/50 rounded-full h-2 mb-2">
                             <div className="bg-white h-2 rounded-full" style={{ width: `${progressPercent}%` }}></div>
@@ -254,6 +295,62 @@ const Pinjaman = () => {
                     </div>
                 </div>
             </div>
+
+            {/* SPK Section for Approved Loans */}
+            {loan.status === 'DISETUJUI' && (
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 shadow-sm">
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center text-white">
+                            <FileText size={24} />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-black text-amber-900 italic uppercase">Dokumen Perjanjian Pinjaman (SPK)</h3>
+                            <p className="text-xs font-bold text-amber-700 italic">Silakan lengkapi dokumen untuk proses pencairan dana.</p>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="bg-white p-5 rounded-xl border border-amber-100 flex flex-col items-center text-center">
+                            <p className="text-xs font-bold text-gray-500 uppercase mb-4 tracking-widest">Tahap 1: Unduh Dokumen</p>
+                            <button
+                                onClick={() => generateLoanAgreementPDF(loan)}
+                                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2 transition-all"
+                            >
+                                <Download size={18} /> Unduh Draft SPK
+                            </button>
+                            <p className="text-[10px] text-gray-400 mt-2 font-medium">Cetak dan tanda tangani dokumen di atas materai Rp. 10.000</p>
+                        </div>
+
+                        <div className="bg-white p-5 rounded-xl border border-amber-100 flex flex-col items-center text-center">
+                            <p className="text-xs font-bold text-gray-500 uppercase mb-4 tracking-widest">Tahap 2: Upload Scan SPK</p>
+                            {loan.link_spk_signed ? (
+                                <div className="w-full py-3 bg-emerald-100 text-emerald-700 rounded-xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2 border border-emerald-200">
+                                    <Check size={18} /> Sudah Diupload
+                                </div>
+                            ) : (
+                                <div className="w-full relative">
+                                    <input
+                                        type="file"
+                                        accept="image/*,application/pdf"
+                                        onChange={handleUploadSPK}
+                                        className="hidden"
+                                        id="spk-upload"
+                                        disabled={uploading}
+                                    />
+                                    <label
+                                        htmlFor="spk-upload"
+                                        className={`w-full py-3 ${uploading ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer'} rounded-xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-100`}
+                                    >
+                                        {uploading ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />}
+                                        {uploading ? 'Sedang Mengunggah...' : 'Upload Scan SPK'}
+                                    </label>
+                                </div>
+                            )}
+                            <p className="text-[10px] text-gray-400 mt-2 font-medium">Format: PDF atau Foto (JPG/PNG). Pastikan tanda-tangan terlihat jelas.</p>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">

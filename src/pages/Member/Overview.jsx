@@ -133,7 +133,7 @@ const Overview = () => {
                     .from('pinjaman')
                     .select('*')
                     .eq('personal_data_id', personalData.id)
-                    .in('status', ['DISETUJUI', 'DICAIRKAN']);
+                    .eq('status', 'DICAIRKAN');
 
                 if (pinjamanData && pinjamanData.length > 0) {
                     let totalPinjaman = 0;

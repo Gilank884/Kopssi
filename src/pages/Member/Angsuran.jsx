@@ -46,7 +46,7 @@ const Angsuran = () => {
                     .from('pinjaman')
                     .select('*')
                     .eq('personal_data_id', personalData.id)
-                    .in('status', ['DISETUJUI', 'DICAIRKAN']);
+                    .eq('status', 'DICAIRKAN');
 
                 if (loans && loans.length > 0) {
                     const loanIds = loans.map(l => l.id);
