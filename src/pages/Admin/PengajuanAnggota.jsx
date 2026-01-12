@@ -92,64 +92,11 @@ const PengajuanAnggota = () => {
 
             if (personalUpdateError) throw personalUpdateError;
 
-            // Generate 12 months of billing records in simpanan table
-            const bills = [];
-            const startDate = new Date();
-
-            for (let i = 1; i <= 12; i++) {
-                let amountPokok = 0;
-                if (i === 1) amountPokok = 100000;
-                else if (i === 2 || i === 3) amountPokok = 50000;
-
-                const amountWajib = 75000;
-                const totalAmount = amountPokok + amountWajib;
-
-                const dueDate = new Date(startDate);
-                dueDate.setMonth(startDate.getMonth() + (i - 1));
-                dueDate.setDate(5); // 5th of each month
-
-                // Insert for Simpanan Wajib
-                bills.push({
-                    personal_data_id: selectedMember.id,
-                    type: 'WAJIB',
-                    transaction_type: 'SETOR',
-                    amount: amountWajib,
-                    status: 'UNPAID',
-                    bulan_ke: i,
-                    jatuh_tempo: dueDate.toISOString().split('T')[0],
-                    created_at: new Date().toISOString()
-                });
-
-                // Insert for Simpanan Pokok (only first 3 months)
-                if (amountPokok > 0) {
-                    bills.push({
-                        personal_data_id: selectedMember.id,
-                        type: 'POKOK',
-                        transaction_type: 'SETOR',
-                        amount: amountPokok,
-                        status: 'UNPAID',
-                        bulan_ke: i,
-                        jatuh_tempo: dueDate.toISOString().split('T')[0],
-                        created_at: new Date().toISOString()
-                    });
-                }
-            }
-
-            const { error: billError } = await supabase
-                .from('simpanan')
-                .insert(bills);
-
-            if (billError) {
-                console.error('Error generating bills:', billError);
-                alert('Anggota diaktifkan tapi gagal membuat tagihan: ' + billError.message);
-                return;
-            }
-
             // Update local state
             setPendingMembers(prev => prev.filter(m => m.id !== selectedMember.id));
             setIsDetailModalOpen(false);
             setSelectedMember(null);
-            alert('Status anggota berhasil diaktifkan dan tagihan simpanan telah dibuat!');
+            alert('Status anggota berhasil diaktifkan!');
         } catch (error) {
             console.error('Error updating status:', error);
             alert('Gagal mengubah status anggota');
