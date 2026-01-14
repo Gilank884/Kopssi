@@ -18,15 +18,18 @@ import {
 } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { generateLoanAgreementPDF } from '../../utils/loanAgreementPdf';
+import InstallmentSummary from '../../components/Admin/InstallmentSummary';
 
 const LoanDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [loan, setLoan] = useState(null);
+    const [userLoans, setUserLoans] = useState([]); // Daftar seluruh pinjaman user ini
     const [installments, setInstallments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [selectedInstallments, setSelectedInstallments] = useState([]); // Angsuran lama yang akan dipotong
 
     useEffect(() => {
         if (id) {
@@ -51,11 +54,18 @@ const LoanDetail = () => {
             if (error) throw error;
             setLoan(data);
 
-            // ================================
-            // REVISI: ambil angsuran berdasarkan ORANG, bukan cuma 1 pinjaman
-            // ================================
             const personId = data.personal_data_id;
 
+            // Ambil seluruh pinjaman orang ini
+            const { data: loansData, error: loansError } = await supabase
+                .from('pinjaman')
+                .select('*')
+                .eq('personal_data_id', personId);
+
+            if (loansError) throw loansError;
+            setUserLoans(loansData || []);
+
+            // Ambil seluruh angsuran orang ini
             const { data: instData, error: instError } = await supabase
                 .from('angsuran')
                 .select(`
@@ -63,7 +73,11 @@ const LoanDetail = () => {
                 pinjaman:pinjaman_id (
                     id,
                     no_pinjaman,
-                    personal_data_id
+                    personal_data_id,
+                    jumlah_pinjaman,
+                    tipe_bunga,
+                    nilai_bunga,
+                    tenor_bulan
                 )
             `)
                 .eq('pinjaman.personal_data_id', personId)
@@ -117,26 +131,77 @@ const LoanDetail = () => {
         }
     };
 
-    const handleCairkan = async () => {
-        if (!loan) return;
+    const handleToggleInstallment = (inst) => {
+        setSelectedInstallments(prev => {
+            const isSelected = prev.some(si => si.id === inst.id);
+            if (isSelected) {
+                return prev.filter(si => si.id !== inst.id);
+            } else {
+                return [...prev, inst];
+            }
+        });
+    };
 
-        const confirmApprove = window.confirm(`Setujui pencairan pinjaman sebesar Rp ${parseFloat(loan.jumlah_pinjaman).toLocaleString('id-ID')} untuk ${loan.personal_data?.full_name}?`);
+    const handleToggleAllInstallments = (loanId, unpaidInsts) => {
+        setSelectedInstallments(prev => {
+            const allSelected = unpaidInsts.every(ui => prev.some(si => si.id === ui.id));
+            if (allSelected) {
+                // Deselect all for this loan
+                return prev.filter(si => si.pinjaman_id !== loanId);
+            } else {
+                // Select all for this loan (avoid duplicates)
+                const otherLoanInsts = prev.filter(si => si.pinjaman_id !== loanId);
+                return [...otherLoanInsts, ...unpaidInsts];
+            }
+        });
+    };
+
+    const handleCairkan = async () => {
+        const totalDeduction = selectedInstallments.reduce((sum, inst) => sum + parseFloat(inst.amount), 0);
+        const netDisbursement = parseFloat(loan.jumlah_pinjaman) - totalDeduction;
+
+        const confirmApprove = window.confirm(
+            `Setujui pencairan pinjaman sebesar ${formatCurrency(loan.jumlah_pinjaman)}?\n\n` +
+            (totalDeduction > 0
+                ? `Potongan Angsuran: ${formatCurrency(totalDeduction)}\n` +
+                `Total yang diterima Member: ${formatCurrency(netDisbursement)}\n\n`
+                : "") +
+            `Konfirmasi pencairan untuk ${loan.personal_data?.full_name}?`
+        );
 
         if (!confirmApprove) return;
 
         try {
             setSubmitting(true);
+
+            // 1. Update status pinjaman & simpan outstanding (potongan)
             const { error: updateError } = await supabase
                 .from('pinjaman')
                 .update({
                     status: 'DICAIRKAN',
-                    disbursed_at: new Date().toISOString()
+                    disbursed_at: new Date().toISOString(),
+                    outstanding: totalDeduction // Simpan jumlah potongan
                 })
                 .eq('id', loan.id);
 
             if (updateError) throw updateError;
 
-            // Generate Installments after disbursement
+            // 2. Tandai angsuran yang dipotong sebagai PAID
+            if (selectedInstallments.length > 0) {
+                const { error: patchError } = await supabase
+                    .from('angsuran')
+                    .update({
+                        status: 'PAID',
+                        tanggal_bayar: new Date().toISOString(),
+                        metode_bayar: 'POTONG_PENCAIRAN',
+                        keterangan: `Dipotong dari pencairan pinjaman ${loan.no_pinjaman}`
+                    })
+                    .in('id', selectedInstallments.map(i => i.id));
+
+                if (patchError) throw patchError;
+            }
+
+            // 3. Generate Installments for the NEW loan
             const principal = parseFloat(loan.jumlah_pinjaman);
             const tenor = loan.tenor_bulan;
             let totalBunga = 0;
@@ -204,9 +269,33 @@ const LoanDetail = () => {
 
     if (!loan) return <div className="p-8 text-center text-gray-500 font-bold uppercase italic">Data pinjaman tidak ditemukan</div>;
 
-    const totalPaid = installments.filter(i => i.status === 'PAID').reduce((sum, i) => sum + parseFloat(i.amount), 0);
-    const totalRemaining = installments.filter(i => i.status !== 'PAID').reduce((sum, i) => sum + parseFloat(i.amount), 0);
-    const paidCount = installments.filter(i => i.status === 'PAID').length;
+    // Helper untuk hitung pokok dari sebuah angsuran
+    const calculatePrincipal = (inst) => {
+        const amount = parseFloat(inst.amount);
+        const l = inst.pinjaman;
+        if (!l) return 0;
+
+        let monthlyInterest = 0;
+        const principal = parseFloat(l.jumlah_pinjaman || 0);
+        const tenor = l.tenor_bulan || 1;
+
+        if (l.tipe_bunga === 'PERSENAN') {
+            const annualRate = parseFloat(l.nilai_bunga || 0);
+            monthlyInterest = (principal * (annualRate / 100)) / 12;
+        } else if (l.tipe_bunga === 'NOMINAL') {
+            monthlyInterest = parseFloat(l.nilai_bunga || 0) / tenor;
+        }
+        return amount - monthlyInterest;
+    };
+
+    // Stats untuk PINJAMAN SAAT INI (Current Loan) & USER-WIDE
+    const currentInstallments = installments.filter(i => i.pinjaman_id === id);
+    const unpaidCurrentInstallments = currentInstallments.filter(i => i.status !== 'PAID');
+    const currentRemaining = unpaidCurrentInstallments.reduce((sum, i) => sum + parseFloat(i.amount), 0);
+
+    const totalPaidPrincipal = installments
+        .filter(i => i.status === 'PAID')
+        .reduce((sum, i) => sum + calculatePrincipal(i), 0);
 
     return (
         <div className="space-y-6 pb-20 animate-in fade-in duration-500">
@@ -238,16 +327,16 @@ const LoanDetail = () => {
                     {/* Financial Summary Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                            <p className="text-[10px] font-black text-gray-400 uppercase italic mb-1 tracking-widest">Total Pinjaman</p>
+                            <p className="text-[10px] font-black text-gray-400 uppercase italic mb-1 tracking-widest">Pinjaman Ini</p>
                             <h3 className="text-xl font-black text-gray-900 italic">{formatCurrency(loan.jumlah_pinjaman)}</h3>
                         </div>
                         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                            <p className="text-[10px] font-black text-gray-400 uppercase italic mb-1 tracking-widest">Pokok Terbayar</p>
-                            <h3 className="text-xl font-black text-emerald-600 italic">{formatCurrency(totalPaid)}</h3>
+                            <p className="text-[10px] font-black text-gray-400 uppercase italic mb-1 tracking-widest">Pokok Terbayar (User)</p>
+                            <h3 className="text-xl font-black text-emerald-600 italic">{formatCurrency(totalPaidPrincipal)}</h3>
                         </div>
                         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                            <p className="text-[10px] font-black text-gray-400 uppercase italic mb-1 tracking-widest">Sisa Kewajiban</p>
-                            <h3 className="text-xl font-black text-red-600 italic">{formatCurrency(totalRemaining)}</h3>
+                            <p className="text-[10px] font-black text-gray-400 uppercase italic mb-1 tracking-widest">Sisa Kewajiban (Ini)</p>
+                            <h3 className="text-xl font-black text-red-600 italic">{formatCurrency(currentRemaining)}</h3>
                         </div>
                     </div>
 
@@ -299,61 +388,17 @@ const LoanDetail = () => {
                             </div>
                         </div>
                     </div>
-
                     {/* Installment History */}
-                    {/* Installment Summary */}
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden text-left">
-                        <div className="bg-gray-50 px-6 py-4 border-b border-gray-100 flex items-center gap-3">
-                            <Clock size={18} className="text-emerald-600" />
-                            <h3 className="font-black italic uppercase tracking-widest text-xs text-gray-800">
-                                Ringkasan Angsuran
-                            </h3>
-                        </div>
-
-                        <div className="p-8 space-y-6">
-                            {/* Total Pinjaman */}
-                            <div>
-                                <p className="text-[10px] font-black text-gray-400 uppercase italic tracking-widest mb-1">
-                                    Total Pinjaman
-                                </p>
-                                <p className="text-xl font-black text-gray-900 italic">
-                                    {formatCurrency(loan.jumlah_pinjaman)}
-                                </p>
-                            </div>
-
-                            {/* Progress Angsuran */}
-                            <div>
-                                <p className="text-[10px] font-black text-gray-400 uppercase italic tracking-widest mb-2">
-                                    Progress Angsuran
-                                </p>
-
-                                <div className="flex items-center justify-between">
-                                    <p className="text-sm font-black text-emerald-600 italic uppercase tracking-tight">
-                                        {paidCount} / {loan.tenor_bulan} Bulan
-                                    </p>
-
-                                    <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border
-                    ${paidCount === loan.tenor_bulan
-                                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                            : 'bg-amber-50 text-amber-700 border-amber-200'
-                                        }`}
-                                    >
-                                        {paidCount === loan.tenor_bulan ? 'LUNAS' : 'BERJALAN'}
-                                    </span>
-                                </div>
-
-                                {/* Progress Bar */}
-                                <div className="w-full bg-gray-100 rounded-full h-2 mt-3 overflow-hidden">
-                                    <div
-                                        className="bg-emerald-600 h-2 transition-all duration-500"
-                                        style={{
-                                            width: `${(paidCount / loan.tenor_bulan) * 100}%`
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <InstallmentSummary
+                        loan={loan}
+                        installments={installments}
+                        userLoans={userLoans}
+                        formatCurrency={formatCurrency}
+                        navigate={navigate}
+                        selectedInstallments={selectedInstallments}
+                        onToggleInstallment={handleToggleInstallment}
+                        onToggleAllInstallments={handleToggleAllInstallments}
+                    />
                 </div>
 
 

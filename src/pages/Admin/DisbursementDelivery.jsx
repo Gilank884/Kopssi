@@ -150,8 +150,11 @@ const DisbursementDelivery = () => {
                             <tr className="bg-gray-50/50 border-b border-gray-100 italic font-black text-[10px] uppercase tracking-widest text-gray-400">
                                 <th className="px-6 py-4">Anggota</th>
                                 <th className="px-6 py-4">No Pinjaman</th>
-                                <th className="px-6 py-4 text-right">Nominal</th>
-                                <th className="px-6 py-4">Tgl Cair (Sistem)</th>
+                                <th className="px-6 py-4 text-center">Tgl Pengajuan</th>
+                                <th className="px-6 py-4 text-center">Tgl Cair</th>
+                                <th className="px-6 py-4 text-right">Plafon</th>
+                                <th className="px-6 py-4 text-right text-red-600 font-black italic">Potongan</th>
+                                <th className="px-6 py-4 text-right font-black italic text-emerald-600">Terima Bersih</th>
                                 <th className="px-6 py-4 text-center">Status Kirim</th>
                                 <th className="px-6 py-4 text-center">Aksi</th>
                             </tr>
@@ -189,13 +192,26 @@ const DisbursementDelivery = () => {
                                                 {loan.no_pinjaman}
                                             </span>
                                         </td>
+                                        <td className="px-6 py-4 text-center text-[10px] text-gray-500 font-bold italic">
+                                            {loan.created_at ? new Date(loan.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
+                                        </td>
+                                        <td className="px-6 py-4 text-center text-[10px] text-gray-500 font-bold italic">
+                                            {loan.disbursed_at ? new Date(loan.disbursed_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
+                                        </td>
                                         <td className="px-6 py-4 text-right">
-                                            <span className="text-sm font-black text-emerald-700 font-mono italic">
+                                            <span className="text-[10px] font-bold text-gray-400 font-mono">
                                                 {formatCurrency(loan.jumlah_pinjaman)}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-gray-500 text-xs font-bold italic">
-                                            {loan.disbursed_at ? new Date(loan.disbursed_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
+                                        <td className="px-6 py-4 text-right">
+                                            <span className="text-[10px] font-black text-red-500 font-mono italic">
+                                                {loan.outstanding > 0 ? `(${formatCurrency(loan.outstanding)})` : '-'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <span className="text-sm font-black text-emerald-700 font-mono italic">
+                                                {formatCurrency(parseFloat(loan.jumlah_pinjaman) - (parseFloat(loan.outstanding) || 0))}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4 text-center">
                                             <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter border ${loan.delivery_status === 'SENT'
