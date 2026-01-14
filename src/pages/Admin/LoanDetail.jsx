@@ -301,47 +301,61 @@ const LoanDetail = () => {
                     </div>
 
                     {/* Installment History */}
+                    {/* Installment Summary */}
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden text-left">
-                        <div className="bg-gray-50 px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <Clock size={18} className="text-emerald-600" />
-                                <h3 className="font-black italic uppercase tracking-widest text-xs text-gray-800">Riwayat Angsuran ({paidCount}/{loan.tenor_bulan})</h3>
-                            </div>
+                        <div className="bg-gray-50 px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+                            <Clock size={18} className="text-emerald-600" />
+                            <h3 className="font-black italic uppercase tracking-widest text-xs text-gray-800">
+                                Ringkasan Angsuran
+                            </h3>
                         </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead>
-                                    <tr className="bg-gray-50/50 border-b border-gray-100 italic font-black text-[10px] uppercase tracking-widest text-gray-400">
-                                        <th className="px-6 py-3">Bulan Ke</th>
-                                        <th className="px-6 py-3">Nominal</th>
-                                        <th className="px-6 py-3">Tanggal Bayar</th>
-                                        <th className="px-6 py-3 text-center">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-50">
-                                    {installments.map((inst) => (
-                                        <tr key={inst.id} className="hover:bg-gray-50/50 transition-colors">
-                                            <td className="px-6 py-3 text-xs font-black text-gray-500 uppercase italic">Angsuran #{inst.bulan_ke}</td>
-                                            <td className="px-6 py-3 text-sm font-black text-gray-800 italic">{formatCurrency(inst.amount)}</td>
-                                            <td className="px-6 py-3 text-xs font-bold text-gray-600 uppercase italic">{formatDate(inst.tanggal_bayar)}</td>
-                                            <td className="px-6 py-3 text-center">
-                                                <span className={`inline-flex px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${inst.status === 'PAID' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'
-                                                    }`}>
-                                                    {inst.status === 'PAID' ? 'LUNAS' : 'BELUM BAYAR'}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    {installments.length === 0 && (
-                                        <tr>
-                                            <td colSpan="4" className="px-6 py-10 text-center text-gray-400 font-bold uppercase italic text-xs">Belum ada data angsuran</td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
+
+                        <div className="p-8 space-y-6">
+                            {/* Total Pinjaman */}
+                            <div>
+                                <p className="text-[10px] font-black text-gray-400 uppercase italic tracking-widest mb-1">
+                                    Total Pinjaman
+                                </p>
+                                <p className="text-xl font-black text-gray-900 italic">
+                                    {formatCurrency(loan.jumlah_pinjaman)}
+                                </p>
+                            </div>
+
+                            {/* Progress Angsuran */}
+                            <div>
+                                <p className="text-[10px] font-black text-gray-400 uppercase italic tracking-widest mb-2">
+                                    Progress Angsuran
+                                </p>
+
+                                <div className="flex items-center justify-between">
+                                    <p className="text-sm font-black text-emerald-600 italic uppercase tracking-tight">
+                                        {paidCount} / {loan.tenor_bulan} Bulan
+                                    </p>
+
+                                    <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border
+                    ${paidCount === loan.tenor_bulan
+                                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                            : 'bg-amber-50 text-amber-700 border-amber-200'
+                                        }`}
+                                    >
+                                        {paidCount === loan.tenor_bulan ? 'LUNAS' : 'BERJALAN'}
+                                    </span>
+                                </div>
+
+                                {/* Progress Bar */}
+                                <div className="w-full bg-gray-100 rounded-full h-2 mt-3 overflow-hidden">
+                                    <div
+                                        className="bg-emerald-600 h-2 transition-all duration-500"
+                                        style={{
+                                            width: `${(paidCount / loan.tenor_bulan) * 100}%`
+                                        }}
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
+
 
                 {/* Sidebar Areas */}
                 <div className="space-y-6">
