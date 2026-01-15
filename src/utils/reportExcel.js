@@ -1,20 +1,25 @@
 import * as XLSX from 'xlsx';
 
+const formatNum = (num) => {
+    if (!num || isNaN(num)) return 0;
+    return new Intl.NumberFormat('id-ID').format(num);
+};
+
 export const exportMonthlyFinancialExcel = (stats) => {
     const data = [
         ['LAPORAN KEUANGAN BULANAN'],
         [`Periode: ${new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}`],
         [''],
         ['Kategori', 'Keterangan', 'Jumlah'],
-        ['PENDAPATAN', 'Total Simpanan Masuk (Setor)', stats.simpananSetor],
-        ['PENDAPATAN', 'Total Angsuran Pinjaman (Paid)', stats.totalAngsuran],
-        ['', 'TOTAL PENDAPATAN', stats.monthlyIncome],
+        ['PENDAPATAN', 'Total Simpanan Masuk (Setor)', formatNum(stats.simpananSetor)],
+        ['PENDAPATAN', 'Total Angsuran Pinjaman (Paid)', formatNum(stats.totalAngsuran)],
+        ['', 'TOTAL PENDAPATAN', formatNum(stats.monthlyIncome)],
         [''],
-        ['PENGELUARAN', 'Total Penarikan Simpanan (Tarik)', stats.simpananTarik],
-        ['PENGELUARAN', 'Total Pencairan Pinjaman Baru', stats.totalDisbursed],
-        ['', 'TOTAL PENGELUARAN', stats.monthlyExpense],
+        ['PENGELUARAN', 'Total Penarikan Simpanan (Tarik)', formatNum(stats.simpananTarik)],
+        ['PENGELUARAN', 'Total Pencairan Pinjaman Baru', formatNum(stats.totalDisbursed)],
+        ['', 'TOTAL PENGELUARAN', formatNum(stats.monthlyExpense)],
         [''],
-        ['CASHFLOW', 'Arus Kas Bersih', stats.monthlyIncome - stats.monthlyExpense]
+        ['CASHFLOW', 'Arus Kas Bersih', formatNum(stats.monthlyIncome - stats.monthlyExpense)]
     ];
 
     const ws = XLSX.utils.aoa_to_sheet(data);
@@ -30,7 +35,7 @@ export const exportMonthlyFinancialExcel = (stats) => {
 
 export const exportActivePortfolioExcel = (portfolioData) => {
     const headers = [['Nama Anggota', 'NIK', 'Saldo Simpanan', 'Hutang Berjalan']];
-    const rows = portfolioData.map(p => [p.full_name, p.nik, p.savingsBalance, p.loanBalance]);
+    const rows = portfolioData.map(p => [p.full_name, p.nik, formatNum(p.savingsBalance), formatNum(p.loanBalance)]);
 
     const ws = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
     const wb = XLSX.utils.book_new();
@@ -45,7 +50,7 @@ export const exportNewMembersExcel = (members) => {
         m.full_name,
         m.nik,
         m.work_unit || '-',
-        new Date(m.created_at).toLocaleDateString('id-ID')
+        new Date(m.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
     ]);
 
     const ws = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
@@ -81,10 +86,10 @@ export const exportMonitoringSimpanan = (data, range, mode = 'DATA') => {
                 bill.id,
                 bill.status,
                 bill.bulan_ke,
-                bill.jatuh_tempo,
-                bill.amount_pokok,
-                bill.amount_wajib,
-                total
+                bill.jatuh_tempo ? new Date(bill.jatuh_tempo).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-',
+                formatNum(bill.amount_pokok),
+                formatNum(bill.amount_wajib),
+                formatNum(total)
             ];
         });
         filename = `Monitoring_Simpanan_${range.startDate}_${range.endDate}.xlsx`;
@@ -103,9 +108,9 @@ export const exportMonitoringPinjaman = (data, range) => {
         loan.personal_data?.nik || '-',
         loan.personal_data?.full_name || '-',
         loan.no_pinjaman,
-        loan.jumlah_pinjaman,
+        formatNum(loan.jumlah_pinjaman),
         loan.tenor_bulan,
-        new Date(loan.created_at).toLocaleDateString('id-ID'),
+        new Date(loan.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }),
         loan.status
     ]);
 
@@ -125,8 +130,8 @@ export const exportMonitoringAngsuran = (data, range) => {
         inst.pinjaman?.no_pinjaman || '-',
         inst.bulan_ke,
         inst.status,
-        inst.amount,
-        inst.tanggal_bayar ? new Date(inst.tanggal_bayar).toLocaleDateString('id-ID') : '-'
+        formatNum(inst.amount),
+        inst.tanggal_bayar ? new Date(inst.tanggal_bayar).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-'
     ]);
 
     const ws = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
@@ -137,20 +142,92 @@ export const exportMonitoringAngsuran = (data, range) => {
 };
 
 export const exportDisbursementDelivery = (data) => {
-    const headers = [['NIK', 'Nama', 'No Pinjaman', 'Nominal', 'Tgl Cair (Sistem)', 'Status Kirim', 'Tgl Kirim']];
-    const rows = data.map(loan => [
-        loan.personal_data?.nik || '-',
-        loan.personal_data?.full_name || '-',
-        loan.no_pinjaman,
-        loan.jumlah_pinjaman,
-        loan.disbursed_at ? new Date(loan.disbursed_at).toLocaleDateString('id-ID') : '-',
-        loan.delivery_status === 'SENT' ? 'TERKIRIM' : 'BELUM TERKIRIM',
-        loan.delivery_date ? new Date(loan.delivery_date).toLocaleDateString('id-ID') : '-'
-    ]);
+    const headers = [[
+        'No', 'No Pinjaman', 'Nama', 'NPP', 'No Anggota', 'Lokasi', 'Tgl Pinjaman', 'Tgl Setuju',
+        'Tenor', 'Jml Pengajuan', 'Jml Disetujui', 'Bunga', 'Outs. Pokok', 'Outs. Bunga',
+        'Biaya Admin', 'Terima Bersih', 'No Rek', 'No HP', 'Keperluan', 'Bank', 'Tgl Realisasi'
+    ]];
+
+    const rows = data.map((loan, index) => {
+        const principal = parseFloat(loan.jumlah_pinjaman || 0);
+        const tenor = loan.tenor_bulan || 1;
+        let totalBunga = 0;
+
+        if (loan.tipe_bunga === 'PERSENAN') {
+            totalBunga = principal * (parseFloat(loan.nilai_bunga || 0) / 100) * (tenor / 12);
+        } else if (loan.tipe_bunga === 'NOMINAL') {
+            totalBunga = parseFloat(loan.nilai_bunga || 0);
+        }
+
+        const netDisbursement = principal - (parseFloat(loan.outstanding) || 0) - 5000;
+
+        return [
+            index + 1,
+            loan.no_pinjaman || '-',
+            loan.personal_data?.full_name || '-',
+            loan.personal_data?.no_npp || '-',
+            loan.personal_data?.no_anggota || '-',
+            loan.personal_data?.lokasi || '-',
+            loan.created_at ? new Date(loan.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-',
+            (loan.approved_at || loan.created_at) ? new Date(loan.approved_at || loan.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-',
+            tenor,
+            formatNum(loan.jumlah_pengajuan || loan.jumlah_pinjaman),
+            formatNum(principal),
+            formatNum(Math.round(totalBunga)),
+            formatNum(loan.calculated_outs_pokok || 0),
+            formatNum(loan.calculated_outs_bunga || 0),
+            formatNum(5000), // Biaya Admin
+            formatNum(netDisbursement),
+            loan.personal_data?.rek_gaji || '-',
+            loan.personal_data?.phone || '-',
+            loan.keperluan || '-',
+            loan.personal_data?.bank_gaji || '-',
+            loan.delivery_date ? new Date(loan.delivery_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-'
+        ];
+    });
 
     const ws = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Pencairan-Delivery');
+    XLSX.utils.book_append_sheet(wb, ws, 'Realisasi Pinjaman');
 
-    XLSX.writeFile(wb, `Pencairan_Delivery_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    XLSX.writeFile(wb, `Realisasi_Pinjaman_${new Date().toISOString().slice(0, 10)}.xlsx`);
+};
+
+export const exportExitRealisasi = (data) => {
+    const headers = [[
+        'Nomor', 'Nama', 'NPP', 'Uraian', 'Unit Kerja',
+        'Masuk', 'Keluar', 'Simpanan Pokok', 'Simpanan Wajib', 'Simpanan Sukarela',
+        'Jumlah', 'Outstanding Pokok', 'Outstanding Bunga',
+        'Admin', 'Jumlah Dikembalikan', 'No Rek', 'Tgl Realisasi'
+    ]];
+
+    const rows = data.map((item, index) => {
+        const netBack = item.jumlah - item.outs_pokok - item.outs_bunga - item.admin;
+
+        return [
+            index + 1,
+            item.nama || '-',
+            item.npp || '-',
+            item.uraian || '-',
+            item.unit_kerja || '-',
+            formatNum(item.masuk || 0),
+            formatNum(item.keluar || 0),
+            formatNum(item.simp_pokok || 0),
+            formatNum(item.simp_wajib || 0),
+            formatNum(item.simp_sukarela || 0),
+            formatNum(item.jumlah || 0),
+            formatNum(item.outs_pokok || 0),
+            formatNum(item.outs_bunga || 0),
+            formatNum(item.admin || 0),
+            formatNum(netBack),
+            item.no_rek || '-',
+            item.tgl_real ? new Date(item.tgl_real).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-'
+        ];
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Realisasi Karyawan');
+
+    XLSX.writeFile(wb, `Realisasi_Karyawan_${new Date().toISOString().slice(0, 10)}.xlsx`);
 };
