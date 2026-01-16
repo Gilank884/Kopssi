@@ -359,8 +359,8 @@ const DetailPengajuan = () => {
                                             {uploadingSPK ? 'MENGUNGGAH...' : 'UPLOAD SCAN SPK'}
                                         </label>
                                     </div>
-                                    <p className="text-[12px] text-red-700 font-medium italic text-center">
-                                        * Untuk Pinjaman Diatas 5 Juta Rupiah Harus Tanda Tangan Dan Materai.
+                                    <p className="text-[10px] text-white/70 font-medium italic text-center">
+                                        * Tanda tangani SPK di atas materai, kemudian upload scan/fotonya di sini.
                                     </p>
                                 </div>
                             )}
