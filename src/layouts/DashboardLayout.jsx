@@ -44,14 +44,15 @@ const DashboardLayout = () => {
     // =====================
     // CEK LOGIN
     // =====================
+    // =====================
+    // CEK LOGIN
+    // =====================
     useEffect(() => {
         const storedUser = localStorage.getItem('auth_user');
-        if (!storedUser) {
-            navigate('/');
-            return;
+        if (storedUser) {
+            setAuthUser(JSON.parse(storedUser));
         }
-        setAuthUser(JSON.parse(storedUser));
-    }, [navigate]);
+    }, []);
 
     const handleLogoutClick = () => {
         setIsLogoutModalOpen(true);
