@@ -37,6 +37,19 @@ export const generateLoanAnalysisPDF = async (loan, isDownload = false, analystN
     const pageWidth = doc.internal.pageSize.getWidth();
     const margin = 15;
 
+    // Add Logo
+    try {
+        const logo = new Image();
+        logo.src = '/Logo.png';
+        await new Promise((resolve, reject) => {
+            logo.onload = resolve;
+            logo.onerror = reject;
+        });
+        doc.addImage(logo, 'PNG', margin, 10, 20, 20);
+    } catch (err) {
+        console.error("Error loading logo:", err);
+    }
+
     // Fetch Simpanan Data
     const { data: simpanan } = await supabase
         .from('simpanan')
@@ -60,7 +73,7 @@ export const generateLoanAnalysisPDF = async (loan, isDownload = false, analystN
     // Fetch Active Loans (Outstanding)
     const { data: activeLoans } = await supabase
         .from('pinjaman')
-        .select('*, bunga:bunga_id(*)')
+        .select('*')
         .eq('personal_data_id', loan.personal_data_id)
         .eq('status', 'DICAIRKAN')
         .neq('id', loan.id);
@@ -134,77 +147,83 @@ export const generateLoanAnalysisPDF = async (loan, isDownload = false, analystN
     doc.text(': ' + formatDate(loan.created_at), 160, 57);
 
     // Member Info Layout
-    const infoY = 55;
+    // Member Info Layout
+    const infoY = 60; // Start a bit lower
     const col1X = margin;
     const col1LabelW = 35;
     const col1ValX = col1X + col1LabelW;
 
-    const col2X = 110;
-    // Actually the requested design has a split layout for some items
+    // Labels column 2 (approx for aligning second items in a row)
+    const col2LabelX = 110;
+    const col2ValX = 140;
 
-    // Left side items
-    const leftItems = [
-        ['No Anggota', loan.personal_data?.no_anggota || '-'],
-        ['NPP', loan.personal_data?.no_npp || '-'],
-        ['Nama Lengkap', loan.personal_data?.full_name || '-'],
-        ['Alamat', loan.personal_data?.address || '-'],
-        ['Tempat Lahir', loan.personal_data?.tempat_lahir || '-'], // Can combine with Tgl Lahir
-        ['Unit Kerja', loan.personal_data?.work_unit || '-'],
-        ['Status Pegawai', loan.personal_data?.employment_status || '-'],
-        ['Tgl Keanggotaan', formatDate(loan.personal_data?.created_at)]
-    ];
+    const safe = (v) => v || '-';
 
     let currentY = infoY;
-    leftItems.forEach((item) => {
+    const items = [
+        { label: 'No Anggota', val: safe(loan.personal_data?.no_anggota) },
+        { label: 'NPP', val: safe(loan.personal_data?.no_npp) },
+        { label: 'Nama Lengkap', val: safe(loan.personal_data?.full_name) },
+        { label: 'Alamat', val: safe(loan.personal_data?.address) },
+    ];
+
+    items.forEach(item => {
+        doc.text(item.label, col1X, currentY);
+        doc.text(': ' + item.val, col1ValX - 2, currentY);
         currentY += 5;
-        doc.text(item[0], col1X, currentY);
-        doc.text(':', col1ValX - 2, currentY);
-
-        let val = item[1];
-        if (item[0] === 'Tempat Lahir' && loan.personal_data?.tanggal_lahir) {
-            // Split across page?
-            // The image shows "Tempat Lahir : ...   Tgl Lahir : ...   Usia : ..."
-            // This is tricky. Let's just print simple for now or try to match.
-            // If "Tempat Lahir", we print Value then Tgl Lahir next to it.
-            const tglLahir = formatDate(loan.personal_data.tanggal_lahir);
-
-            // Calculate Age roughly
-            const dob = new Date(loan.personal_data.tanggal_lahir);
-            const ageDiff = Date.now() - dob.getTime();
-            const ageDate = new Date(ageDiff);
-            const age = Math.abs(ageDate.getUTCFullYear() - 1970);
-
-            doc.text(val, col1ValX, currentY);
-            doc.text('Tgl Lahir : ' + tglLahir, col1ValX + 50, currentY);
-            doc.text('Usia : ' + age + ' Tahun', col1ValX + 110, currentY);
-            return;
-        }
-
-        if (item[0] === 'Tgl Keanggotaan') {
-            const joinDate = loan.personal_data?.join_date || loan.personal_data?.created_at;
-            const lamaBulan = joinDate ? diffMonths(joinDate, new Date()) : 0;
-
-            doc.text(formatDate(joinDate), col1ValX, currentY);
-            // Right side items aligned with this
-            // Rekening info seems to be here in the image
-            // We can place it manually or relative
-
-            // "Lama Keanggotaan : ... Bulan" aligned rightish
-            // doc.text(`Lama Keanggotaan : ${lamaBulan} Bulan`, 110, currentY); // Keeping this or removing? User said "until Tgl Keanggotaan". 
-            // Let's keep Lama Keanggotaan as it is part of the date context usually, but remove accounts.
-            doc.text(`Lama Keanggotaan : ${lamaBulan} Bulan`, 110, currentY);
-            return;
-        }
-
-        doc.text(val.toString(), col1ValX, currentY);
-
-        if (item[0] === 'Status Pegawai') {
-            // Add Masa Kerja if available? The image shows "Masa Kerja : -"
-            // We don't have masa kerja calculated easily usually unless from join_date of work?
-            // Just hardcode placeholder or omit if not in data
-            doc.text('Masa Kerja : -', 130, currentY);
-        }
     });
+
+    // Validations & Calculations
+    const dob = loan.personal_data?.tanggal_lahir ? new Date(loan.personal_data?.tanggal_lahir) : null;
+    const age = dob ? Math.floor((new Date() - dob) / 31557600000) : 0;
+
+    const joinDate = loan.personal_data?.join_date ? new Date(loan.personal_data?.join_date) :
+        (loan.personal_data?.created_at ? new Date(loan.personal_data?.created_at) : null);
+    const monthsJoin = joinDate ? diffMonths(joinDate, new Date()) : 0;
+
+    // Row: Tempat Lahir ... Tgl Lahir ... Usia
+    doc.text('Tempat Lahir', col1X, currentY);
+    doc.text(': ' + safe(loan.personal_data?.tempat_lahir), col1ValX - 2, currentY);
+
+    doc.text('Tgl Lahir : ' + (dob ? formatDate(loan.personal_data?.tanggal_lahir) : '-'), col2LabelX, currentY);
+    doc.text('Usia : ' + age + ' Tahun', col2LabelX + 65, currentY, { align: 'right' }); // Align right side or fixed?
+
+    currentY += 5;
+
+    // Row: Unit Kerja
+    doc.text('Unit Kerja', col1X, currentY);
+    doc.text(': ' + safe(loan.personal_data?.work_unit), col1ValX - 2, currentY);
+
+    currentY += 5;
+
+    // Row: Status Pegawai ... Masa Kerja
+    doc.text('Status Pegawai', col1X, currentY);
+    doc.text(': ' + safe(loan.personal_data?.employment_status), col1ValX - 2, currentY);
+
+    // Masa Kerja (Not in personal_data usually, placeholder)
+    doc.text('Masa Kerja : -', col2LabelX + 65, currentY, { align: 'right' });
+
+    currentY += 5;
+
+    // Row: Tgl Keanggotaan ... Lama Keanggotaan
+    doc.text('Tgl Keanggotaan', col1X, currentY);
+    doc.text(': ' + (joinDate ? formatDate(joinDate) : '-'), col1ValX - 2, currentY);
+
+    doc.text('Lama Keanggotaan : ' + monthsJoin + ' Bulan', col2LabelX + 65, currentY, { align: 'right' });
+
+    currentY += 5;
+
+    // Row: Rekening Gaji ... Rekening Pribadi
+    // Assuming these fields exist in personal_data or I need to add them. 
+    // Checking schema from knowledge: personal_data usually has bank info?
+    // If not, I'll use placeholders or check props.
+    // Based on user request, they want it. I'll check `personal_data` for `rekening_gaji` / `rekening_pribadi` or similar.
+    // Use optional chaining.
+    const rekGaji = loan.personal_data?.no_rekening_gaji || loan.personal_data?.bank_account_number || '-';
+    const rekPribadi = loan.personal_data?.no_rekening_pribadi || '-'; // Assuming this field
+
+    doc.text(`Rekening Gaji : ${rekGaji}`, col1ValX, currentY);
+    doc.text(`Rekening Pribadi : ${rekPribadi}`, col2LabelX + 65, currentY, { align: 'right' });
 
     // Data Simpanan
     currentY += 10;
