@@ -139,9 +139,6 @@ const DisbursementDelivery = () => {
 
             alert('Status pengiriman berhasil diperbarui!');
 
-            // AUTOMATED EXCEL EXPORT
-            const { exportDisbursementDelivery } = await import('../../utils/reportExcel');
-            exportDisbursementDelivery([loan]);
 
             fetchDisbursedLoans();
         } catch (error) {
@@ -172,9 +169,6 @@ const DisbursementDelivery = () => {
 
             alert(`Berhasil merealisasikan ${selectedLoans.length} pinjaman!`);
 
-            // Export multiple
-            const { exportDisbursementDelivery } = await import('../../utils/reportExcel');
-            exportDisbursementDelivery(selectedLoans);
 
             setSelectedIds([]);
             fetchDisbursedLoans();

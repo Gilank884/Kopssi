@@ -11,8 +11,6 @@ const MasterData = () => {
 
     const tabs = [
         { id: 'company', label: 'Perusahaan/PT', icon: <Building2 size={18} /> },
-        { id: 'work_unit', label: 'Unit Kerja', icon: <Briefcase size={18} /> },
-        { id: 'lokasi', label: 'Lokasi', icon: <MapPin size={18} /> },
         { id: 'loan_category', label: 'Kategori Pinjaman', icon: <FileText size={18} /> },
     ];
 

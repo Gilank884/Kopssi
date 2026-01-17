@@ -287,71 +287,7 @@ const AdminReports = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Detailed Report Access */}
                 <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-                        <div className="bg-gray-800 p-4 flex items-center justify-between">
-                            <div className="flex items-center gap-2 text-white font-black italic uppercase tracking-tight text-sm">
-                                <FileText size={18} />
-                                Menu Laporan Utama
-                            </div>
-                        </div>
-                        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* Monthly Financial Card */}
-                            <div className="p-5 border-2 border-gray-100 rounded-2xl hover:border-emerald-500 transition-all group flex flex-col justify-between h-44">
-                                <div>
-                                    <h4 className="font-black text-gray-900 uppercase italic text-sm mb-1">Laporan Keuangan Bulanan</h4>
-                                    <p className="text-[10px] text-gray-500 font-medium">Rekapitulasi arus kas masuk dan keluar periode {new Date().toLocaleDateString('id-ID', { month: 'long' })}.</p>
-                                </div>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={handleDownloadMonthly}
-                                        className="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 transition shadow-lg shadow-emerald-100 flex items-center justify-center gap-1"
-                                    >
-                                        <Download size={12} /> PDF
-                                    </button>
-                                    <button
-                                        onClick={handleExcelFinancial}
-                                        className="flex-1 py-2 bg-white text-emerald-600 border-2 border-emerald-100 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-50 transition flex items-center justify-center gap-1"
-                                    >
-                                        <FileText size={12} /> EXCEL
-                                    </button>
-                                    <button
-                                        onClick={() => window.print()}
-                                        className="flex-1 py-2 bg-gray-50 text-gray-600 border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-100 transition flex items-center justify-center gap-1"
-                                    >
-                                        <Printer size={12} /> Print
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Portfolio Card */}
-                            <div className="p-5 border-2 border-gray-100 rounded-2xl hover:border-blue-500 transition-all group flex flex-col justify-between h-44">
-                                <div>
-                                    <h4 className="font-black text-gray-900 uppercase italic text-sm mb-1">Pinjaman & Simpanan Aktif</h4>
-                                    <p className="text-[10px] text-gray-500 font-medium">Data seluruh anggota yang memiliki saldo simpanan dan pinjaman berjalan saat ini.</p>
-                                </div>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={handleDownloadPortfolio}
-                                        className="flex-1 py-2 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition shadow-lg shadow-blue-100 flex items-center justify-center gap-1"
-                                    >
-                                        <Download size={12} /> PDF
-                                    </button>
-                                    <button
-                                        onClick={handleExcelPortfolio}
-                                        className="flex-1 py-2 bg-white text-blue-600 border-2 border-blue-100 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-50 transition flex items-center justify-center gap-1"
-                                    >
-                                        <FileText size={12} /> EXCEL
-                                    </button>
-                                    <button
-                                        onClick={() => window.print()}
-                                        className="flex-1 py-2 bg-gray-50 text-gray-600 border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-100 transition flex items-center justify-center gap-1"
-                                    >
-                                        <Printer size={12} /> Print
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    {/* Menu Laporan Utama Removed */}
 
                     {/* New Members Table */}
                     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">

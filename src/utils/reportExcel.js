@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx-js-style';
 
 const formatNum = (num) => {
     if (!num || isNaN(num)) return 0;
@@ -144,18 +144,58 @@ export const exportMonitoringAngsuran = (data, range) => {
 };
 
 export const exportDisbursementDelivery = (data) => {
-    // 1. DATE HEADER ROW
-    const dateHeader = ['', '', new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: '2-digit' }).replace(/ /g, '-')];
+    // 1. STYLES
+    const borderStyle = {
+        top: { style: "thin", color: { rgb: "000000" } },
+        bottom: { style: "thin", color: { rgb: "000000" } },
+        left: { style: "thin", color: { rgb: "000000" } },
+        right: { style: "thin", color: { rgb: "000000" } }
+    };
 
-    // 2. COLUMN HEADERS
+    const headerStyle = {
+        font: { bold: true, sz: 11 },
+        alignment: { horizontal: "center", vertical: "center", wrapText: true },
+        border: borderStyle,
+        fill: { fgColor: { rgb: "E0E0E0" } } // Light gray background
+    };
+
+    const dataStyle = {
+        font: { sz: 10 },
+        alignment: { vertical: "center" },
+        border: borderStyle
+    };
+
+    const moneyStyle = {
+        ...dataStyle,
+        alignment: { horizontal: "right", vertical: "center" }
+        // numFmt removed to support string inputs
+    };
+
+    const centerStyle = {
+        ...dataStyle,
+        alignment: { horizontal: "center", vertical: "center" }
+    };
+
+    // 2. HEADERS
     const headers = [
         'No', 'No Pinjaman', 'Nama', 'NPP', 'No Anggota', 'Lokasi', 'Tgl Pinjam', 'Tgl Setuju',
         'Tenor', 'Jml. Pengajuan', 'Jumlah Pinjam', 'Bunga', 'Outs. Pokok', 'Outs. Bunga',
         'Biaya', 'Diterima', 'NoRek', 'NoHP', 'Keperluan', 'Bank', 'Tgl Realisasi'
     ];
 
-    // 3. DATA ROWS
-    const rows = data.map((loan, index) => {
+    // 3. PROCESS DATA & TOTALS
+    // We calculate totals first using raw numbers, then map to strings for display
+    let rawTotals = {
+        jmlPengajuan: 0,
+        jumlahPinjam: 0,
+        bunga: 0,
+        outsPokok: 0,
+        outsBunga: 0,
+        biaya: 0,
+        diterima: 0
+    };
+
+    const processedRows = data.map((loan, index) => {
         const principal = parseFloat(loan.jumlah_pinjaman || 0);
         const tenor = loan.tenor_bulan || 1;
         let totalBunga = 0;
@@ -170,63 +210,157 @@ export const exportDisbursementDelivery = (data) => {
         const outsBunga = parseFloat(loan.calculated_outs_bunga || 0);
         const adminFee = 5000;
         const netDisbursement = principal - outsPokok - outsBunga - adminFee;
+        const jmlPengajuan = parseFloat(loan.jumlah_pengajuan || loan.jumlah_pinjaman || 0);
+        const bungaRounded = Math.round(totalBunga);
 
-        return [
-            index + 1,
-            loan.no_pinjaman || '-',
-            loan.personal_data?.full_name || '-',
-            loan.personal_data?.no_npp || '-',
-            loan.personal_data?.no_anggota || '-',
-            loan.personal_data?.lokasi || '-',
-            loan.created_at ? new Date(loan.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'numeric', year: 'numeric' }) : '-',
-            (loan.approved_at || loan.created_at) ? new Date(loan.approved_at || loan.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'numeric', year: 'numeric' }) : '-',
-            tenor,
-            parseFloat(loan.jumlah_pengajuan || loan.jumlah_pinjaman || 0),
-            principal,
-            Math.round(totalBunga),
-            outsPokok,
-            outsBunga,
-            adminFee,
-            netDisbursement,
-            loan.personal_data?.rek_gaji || '-',
-            loan.personal_data?.phone || '-',
-            loan.keperluan || '-',
-            loan.personal_data?.bank_gaji || '-',
-            loan.delivery_date ? new Date(loan.delivery_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'numeric', year: 'numeric' }) : '-'
-        ];
+        // Accumulate Totals
+        rawTotals.jmlPengajuan += jmlPengajuan;
+        rawTotals.jumlahPinjam += principal;
+        rawTotals.bunga += bungaRounded;
+        rawTotals.outsPokok += outsPokok;
+        rawTotals.outsBunga += outsBunga;
+        rawTotals.biaya += adminFee;
+        rawTotals.diterima += netDisbursement;
+
+        // Return STRING formatted values for display
+        return {
+            no: index + 1,
+            noPinjaman: loan.no_pinjaman || '-',
+            nama: loan.personal_data?.full_name || '-',
+            npp: loan.personal_data?.no_npp || '-',
+            noAnggota: loan.personal_data?.no_anggota || '-',
+            lokasi: loan.personal_data?.lokasi || '-',
+            tglPinjam: loan.created_at ? new Date(loan.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'numeric', year: 'numeric' }) : '-',
+            tglSetuju: (loan.approved_at || loan.created_at) ? new Date(loan.approved_at || loan.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'numeric', year: 'numeric' }) : '-',
+            tenor: tenor,
+            jmlPengajuan: formatNum(jmlPengajuan),
+            jumlahPinjam: formatNum(principal),
+            bunga: formatNum(bungaRounded),
+            outsPokok: formatNum(outsPokok),
+            outsBunga: formatNum(outsBunga),
+            biaya: formatNum(adminFee),
+            diterima: formatNum(netDisbursement),
+            noRek: loan.personal_data?.rek_gaji || '-',
+            noHp: loan.personal_data?.phone || '-',
+            keperluan: loan.keperluan || '-',
+            bank: loan.personal_data?.bank_gaji || '-',
+            tglReal: loan.delivery_date ? new Date(loan.delivery_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'numeric', year: 'numeric' }) : '-'
+        };
     });
 
-    // 4. TOTALS ROW
-    const totals = {
-        jmlPengajuan: rows.reduce((acc, curr) => acc + curr[9], 0),
-        jmlPinjam: rows.reduce((acc, curr) => acc + curr[10], 0),
-        bunga: rows.reduce((acc, curr) => acc + curr[11], 0),
-        outsPokok: rows.reduce((acc, curr) => acc + curr[12], 0),
-        outsBunga: rows.reduce((acc, curr) => acc + curr[13], 0),
-        biaya: rows.reduce((acc, curr) => acc + curr[14], 0),
-        diterima: rows.reduce((acc, curr) => acc + curr[15], 0)
-    };
+    // 4. BUILD WORKSHEET WITH STYLED CELLS
+    const wsData = [];
+
+    // Row 1: Date Header
+    const dateStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: '2-digit' }).replace(/ /g, '-');
+    wsData.push([
+        { v: '', s: {} },
+        { v: '', s: {} },
+        { v: dateStr, s: { font: { bold: true, sz: 12 }, alignment: { horizontal: "center" }, fill: { fgColor: { rgb: "FFCC80" } }, border: borderStyle } }
+    ]);
+    // Merge date cell if desired, but kept simple for now
+
+    // Row 2: Headers
+    const headerRow = headers.map(h => ({ v: h, s: headerStyle }));
+    wsData.push(headerRow);
+
+    // Row 3+: Data
+    processedRows.forEach(row => {
+        wsData.push([
+            { v: row.no, s: centerStyle },
+            { v: row.noPinjaman, s: centerStyle },
+            { v: row.nama, s: dataStyle },
+            { v: row.npp, s: centerStyle },
+            { v: row.noAnggota, s: centerStyle },
+            { v: row.lokasi, s: centerStyle },
+            { v: row.tglPinjam, s: centerStyle },
+            { v: row.tglSetuju, s: centerStyle },
+            { v: row.tenor, s: centerStyle },
+            { v: row.jmlPengajuan, s: moneyStyle, t: 's' },
+            { v: row.jumlahPinjam, s: moneyStyle, t: 's' },
+            { v: row.bunga, s: moneyStyle, t: 's' },
+            { v: row.outsPokok, s: moneyStyle, t: 's' },
+            { v: row.outsBunga, s: moneyStyle, t: 's' },
+            { v: row.biaya, s: moneyStyle, t: 's' },
+            { v: row.diterima, s: moneyStyle, t: 's' },
+            { v: row.noRek, s: centerStyle },
+            { v: row.noHp, s: centerStyle },
+            { v: row.keperluan, s: dataStyle },
+            { v: row.bank, s: centerStyle },
+            { v: row.tglReal, s: centerStyle }
+        ]);
+    });
+
+    // Row Last: TOTALS
+    const totalLabelStyle = { font: { bold: true }, alignment: { horizontal: "right" }, border: borderStyle };
+    const totalMoneyStyle = { font: { bold: true }, alignment: { horizontal: "right" }, border: borderStyle };
+
+    // Fill empty cells with borders for the total row
+    const emptyBorder = { v: '', s: { border: borderStyle } };
 
     const totalRow = [
-        '', '', '', '', '', '', '', '', '',
-        totals.jmlPengajuan,
-        totals.jmlPinjam,
-        totals.bunga,
-        totals.outsPokok,
-        totals.outsBunga,
-        totals.biaya,
-        totals.diterima,
-        '', '', '', '', ''
+        emptyBorder, emptyBorder, emptyBorder, emptyBorder, emptyBorder, emptyBorder, emptyBorder, emptyBorder,
+        { v: 'TOTAL', s: totalLabelStyle },
+        { v: formatNum(rawTotals.jmlPengajuan), s: totalMoneyStyle, t: 's' },
+        { v: formatNum(rawTotals.jumlahPinjam), s: totalMoneyStyle, t: 's' },
+        { v: formatNum(rawTotals.bunga), s: totalMoneyStyle, t: 's' },
+        { v: formatNum(rawTotals.outsPokok), s: totalMoneyStyle, t: 's' },
+        { v: formatNum(rawTotals.outsBunga), s: totalMoneyStyle, t: 's' },
+        { v: formatNum(rawTotals.biaya), s: totalMoneyStyle, t: 's' },
+        { v: formatNum(rawTotals.diterima), s: totalMoneyStyle, t: 's' },
+        emptyBorder, emptyBorder, emptyBorder, emptyBorder, emptyBorder
+    ];
+    wsData.push(totalRow);
+
+    // Create Sheet
+    const ws = XLSX.utils.aoa_to_sheet([]);
+
+    // Check if aoa_to_sheet supports cell objects directly in the lib version, 
+    // if not we map to grid. But xlsx-js-style documentation says we can assign !data or just add cells.
+    // The most reliable way with style libs is creating a sheet and adding generic data, then updating cells, OR using aoa_to_sheet with objects if supported.
+    // xlsx-js-style SUPPORTS cell objects in aoa_to_sheet.
+
+    // However, safest bet is to assign specific cells
+
+    // Convert logic:
+    // Generate range
+    const range = { s: { c: 0, r: 0 }, e: { c: headers.length - 1, r: wsData.length - 1 } };
+    ws['!ref'] = XLSX.utils.encode_range(range);
+
+    // Populate cells
+    for (let R = 0; R < wsData.length; ++R) {
+        for (let C = 0; C < wsData[R].length; ++C) {
+            const cell = wsData[R][C];
+            const cellRef = XLSX.utils.encode_cell({ c: C, r: R });
+            if (cell) ws[cellRef] = cell;
+        }
+    }
+
+    // Set Column Widths
+    ws['!cols'] = [
+        { wch: 4 },  // No
+        { wch: 12 }, // No Pin
+        { wch: 20 }, // Nama
+        { wch: 8 },  // NPP
+        { wch: 10 }, // No Anggota
+        { wch: 10 }, // Lokasi
+        { wch: 10 }, // Tgl
+        { wch: 10 }, // Tgl
+        { wch: 6 },  // Tenor
+        { wch: 12 }, // Jml Pengajuan
+        { wch: 12 }, // Jml Pinjam
+        { wch: 12 }, // Bunga
+        { wch: 12 }, // Outs
+        { wch: 12 }, // Outs
+        { wch: 10 }, // Biaya
+        { wch: 12 }, // Diterima
+        { wch: 12 }, // NoRek
+        { wch: 12 }, // NoHP
+        { wch: 15 }, // Keperluan
+        { wch: 8 },  // Bank
+        { wch: 10 }  // Tgl Real
     ];
 
-    const finalData = [
-        dateHeader,
-        headers,
-        ...rows,
-        totalRow
-    ];
-
-    const ws = XLSX.utils.aoa_to_sheet(finalData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Realisasi Pinjaman');
 
@@ -234,75 +368,214 @@ export const exportDisbursementDelivery = (data) => {
 };
 
 export const exportExitRealisasi = (data) => {
-    const formatNum = (num) => parseFloat(num || 0);
+    // 1. STYLES
+    const borderStyle = {
+        top: { style: "thin", color: { rgb: "000000" } },
+        bottom: { style: "thin", color: { rgb: "000000" } },
+        left: { style: "thin", color: { rgb: "000000" } },
+        right: { style: "thin", color: { rgb: "000000" } }
+    };
 
-    // 1. DATE HEADER
-    const dateHeader = [
-        `TANGGAL CETAK: ${new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}`
-    ];
+    const titleStyle = {
+        font: { bold: true, sz: 12 },
+        alignment: { horizontal: "center", vertical: "center" },
+        fill: { fgColor: { rgb: "D99694" } }, // Reddish color like in user image
+        border: borderStyle
+    };
+
+    const headerStyle = {
+        font: { bold: true, sz: 10 },
+        alignment: { horizontal: "center", vertical: "center", wrapText: true },
+        border: borderStyle,
+        fill: { fgColor: { rgb: "FFFFFF" } } // White background for headers
+    };
+
+    const dataStyle = {
+        font: { sz: 10 },
+        alignment: { vertical: "center" },
+        border: borderStyle
+    };
+
+    const moneyStyle = {
+        ...dataStyle,
+        alignment: { horizontal: "right", vertical: "center" }
+    };
+
+    const centerStyle = {
+        ...dataStyle,
+        alignment: { horizontal: "center", vertical: "center" }
+    };
 
     // 2. HEADERS
     const headers = [
-        'No', 'Nama', 'NPP', 'Uraian', 'Unit Kerja',
-        'Masuk', 'Keluar', 'Simp. Pokok', 'Simp. Wajib', 'Simp. Sukarela',
-        'Jumlah', 'Outs. Pokok', 'Outs. Bunga',
-        'Admin', 'Diterima', 'No Rek', 'Tgl Realisasi'
+        'No.', 'Nama', 'NPP', 'Uraian', 'Unit Kerja',
+        'Masuk', 'Keluar', 'S.P', 'S.W', 'SWK',
+        'JUMLAH', 'Outs', 'Out bunga',
+        'By TF', 'dikembalikan', 'No Rek'
     ];
 
-    // 3. DATA ROWS
-    const rows = data.map((item, index) => {
-        const netBack = (item.jumlah || 0) - (item.outs_pokok || 0) - (item.outs_bunga || 0) - (item.admin || 0);
-
-        return [
-            index + 1,
-            item.nama || '-',
-            item.npp || '-',
-            item.uraian || '-',
-            item.unit_kerja || '-',
-            formatNum(item.masuk),
-            formatNum(item.keluar),
-            formatNum(item.simp_pokok),
-            formatNum(item.simp_wajib),
-            formatNum(item.simp_sukarela),
-            formatNum(item.jumlah),
-            formatNum(item.outs_pokok),
-            formatNum(item.outs_bunga),
-            formatNum(item.admin),
-            formatNum(netBack),
-            item.no_rek || '-',
-            item.tgl_real ? new Date(item.tgl_real).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-'
-        ];
-    });
-
-    // 4. TOTALS ROW
-    const totals = {
-        masuk: rows.reduce((acc, curr) => acc + curr[5], 0),
-        keluar: rows.reduce((acc, curr) => acc + curr[6], 0),
-        pokok: rows.reduce((acc, curr) => acc + curr[7], 0),
-        wajib: rows.reduce((acc, curr) => acc + curr[8], 0),
-        sukarela: rows.reduce((acc, curr) => acc + curr[9], 0),
-        jumlah: rows.reduce((acc, curr) => acc + curr[10], 0),
-        outsP: rows.reduce((acc, curr) => acc + curr[11], 0),
-        outsB: rows.reduce((acc, curr) => acc + curr[12], 0),
-        admin: rows.reduce((acc, curr) => acc + curr[13], 0),
-        diterima: rows.reduce((acc, curr) => acc + curr[14], 0)
+    // 3. PROCESS DATA & TOTALS
+    let rawTotals = {
+        masuk: 0,
+        keluar: 0,
+        pokok: 0,
+        wajib: 0,
+        sukarela: 0,
+        jumlah: 0,
+        outsP: 0,
+        outsB: 0,
+        admin: 0,
+        diterima: 0
     };
 
+    const processedRows = data.map((item, index) => {
+        const netBack = (item.jumlah || 0) - (item.outs_pokok || 0) - (item.outs_bunga || 0) - (item.admin || 0);
+
+        // Update totals
+        rawTotals.masuk += (item.masuk || 0);
+        rawTotals.keluar += (item.keluar || 0);
+        rawTotals.pokok += (item.simp_pokok || 0);
+        rawTotals.wajib += (item.simp_wajib || 0);
+        rawTotals.sukarela += (item.simp_sukarela || 0);
+        rawTotals.jumlah += (item.jumlah || 0);
+        rawTotals.outsP += (item.outs_pokok || 0);
+        rawTotals.outsB += (item.outs_bunga || 0);
+        rawTotals.admin += (item.admin || 0);
+        rawTotals.diterima += netBack;
+
+        return {
+            no: index + 1,
+            nama: item.nama || '-',
+            npp: item.npp || '-',
+            uraian: item.uraian || '-',
+            unit_kerja: item.unit_kerja || '-',
+            // Masuk/Keluar are currently 0 in source, treating as strings for now or 0
+            // Image shows dates "Jan-17", but currently data is numeric 0.
+            // Using '-' or formatNum(0)
+            masuk: item.masuk ? formatNum(item.masuk) : '-',
+            keluar: item.keluar ? formatNum(item.keluar) : '-',
+            sp: formatNum(item.simp_pokok),
+            sw: formatNum(item.simp_wajib),
+            swk: formatNum(item.simp_sukarela),
+            jumlah: formatNum(item.jumlah),
+            outs: item.outs_pokok ? formatNum(item.outs_pokok) : '', // Empty if 0 in image potentially, but using value
+            outBunga: item.outs_bunga ? formatNum(item.outs_bunga) : '',
+            byTf: formatNum(item.admin),
+            dikembalikan: formatNum(netBack),
+            noRek: item.no_rek || '-'
+        };
+    });
+
+    // 4. BUILD WORKSHEET
+    const wsData = [];
+
+    // Row 1: Title "Undur diri" merged roughly over first few cols? 
+    // Image shows "Undur diri" in a reddish box.
+    wsData.push([
+        { v: '', s: {} },
+        { v: 'Undur diri', s: titleStyle },
+        { v: '', s: {} }, // Will merge later
+        { v: '', s: {} }
+    ]);
+
+    // Row 2: Headers
+    const headerRow = headers.map(h => ({ v: h, s: headerStyle }));
+    wsData.push(headerRow);
+
+    // Row 3+: Data
+    processedRows.forEach(row => {
+        wsData.push([
+            { v: row.no, s: centerStyle },
+            { v: row.nama, s: dataStyle },
+            { v: row.npp, s: centerStyle },
+            { v: row.uraian, s: centerStyle },
+            { v: row.unit_kerja, s: centerStyle },
+            { v: row.masuk, s: centerStyle },
+            { v: row.keluar, s: centerStyle },
+            { v: row.sp, s: moneyStyle, t: 's' },
+            { v: row.sw, s: moneyStyle, t: 's' },
+            { v: row.swk, s: moneyStyle, t: 's' },
+            { v: row.jumlah, s: moneyStyle, t: 's' },
+            { v: row.outs, s: moneyStyle, t: 's' },
+            { v: row.outBunga, s: moneyStyle, t: 's' },
+            { v: row.byTf, s: moneyStyle, t: 's' },
+            { v: row.dikembalikan, s: moneyStyle, t: 's' },
+            { v: row.noRek, s: centerStyle }
+        ]);
+    });
+
+    // Row Last: Totals
+    // Image shows totals under relevant columns.
+    // Boxed S.P ... dikembalikan?
+    // Image shows totals at bottom.
+    // Total row style: Bold, Borders
+    const totalStyle = { font: { bold: true }, alignment: { horizontal: "right" }, border: borderStyle };
+    const emptyBorder = { v: '', s: { border: borderStyle } };
+
+    // Need to align totals with columns.
+    // Cols indices: 0:No, 1:Nama, 2:NPP, 3:Uraian, 4:Unit, 5:Masuk, 6:Keluar, 7:SP, 8:SW, 9:SWK, 10:JML, 11:Outs, 12:OutB, 13:ByTF, 14:Dikembalikan, 15:NoRek
+
+    // In image, Totals seem to start from S.P (Col 7) 
     const totalRow = [
-        '', '', '', '', 'TOTAL',
-        totals.masuk, totals.keluar, totals.pokok, totals.wajib, totals.sukarela,
-        totals.jumlah, totals.outsP, totals.outsB, totals.admin, totals.diterima,
-        '', ''
+        emptyBorder, emptyBorder, emptyBorder, emptyBorder, emptyBorder, emptyBorder, emptyBorder,
+        { v: formatNum(rawTotals.pokok), s: totalStyle, t: 's' },
+        { v: formatNum(rawTotals.wajib), s: totalStyle, t: 's' },
+        { v: formatNum(rawTotals.sukarela), s: totalStyle, t: 's' },
+        { v: formatNum(rawTotals.jumlah), s: totalStyle, t: 's' },
+        { v: formatNum(rawTotals.outsP), s: totalStyle, t: 's' },
+        { v: formatNum(rawTotals.outsB), s: totalStyle, t: 's' },
+        { v: formatNum(rawTotals.admin), s: totalStyle, t: 's' },
+        { v: formatNum(rawTotals.diterima), s: totalStyle, t: 's' },
+        emptyBorder
+    ];
+    wsData.push(totalRow);
+
+    // Grand Total Row (optional, image shows separate grand total lower down? "33,597,926" in pink box)
+    // It seems to be under "dikembalikan"
+    const grandTotalRow = [
+        { v: '', s: {} }, { v: '', s: {} }, { v: '', s: {} }, { v: '', s: {} }, { v: '', s: {} }, { v: '', s: {} }, { v: '', s: {} },
+        { v: '', s: {} }, { v: '', s: {} }, { v: '', s: {} }, { v: '', s: {} }, { v: '', s: {} }, { v: '', s: {} }, { v: '', s: {} },
+        { v: formatNum(rawTotals.diterima), s: { ...totalStyle, fill: { fgColor: { rgb: "FBD4B4" } } }, t: 's' }, // Pinkish bg
+        { v: '', s: {} }
+    ];
+    wsData.push(grandTotalRow);
+
+    const ws = XLSX.utils.aoa_to_sheet([]);
+    const range = { s: { c: 0, r: 0 }, e: { c: headers.length - 1, r: wsData.length - 1 } };
+    ws['!ref'] = XLSX.utils.encode_range(range);
+
+    // Merge title cell
+    if (!ws['!merges']) ws['!merges'] = [];
+    ws['!merges'].push({ s: { r: 0, c: 1 }, e: { r: 0, c: 3 } }); // Merging "Undur diri" over Nama, NPP, Uraian
+
+    for (let R = 0; R < wsData.length; ++R) {
+        for (let C = 0; C < wsData[R].length; ++C) {
+            const cell = wsData[R][C];
+            const cellRef = XLSX.utils.encode_cell({ c: C, r: R });
+            if (cell) ws[cellRef] = cell;
+        }
+    }
+
+    // Column widths
+    ws['!cols'] = [
+        { wch: 4 },  // No
+        { wch: 25 }, // Nama
+        { wch: 10 }, // NPP
+        { wch: 12 }, // Uraian
+        { wch: 15 }, // Unit
+        { wch: 10 }, // Masuk
+        { wch: 10 }, // Keluar
+        { wch: 12 }, // SP
+        { wch: 12 }, // SW
+        { wch: 12 }, // SWK
+        { wch: 15 }, // JML
+        { wch: 12 }, // Outs
+        { wch: 12 }, // OutB
+        { wch: 10 }, // ByTF
+        { wch: 15 }, // Dikembalikan
+        { wch: 15 }  // NoRek
     ];
 
-    const finalData = [
-        dateHeader,
-        headers,
-        ...rows,
-        totalRow
-    ];
-
-    const ws = XLSX.utils.aoa_to_sheet(finalData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Realisasi Karyawan');
 

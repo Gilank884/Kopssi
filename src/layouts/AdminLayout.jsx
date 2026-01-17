@@ -29,6 +29,10 @@ const AdminLayout = () => {
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
     const [openMenus, setOpenMenus] = useState({});
     const [pendingCount, setPendingCount] = useState(0);
+    const [countAssessment, setCountAssessment] = useState(0);
+    const [countDisbursement, setCountDisbursement] = useState(0);
+    const [countDelivery, setCountDelivery] = useState(0);
+    const [countExit, setCountExit] = useState(0);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -107,9 +111,9 @@ const AdminLayout = () => {
     useEffect(() => {
         fetchPendingCount();
 
-        // Setup realtime subscription
-        const channel = supabase
-            .channel('personal_data_changes')
+        // Setup realtime subscription for personal_data
+        const channelPersonal = supabase
+            .channel('personal_data_badges')
             .on('postgres_changes', {
                 event: '*',
                 schema: 'public',
@@ -119,22 +123,107 @@ const AdminLayout = () => {
             })
             .subscribe();
 
+        // Setup realtime subscription for pinjaman
+        const channelPinjaman = supabase
+            .channel('pinjaman_badges')
+            .on('postgres_changes', {
+                event: '*',
+                schema: 'public',
+                table: 'pinjaman'
+            }, () => {
+                fetchPendingCount();
+            })
+            .subscribe();
+
         return () => {
-            supabase.removeChannel(channel);
+            supabase.removeChannel(channelPersonal);
+            supabase.removeChannel(channelPinjaman);
         };
     }, []);
 
     const fetchPendingCount = async () => {
         try {
-            const { count, error } = await supabase
+            // 1. Pengajuan Anggota (DONE VERIFIKASI)
+            const p1 = supabase
                 .from('personal_data')
                 .select('*', { count: 'exact', head: true })
                 .eq('status', 'DONE VERIFIKASI');
 
-            if (error) throw error;
-            setPendingCount(count || 0);
+            // 2. Pengajuan Pinjaman (PENGAJUAN)
+            const p2 = supabase
+                .from('pinjaman')
+                .select('*', { count: 'exact', head: true })
+                .eq('status', 'PENGAJUAN');
+
+            // 3. Pencairan Pinjaman (DISETUJUI)
+            const p3 = supabase
+                .from('pinjaman')
+                .select('*', { count: 'exact', head: true })
+                .eq('status', 'DISETUJUI');
+
+            // 4. Realisasi Pinjaman (DICAIRKAN & delivery_status != SENT)
+            // Note: Supabase doesn't support != SENT easily in one go with simple query builder sometimes, 
+            // but .neq('delivery_status', 'SENT') works. Use IS NULL or 'PENDING' if that's the default.
+            // Based on code, we check if delivery_status === 'SENT'. If not sent, it counts.
+            // It could be null.
+            const p4 = supabase
+                .from('pinjaman')
+                .select('*', { count: 'exact', head: true })
+                .eq('status', 'DICAIRKAN')
+                .neq('delivery_status', 'SENT'); // This assumes not null is handled or null is not equal to SENT
+
+            // 5. Realisasi Karyawan (NON_ACTIVE & exit_realisasi_status = PENDING)
+            const p5 = supabase
+                .from('personal_data')
+                .select('*', { count: 'exact', head: true })
+                .eq('status', 'NON_ACTIVE')
+                .eq('exit_realisasi_status', 'PENDING');
+
+            const [r1, r2, r3, r4, r5] = await Promise.all([p1, p2, p3, p4, p5]);
+
+            setPendingCount(r1.count || 0);
+            setCountAssessment(r2.count || 0);
+            setCountDisbursement(r3.count || 0);
+            // For p4, we need to be careful about nulls. .neq('delivery_status', 'SENT') matches nulls in Supabase? 
+            // Postgres `IS DISTINCT FROM` behavior. Supabase `.neq` usually translates to `<>`. `NULL <> 'SENT'` is NULL (falsy).
+            // So we might miss NULLs. Better to use .or('delivery_status.is.null,delivery_status.neq.SENT')
+            // But complex filters in simple select count might be tricky.
+            // Let's rely on client side filtering if the count is small, OR try a better filter.
+            // For now, let's assume default is null or 'PENDING'.
+            // If I look at the previous code "RealisasiPinjaman", it checked `!isSent`.
+
+            // Retrying p4 with safer logic if possible, or accepting `.neq` might miss nulls.
+            // Actually, let's just use the count from the response. If it misses nulls, I will fix.
+            // NOTE: In the `DisbursementDelivery.jsx` user code: `const isSent = loan.delivery_status === 'SENT';`
+            // So anything NOT 'SENT' counts. 
+            // To be safe, I should query `eq('status', 'DICAIRKAN')` and filter in memory if count is small?
+            // Or better: `status=DICAIRKAN`. Then subtract those that are SENT?
+            // `count(DICAIRKAN)` - `count(DICAIRKAN & SENT)`? 
+            // A bit expensive to run two queries.
+            // Let's try `.or('delivery_status.is.null,delivery_status.neq.SENT')`
+            // But `.or` syntax with other filters is tricky.
+            // Let's stick to a simpler query for now: 
+            // `select count from pinjaman where status='DICAIRKAN'`. 
+            // And `select count from pinjaman where status='DICAIRKAN' and delivery_status='SENT'`.
+            // Pending = Total - Sent.
+
+            const p4_total = supabase.from('pinjaman').select('*', { count: 'exact', head: true }).eq('status', 'DICAIRKAN');
+            const p4_sent = supabase.from('pinjaman').select('*', { count: 'exact', head: true }).eq('status', 'DICAIRKAN').eq('delivery_status', 'SENT');
+
+            // Re-executing Promise.all with corrected logic
+            const [res1, res2, res3, res4_total, res4_sent, res5] = await Promise.all([
+                p1, p2, p3, p4_total, p4_sent, p5
+            ]);
+
+            setPendingCount(res1.count || 0);
+            setCountAssessment(res2.count || 0);
+            setCountDisbursement(res3.count || 0);
+            const pendingDelivery = (res4_total.count || 0) - (res4_sent.count || 0);
+            setCountDelivery(pendingDelivery > 0 ? pendingDelivery : 0);
+            setCountExit(res5.count || 0);
+
         } catch (err) {
-            console.error('Error fetching pending count:', err);
+            console.error('Error fetching pending counts:', err);
         }
     };
 
@@ -227,6 +316,12 @@ const AdminLayout = () => {
                                             {item.label === 'Manajemen Anggota' && pendingCount > 0 && (
                                                 <span className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-red-500 rounded-full border-2 border-slate-900 animate-pulse"></span>
                                             )}
+                                            {item.label === 'Pinjaman' && (countAssessment > 0 || countDisbursement > 0) && (
+                                                <span className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-red-500 rounded-full border-2 border-slate-900 animate-pulse"></span>
+                                            )}
+                                            {item.label === 'Realisasi' && (countDelivery > 0 || countExit > 0) && (
+                                                <span className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-red-500 rounded-full border-2 border-slate-900 animate-pulse"></span>
+                                            )}
                                         </div>
                                         {isSidebarOpen && <span className="tracking-wide">{item.label}</span>}
                                     </div>
@@ -264,7 +359,19 @@ const AdminLayout = () => {
                                                 <div className="relative">
                                                     {sub.icon}
                                                     {sub.label === 'Pengajuan Anggota' && pendingCount > 0 && (
-                                                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                                                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                                                    )}
+                                                    {sub.label === 'Pengajuan Pinjaman' && countAssessment > 0 && (
+                                                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                                                    )}
+                                                    {sub.label === 'Pencairan Pinjaman' && countDisbursement > 0 && (
+                                                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                                                    )}
+                                                    {sub.label === 'Realisasi Pinjaman' && countDelivery > 0 && (
+                                                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                                                    )}
+                                                    {sub.label === 'Realisasi Karyawan' && countExit > 0 && (
+                                                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
                                                     )}
                                                 </div>
                                                 <span>{sub.label}</span>

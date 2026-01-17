@@ -73,8 +73,8 @@ const DashboardLayout = () => {
         { path: '/dashboard/simpanan', label: 'Simpanan Saya', icon: <Wallet size={20} /> },
         { path: '/dashboard/pinjaman', label: 'Pinjaman Saya', icon: <CreditCard size={20} /> },
         { path: '/dashboard/angsuran', label: 'Angsuran Saya', icon: <CalendarDays size={20} /> },
-        { path: '/dashboard/pengajuan-pinjaman', label: 'Form Pengajuan', icon: <FileText size={20} /> },
-        { path: '/dashboard/riwayat-pengajuan', label: 'Status Pengajuan', icon: <Clock size={20} /> },
+        { path: '/dashboard/pengajuan-pinjaman', label: 'Ajukan Pinjaman', icon: <FileText size={20} /> },
+        { path: '/dashboard/riwayat-pengajuan', label: 'Riwayat Pinjaman', icon: <Clock size={20} /> },
         { path: '/dashboard/profil', label: 'Profil', icon: <User size={20} /> },
     ];
 

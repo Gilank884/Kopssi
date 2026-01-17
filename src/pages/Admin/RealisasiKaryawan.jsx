@@ -44,7 +44,7 @@ const RealisasiKaryawan = () => {
     useEffect(() => {
         fetchRealisasiData();
         fetchCompanies();
-    }, [startDate, endDate]);
+    }, [startDate, endDate, activeTab]);
 
     useEffect(() => {
         setSelectedIds([]);
@@ -170,9 +170,6 @@ const RealisasiKaryawan = () => {
 
             alert('Status pengiriman berhasil diperbarui!');
 
-            const { exportExitRealisasi } = await import('../../utils/reportExcel');
-            exportExitRealisasi([item]);
-
             fetchRealisasiData();
         } catch (error) {
             console.error('Error updating delivery status:', error);
@@ -201,9 +198,6 @@ const RealisasiKaryawan = () => {
             if (error) throw error;
 
             alert(`Berhasil merealisasikan ${items.length} pengembalian!`);
-
-            const { exportExitRealisasi } = await import('../../utils/reportExcel');
-            exportExitRealisasi(items);
 
             setSelectedIds([]);
             fetchRealisasiData();
