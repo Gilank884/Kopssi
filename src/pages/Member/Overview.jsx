@@ -156,7 +156,7 @@ const Overview = () => {
                         const unpaidItems = angsuranData
                             .filter(a => a.status !== 'PAID')
                             .sort((a, b) => new Date(a.tanggal_bayar) - new Date(b.tanggal_bayar));
-                        
+
                         if (unpaidItems.length > 0) {
                             const nextItem = unpaidItems[0];
                             setNextInstallment(parseFloat(nextItem.amount));
@@ -266,17 +266,24 @@ const Overview = () => {
                     <div className="h-64 w-full">
                         {hasSimpanan ? (
                             <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-                                <BarChart data={simpananChartData}>
+                                <LineChart data={simpananChartData}>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
                                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 12 }} dy={10} />
                                     <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 12 }} tickFormatter={(val) => `${val / 1000000}Jt`} />
                                     <Tooltip
                                         contentStyle={{ backgroundColor: '#fff', borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                        cursor={{ fill: '#ECFDF5' }}
+                                        cursor={{ stroke: '#ECFDF5', strokeWidth: 2 }}
                                         formatter={(value) => formatCurrency(value)}
                                     />
-                                    <Bar dataKey="amount" fill="#10B981" radius={[4, 4, 0, 0]} />
-                                </BarChart>
+                                    <Line
+                                        type="monotone"
+                                        dataKey="amount"
+                                        stroke="#10B981"
+                                        strokeWidth={3}
+                                        dot={{ fill: '#10B981', r: 4, strokeWidth: 0 }}
+                                        activeDot={{ r: 6, stroke: '#ECFDF5', strokeWidth: 4 }}
+                                    />
+                                </LineChart>
                             </ResponsiveContainer>
                         ) : (
                             <div className="flex items-center justify-center h-full text-gray-400 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
@@ -295,17 +302,24 @@ const Overview = () => {
                     <div className="h-64 w-full">
                         {hasPinjaman ? (
                             <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-                                <BarChart data={pinjamanChartData} layout="vertical">
-                                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E5E7EB" />
-                                    <XAxis type="number" hide />
-                                    <YAxis dataKey="name" type="category" width={80} axisLine={false} tickLine={false} tick={{ fill: '#374151', fontSize: 12, fontWeight: 500 }} />
+                                <LineChart data={pinjamanChartData}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#374151', fontSize: 12, fontWeight: 500 }} dy={10} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#374151', fontSize: 12 }} tickFormatter={(val) => `${val / 1000000}Jt`} />
                                     <Tooltip
-                                        cursor={{ fill: 'transparent' }}
+                                        cursor={{ stroke: '#FEF2F2', strokeWidth: 2 }}
                                         contentStyle={{ backgroundColor: '#fff', borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
                                         formatter={(value) => formatCurrency(value)}
                                     />
-                                    <Bar dataKey="sisa" fill="#EF4444" radius={[0, 4, 4, 0]} barSize={20} background={{ fill: '#F3F4F6' }} />
-                                </BarChart>
+                                    <Line
+                                        type="monotone"
+                                        dataKey="sisa"
+                                        stroke="#EF4444"
+                                        strokeWidth={3}
+                                        dot={{ fill: '#EF4444', r: 4, strokeWidth: 0 }}
+                                        activeDot={{ r: 6, stroke: '#FEF2F2', strokeWidth: 4 }}
+                                    />
+                                </LineChart>
                             </ResponsiveContainer>
                         ) : (
                             <div className="flex items-center justify-center h-full text-gray-400 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">

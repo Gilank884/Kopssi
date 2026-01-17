@@ -60,6 +60,14 @@ const AdminLayout = () => {
             ]
         },
         {
+            label: 'Upload Pembayaran',
+            icon: <Upload size={20} />,
+            children: [
+                { path: '/admin/upload-simpanan', label: 'Upload Simpanan', icon: <Banknote size={18} /> },
+                { path: '/admin/upload-pinjaman', label: 'Upload angsuran', icon: <ClipboardCheck size={18} /> },
+            ]
+        },
+        {
             label: 'Pinjaman',
             icon: <BadgeCent size={20} />,
             children: [
@@ -67,6 +75,16 @@ const AdminLayout = () => {
                 { path: '/admin/pencairan-pinjaman', label: 'Pencairan Pinjaman', icon: <BanknoteArrowUp size={18} /> },
                 { path: '/admin/monitor-pinjaman', label: 'Monitoring Pinjaman', icon: <BadgeCent size={18} /> },
 
+            ]
+        },
+
+        {
+            label: 'Angsuran Dan Simpanan',
+            icon: <Banknote size={20} />,
+            children: [
+                { path: '/admin/monitor-simpanan', label: 'Monitoring Simpanan', icon: <Banknote size={18} /> },
+                { path: '/admin/monitor-angsuran', label: 'Monitoring Angsuran', icon: <ClipboardCheck size={18} /> },
+                { path: '/admin/transaksi', label: 'Transaksi', icon: <ArrowLeftRight size={18} /> },
             ]
         },
         {
@@ -77,23 +95,7 @@ const AdminLayout = () => {
                 { path: '/admin/realisasi-karyawan', label: 'Realisasi Karyawan', icon: <Users size={18} /> },
             ]
         },
-        {
-            label: 'Keuangan',
-            icon: <Banknote size={20} />,
-            children: [
-                { path: '/admin/monitor-simpanan', label: 'Monitoring Simpanan', icon: <Banknote size={18} /> },
-                { path: '/admin/monitor-angsuran', label: 'Monitoring Angsuran', icon: <ClipboardCheck size={18} /> },
-                { path: '/admin/transaksi', label: 'Transaksi', icon: <ArrowLeftRight size={18} /> },
-            ]
-        },
-        {
-            label: 'Upload Pembayaran',
-            icon: <Upload size={20} />,
-            children: [
-                { path: '/admin/upload-simpanan', label: 'Upload Simpanan', icon: <Banknote size={18} /> },
-                { path: '/admin/upload-pinjaman', label: 'Upload angsuran', icon: <ClipboardCheck size={18} /> },
-            ]
-        },
+
         {
             label: 'Database',
             icon: <Settings size={20} />,
@@ -391,7 +393,7 @@ const AdminLayout = () => {
                         className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-all duration-200 group border border-transparent hover:border-rose-500/20"
                     >
                         <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
-                        {isSidebarOpen && <span>Keluar Sistem</span>}
+                        {isSidebarOpen && <span>Logout</span>}
                     </button>
                 </div>
             </aside>

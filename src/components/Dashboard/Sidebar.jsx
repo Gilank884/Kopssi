@@ -52,7 +52,7 @@ const Sidebar = ({ isOpen, navItems, onLogout, onNavItemClick }) => {
                     {isOpen && (
                         <div className="flex flex-col">
                             <h1 className="font-black text-xl text-white tracking-tight italic leading-none">KOPSSI</h1>
-                            <span className="text-[9px] text-emerald-400 font-bold uppercase tracking-[0.2em] leading-none mt-1">System</span>
+                            <span className="text-[9px] text-emerald-400 font-bold uppercase tracking-[0.2em] leading-none mt-1">Member</span>
                         </div>
                     )}
                 </div>
@@ -117,7 +117,7 @@ const Sidebar = ({ isOpen, navItems, onLogout, onNavItemClick }) => {
                     `}
                 >
                     <LogOut size={20} className="transition-transform duration-300 group-hover:-translate-x-1" />
-                    {isOpen && <span>Keluar Aplikasi</span>}
+                    {isOpen && <span>Logout</span>}
                 </button>
             </div>
         </aside>

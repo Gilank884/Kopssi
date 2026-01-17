@@ -262,17 +262,10 @@ const PencairanDetail = () => {
                                 Kelola Pencairan
                             </button>
 
-                            <button
-                                onClick={() => navigate(`/admin/loan-detail/${loan.id}`)}
-                                className="w-full py-3 bg-white text-gray-600 rounded-xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-gray-50 transition-all border border-gray-200 shadow-sm"
-                            >
-                                <Eye size={16} />
-                                Lihat Detail Full
-                            </button>
 
                             <button
                                 onClick={() => navigate('/admin/pencairan-pinjaman')}
-                                className="w-full py-3 bg-white text-gray-400 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-gray-50 transition-all"
+                                className="w-full py-3 bg-gray-200 text-white rounded-xl font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-gray-500 transition-all"
                             >
                                 Kembali ke Daftar
                             </button>

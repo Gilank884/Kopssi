@@ -13,11 +13,14 @@ const numberToWords = (num) => {
     if (num < 1000) return numberToWords(Math.floor(num / 100)) + ' Ratus ' + numberToWords(num % 100);
     if (num < 2000) return 'Seribu ' + numberToWords(num - 1000);
     if (num < 1000000) return numberToWords(Math.floor(num / 1000)) + ' Ribu ' + numberToWords(num % 1000);
+    if (num < 1000000000) return numberToWords(Math.floor(num / 1000000)) + ' Juta ' + numberToWords(num % 1000000);
+    if (num < 1000000000000) return numberToWords(Math.floor(num / 1000000000)) + ' Milyar ' + numberToWords(num % 1000000000);
     return num.toString();
 };
 
 const formatDate = (date) =>
     new Date(date).toLocaleDateString('id-ID', {
+        weekday: 'long',
         day: 'numeric',
         month: 'long',
         year: 'numeric'
@@ -44,16 +47,16 @@ export const generateLoanAgreementPDF = async (loan) => {
     const logo = new Image();
     logo.src = '/Logo.png';
     await new Promise((res) => (logo.onload = res));
-    doc.addImage(logo, 'PNG', margin, 10, 16, 16);
+    doc.addImage(logo, 'PNG', margin, 12, 16, 12);
 
     /* =========================
        STYLE DASAR
     ========================= */
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);     // lebih besar & nyaman
-    const lineHeight = 5;   // spasi lebih lega
+    doc.setFontSize(7);     // diperkecil lagi
+    const lineHeight = 3;   // spasi sangat rapat
 
-    const writeLeft = (text, gap = 4) => {
+    const writeLeft = (text, gap = 2) => {
         const lines = doc.splitTextToSize(text, colWidth);
         doc.text(lines, leftX, yLeft);
         yLeft += lines.length * lineHeight + gap;
@@ -69,18 +72,27 @@ export const generateLoanAgreementPDF = async (loan) => {
        HEADER
     ========================= */
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    writeLeft('Koperasi Jasa Pegawai Swadharma Sarana Informatika', 2);
+    doc.setFontSize(7);
+    writeLeft('Koperasi Jasa Pegawai Swadharma Sarana Informatika', 3);
 
-    doc.setFontSize(11);
-    writeLeft('PERJANJIAN PINJAMAN ANGGOTA KOPERASI JASA', 1);
-    writeLeft('PEGAWAI SWADHARMA SARANA INFORMATIKA', 2);
+    doc.setFontSize(9); // Size 9 for Title (was 11)
+    const titleText = 'PERJANJIAN PINJAMAN ANGGOTA KOPERASI JASA PEGAWAI SWADHARMA SARANA INFORMATIKA';
+    const titleLines = doc.splitTextToSize(titleText, colWidth);
+    titleLines.forEach(line => {
+        const w = doc.getTextWidth(line);
+        doc.text(line, leftX + (colWidth - w) / 2, yLeft);
+        yLeft += lineHeight;
+    });
 
-    doc.setFontSize(10);
-    writeLeft(`Nomor : ${loan.no_pinjaman}`, 6);
+    yLeft += 1; // Small gap
+
+    const nomorText = `Nomor : ${loan.no_pinjaman}`;
+    const nomorW = doc.getTextWidth(nomorText);
+    doc.text(nomorText, leftX + (colWidth - nomorW) / 2, yLeft);
+    yLeft += lineHeight + 4; // Gap before next section
 
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
+    doc.setFontSize(7);
 
     /* =========================
        BLOK IDENTITAS
@@ -89,6 +101,7 @@ export const generateLoanAgreementPDF = async (loan) => {
     writeLeft('Yang bertanda tangan dibawah ini :', 4);
 
     doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7);
     writeLeft('I. R. LIZA SARASWATI', 1);
 
     doc.setFont('helvetica', 'normal');
@@ -112,58 +125,171 @@ untuk selanjutnya disebut :
 
     writeLeft(
         'Kedua belah pihak setuju dan sepakat menandatangani Perjanjian Pinjaman dengan syarat-syarat serta ketentuan-ketentuan sebagai berikut :',
-        6
+        4
     );
 
     /* =========================
        PASAL KIRI
     ========================= */
+    const renderPasalContent = (text, startX, startY, width, gap = 2, indent = 4) => {
+        let currentY = startY;
+        // Split by newline to preserve paragraph structure
+        const paragraphs = text.split('\n');
+
+        paragraphs.forEach(para => {
+            const hasNumber = para.match(/^(\d+\.)\s+(.*)/);
+            if (hasNumber) {
+                // It is a numbered line: "1. Text..."
+                const numberStr = hasNumber[1];
+                const contentStr = hasNumber[2];
+
+                // Draw Number
+                doc.text(numberStr, startX, currentY);
+
+                // Draw Content with indent
+                const contentLines = doc.splitTextToSize(contentStr, width - indent);
+                doc.text(contentLines, startX + indent, currentY);
+
+                currentY += contentLines.length * lineHeight;
+            } else {
+                // Normal paragraph
+                const lines = doc.splitTextToSize(para, width);
+                doc.text(lines, startX, currentY);
+                currentY += lines.length * lineHeight;
+            }
+        });
+
+        return currentY + gap;
+    };
+
     const pasalLeft = (title, text) => {
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(10);
-        writeLeft(title, 2);
+        doc.setFontSize(7);
+
+        // Center Title
+        const titleLines = doc.splitTextToSize(title, colWidth);
+        titleLines.forEach(line => {
+            const lineWidth = doc.getTextWidth(line);
+            const xOffset = leftX + (colWidth - lineWidth) / 2;
+            doc.text(line, xOffset, yLeft);
+            yLeft += lineHeight;
+        });
+
+        yLeft += 1;
+
         doc.setFont('helvetica', 'normal');
-        doc.setFontSize(9);
-        writeLeft(text, 5);
+        doc.setFontSize(7);
+
+        // Render aligned text
+        yLeft = renderPasalContent(text, leftX, yLeft, colWidth);
     };
 
     pasalLeft(
         'Pasal 1\nMAKSIMUM & TUJUAN PINJAMAN',
-        `1. Maksimum Pinjaman sebesar Rp ${Number(loan.jumlah_pinjaman).toLocaleString('id-ID')} (${numberToWords(loan.jumlah_pinjaman)}).
-Maksimum Pinjaman adalah fasilitas pinjaman tertinggi yang dapat ditarik oleh PEMINJAM setelah memenuhi semua syarat yang ditetapkan oleh KOPERASI JASA PEGAWAI SWADHARMA SARANA INFORMATIKA.
-2. Tujuan Pinjaman untuk : ${loan.keperluan}`
+        `1. Maksimum Pinjaman sebesar Rp ${Number(loan.jumlah_pinjaman).toLocaleString('id-ID')} (${numberToWords(loan.jumlah_pinjaman)}). Maksimum Pinjaman adalah fasilitas pinjaman tertinggi yang dapat ditarik oleh PEMINJAM setelah memenuhi semua syarat yang ditetapkan oleh KOPERASI JASA PEGAWAI SWADHARMA SARANA INFORMATIKA.\n2. Tujuan Pinjaman untuk : ${loan.keperluan}`
     );
 
-    pasalLeft('Pasal 2\nJANGKA WAKTU PINJAMAN', `Jangka waktu pinjaman adalah ${loan.tenor_bulan} (${numberToWords(loan.tenor_bulan)}) bulan.`);
-    pasalLeft('Pasal 3\nSUKU BUNGA PINJAMAN & PROVISI', `Bunga Pinjaman sebesar ${(Number(loan.nilai_bunga || 0) / 12).toFixed(2)} % per bulan.`);
-    pasalLeft('Pasal 4\nCARA PEMBAYARAN ANGSURAN', `Pembayaran dilakukan melalui potong gaji Pegawai ALIH DAYA JST tanggal 25 setiap bulannya.`);
-    pasalLeft('Pasal 5\nJAMINAN', `Gaji, simpanan, dan/atau jaminan tambahan apabila diperlukan.`);
-    pasalLeft('Pasal 6\nPELUNASAN', `Pinjaman wajib dilunasi apabila PEMINJAM berhenti bekerja atau keluar dari keanggotaan KOPSSI.`);
-    pasalLeft('Pasal 7\nPASAL TAMBAHAN', `PEMINJAM wajib memberitahukan perubahan alamat atau pekerjaan.`);
+    pasalLeft(
+        'Pasal 2\nJANGKA WAKTU PINJAMAN',
+        `Jangka waktu pinjaman adalah ${loan.tenor_bulan}, (${numberToWords(loan.tenor_bulan)}) bulan terhitung sejak ditandatangani perjanjian pinjaman.`
+    );
+
+    pasalLeft(
+        'Pasal 3\nSUKU BUNGA PINJAMAN & PROVISI',
+        `1. PEMINJAM wajib membayar bunga Pinjaman kepada KOPSSI sebesar 0.83 % per bulan.`
+    );
+
+    pasalLeft(
+        'Pasal 4\nCARA PEMBAYARAN ANGSURAN',
+        `Terhadap Fasilitas Pinjaman ini, PEMINJAM diwajibkan melakukan pembayaran dalam bentuk :\n1. Diangsur melalui potong gaji Pegawai ALIH DAYA JST tanggal 25 setiap bulannya.`
+    );
+
+    pasalLeft(
+        'Pasal 5\nJAMINAN',
+        `Peminjam wajib menyerahkan jaminan pembayaran atas Pinjaman kepada KOPSSI dalam bentuk:\n1. Jaminan Pokok Pinjaman berupa Gaji dan pensiunan atau pendapatan lain yang akan diperoleh Peminjam, termasuk Simpanan Pokok, Simpanan Wajib yang ada pada KOPSSI\n2. Jaminan Tambahan akan diserahkan ke KOPSSI, (apabila diperlukan).`
+    );
+
+    pasalLeft(
+        'Pasal 6\nPELUNASAN',
+        `1. Jika PEMINJAM berhenti bekerja dari unit kerjanya atau berhenti dari keanggotaan KOPSSI sebelum pinjaman lunas, maka PEMINJAM wajib melunasi pinjamannya.\n2. Segala penerimaan yang masih akan diperoleh baik dari unit kerja yang bersangkutan maupun simpanan-simpanan yang ada di KOPSSI akan dikompensasikan dengan sisa jumlah pinjaman yang masih terhutang, namun apabila setelah dikompensasikan belum lunas, maka PEMINJAM atau ahli warisnya harus segera melunasinya sekaligus.`
+    );
+
+    pasalLeft(
+        'Pasal 7\nPASAL TAMBAHAN',
+        `1. PEMINJAM wajib segera memberitahukan kepada KOPSSI dalam hal PEMINJAM pindah alamat atau pindah pekerjaan an atau dimutasikan ketempat lain.`
+    );
 
     /* =========================
        KOLOM KANAN
     ========================= */
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    writeRight('Pasal 8\nPENYELESAIAN PERSELISIHAN', 2);
+    const pasalRight = (title, text) => {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7);
 
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    writeRight(
-        'Perselisihan diselesaikan secara musyawarah dan apabila tidak tercapai, diselesaikan melalui Pengadilan Negeri Jakarta Selatan.',
-        6
+        const titleLines = doc.splitTextToSize(title, colWidth);
+        titleLines.forEach(line => {
+            const lineWidth = doc.getTextWidth(line);
+            const xOffset = rightX + (colWidth - lineWidth) / 2;
+            doc.text(line, xOffset, yRight);
+            yRight += lineHeight;
+        });
+
+        yRight += 2;
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7);
+
+        // Reuse the helper for right column with rightX
+        yRight = renderPasalContent(text, rightX, yRight, colWidth);
+    };
+
+    pasalRight(
+        'Pasal 8\nPENYELESAIAN PERSELISIHAN',
+        '1. Dalam hal terjadi perselisihan tentang pelaksanaan perjanjian ini, Para Pihak sepakat untuk menyelesaikan secara musyawarah dan apabila musyawarah tidak tercapai, maka akan diselesaikan melalui Pengadilan Negeri Jakarta Selatan.'
     );
 
-    writeRight(`Perjanjian ini dibuat di Jakarta, ${formatDate(new Date())}`, 10);
+    writeRight(`Perjanjian ini dibuat di Jakarta pada hari ${formatDate(new Date())}`, 10);
 
+    /* =========================
+       SIGNATURE BLOCK (Side-by-Side)
+    ========================= */
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    writeRight('KOPERASI JASA PEGAWAI\nSWADHARMA SARANA\nINFORMATIKA', 16);
-    writeRight('PEMINJAM', 16);
+    doc.setFontSize(7);
 
-    writeRight('R. LIZA SARASWATI', 0);
-    writeRight(loan.personal_data?.full_name?.toUpperCase(), 0);
+    // Grid calculation
+    const sigStartY = yRight;
+    const halfWidth = colWidth / 2;
+    const leftSubColCenter = rightX + (halfWidth / 2);
+    const rightSubColCenter = rightX + halfWidth + (halfWidth / 2);
+
+    // Left Side: Koperasi
+    const kopText = 'KOPERASI JASA PEGAWAI\nSWADHARMA SARANA\nINFORMATIKA';
+    const kopLines = doc.splitTextToSize(kopText, halfWidth);
+    let kopY = sigStartY;
+    kopLines.forEach((line) => {
+        const w = doc.getTextWidth(line);
+        doc.text(line, leftSubColCenter - w / 2, kopY);
+        kopY += lineHeight;
+    });
+
+    // Right Side: Peminjam
+    const peminjamText = 'PEMINJAM';
+    const peminjamW = doc.getTextWidth(peminjamText);
+    doc.text(peminjamText, rightSubColCenter - peminjamW / 2, sigStartY);
+
+    // Names below (Gap)
+    const signatureGap = 15;
+    const nameY = sigStartY + signatureGap + 5; // Adjust based on Koperasi title height ~9-10mm
+
+    // Name 1 (Left)
+    const signer1 = 'R. LIZA SARASWATI';
+    const signer1W = doc.getTextWidth(signer1);
+    doc.text(signer1, leftSubColCenter - signer1W / 2, nameY);
+
+    // Name 2 (Right)
+    const signer2 = (loan.personal_data?.full_name || '').toUpperCase();
+    const signer2W = doc.getTextWidth(signer2);
+    doc.text(signer2, rightSubColCenter - signer2W / 2, nameY);
 
     /* =========================
        SAVE
