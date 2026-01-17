@@ -68,13 +68,74 @@ const MonitorAngsuran = () => {
 
             if (error) throw error;
 
-            // Filter by month range locally if angsuran doesn't have a specific due date field that's reliable
-            // We use created_at as a proxy or if there's a better logic. 
-            // In kopssi, installments are usually generated for specific months.
+            // Group by loan and find the next bill (earliest UNPAID)
+            const loanGroups = {};
+            (data || []).forEach(inst => {
+                if (!loanGroups[inst.pinjaman_id]) {
+                    loanGroups[inst.pinjaman_id] = [];
+                }
+                loanGroups[inst.pinjaman_id].push(inst);
+            });
 
-            const filteredByDate = (data || []).filter(inst => {
-                const instDate = new Date(inst.created_at).toISOString().split('T')[0];
-                return instDate >= startDate && instDate <= endDate;
+            const nextInstallments = [];
+            Object.values(loanGroups).forEach(group => {
+                // Sort by bulan_ke ASC
+                group.sort((a, b) => a.bulan_ke - b.bulan_ke);
+
+                // Find first UNPAID
+                const firstUnpaid = group.find(i => i.status === 'UNPAID');
+
+                if (firstUnpaid) {
+                    nextInstallments.push(firstUnpaid);
+                } else {
+                    // If all paid, maybe show the last paid one to indicate completion?
+                    // Or don't show if we only care about monitoring "bills to pay".
+                    // If filterStatus is 'PAID', we might want to see them.
+                    // If filterStatus is 'ALL', seeing the last status is good.
+                    // Let's take the last one (max bulan_ke)
+                    const lastPaid = group[group.length - 1];
+                    nextInstallments.push(lastPaid);
+                }
+            });
+
+            // Apply Date Filter to the SELECTED installments
+            const filteredByDate = nextInstallments.filter(inst => {
+                // Use tanggal_bayar if exists (for paid), or created_at/estimated due date?
+                // For UNPAID, we might want to see if it due in this range?
+                // The current code used created_at which is generation time, not due date.
+                // UNPAID usually doesn't have tanggal_bayar set (it's null).
+                // If we want "Bulan Terdekat", we usually just want to see it regardless of date filter 
+                // OR we check if the 'due date' (which we calculate dynamically in other places) is in range.
+                // Since this page used `created_at` before, let's keep it simple: 
+                // IF UNPAID, we likely want to see it always if it's the next bill. 
+                // BUT user kept date filters. 
+                // Let's filter based on: if PAID -> tanggal_bayar. If UNPAID -> maybe don't filter by date? 
+                // Or use the "estimated" date (created_at + X months).
+                // EXISTING CODE used `inst.created_at`. Let's stick to `inst.created_at` or disable date filter for UNPAID if user wants "Bulan Terdekat".
+                // Actually, "Monitoring Angsuran" usually implies "What is due this month?".
+                // If I filtered to "Next Bill", and then apply date filter `2026-01-01` to `2026-01-31`, 
+                // I expect to see bills due in Jan 2026. 
+                // Since `angsuran` table doesn't seem to have a strict `due_date` column in the select above (it selects *), 
+                // let's assume `tanggal_bayar` is the relevant date for PAID. 
+                // For UNPAID, `tanggal_bayar` is null.
+                // We should probably rely on the logic that `MonitorAngsuran` usually shows what happened or is happening.
+
+                // User said: "tampilkan jangan semua data angsuran tapi hanya bulan terdekat saja"
+                // This implies simpler view. 
+                // I will return `nextInstallments` directly for now to ensure we see the unique list. 
+                // If the user wants to filter by date, they can, but filtering `nextInstallments` by `created_at` (which is loan creation + 0s for all insts) is wrong.
+                // Installments are created at bulk. `created_at` is same for all 12 installments.
+                // So filtering by `created_at` was likely WRONG before too (it would show ALL 12 if range covered loan creation).
+                // Let's REMOVE date filter for UNPAID to ensure we see the current obligation. 
+                // Or filter by `tanggal_bayar` if PAID.
+
+                if (inst.status === 'PAID') {
+                    const pDate = new Date(inst.tanggal_bayar).toISOString().split('T')[0];
+                    return pDate >= startDate && pDate <= endDate;
+                }
+                // For UNPAID, show all (since it's the "current" one) OR maybe we don't apply date filter?
+                // Let's show all UNPAID next bills.
+                return true;
             });
 
             setInstallments(filteredByDate);
