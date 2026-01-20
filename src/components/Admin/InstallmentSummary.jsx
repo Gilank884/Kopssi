@@ -76,69 +76,133 @@ const InstallmentSummary = ({ loan, installments, userLoans, formatCurrency, sel
                             </div>
                         </div>
 
-                        {/* List Angsuran Berjalan Pinjaman Ini */}
-                        {unpaidCurrentInstallments.length > 0 && (
-                            <div className="mt-6 space-y-3">
-                                <p className="text-[10px] font-black text-gray-400 uppercase italic tracking-widest px-1">
-                                    Daftar Angsuran Berjalan
+                        {/* Jadwal Pinjaman Table */}
+                        <div className="mt-8 space-y-4">
+                            <div className="flex items-center justify-between px-1 text-left">
+                                <p className="text-[10px] font-black text-gray-400 uppercase italic tracking-widest leading-none">
+                                    Jadwal Pinjaman (Official Schedule)
                                 </p>
-                                <div className="bg-white rounded-xl border border-emerald-100/50 divide-y divide-emerald-50 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-emerald-100">
-                                    {unpaidCurrentInstallments.map((inst) => (
-                                        <div key={inst.id} className="p-3 flex items-center justify-between group hover:bg-emerald-50/30 transition-colors">
-                                            <div className="flex items-center gap-3">
-                                                <div className={`p-1.5 rounded-lg border italic font-black text-[9px] ${new Date(inst.tanggal_bayar) < new Date()
-                                                    ? 'bg-red-50 text-red-600 border-red-100'
-                                                    : 'bg-emerald-50 text-emerald-600 border-emerald-100'
-                                                    }`}>
-                                                    BLN {inst.bulan_ke}
-                                                </div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-[10px] font-black text-gray-700 uppercase italic">Jatuh Tempo</span>
-                                                    <span className="text-[10px] font-bold text-gray-400">{new Date(inst.tanggal_bayar).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <span className="text-[11px] font-black text-emerald-700 italic block">{formatCurrency(inst.amount)}</span>
-                                                {new Date(inst.tanggal_bayar) < new Date() && (
-                                                    <span className="text-[8px] font-black text-red-500 uppercase italic">Terlambat</span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
+                                <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full uppercase italic shrink-0">
+                                    Amortisasi Flat
+                                </span>
                             </div>
-                        )}
 
-                        {/* Mutasi Pembayaran (Sudah Bayar) */}
-                        {paidCurrentInstallments.length > 0 && (
-                            <div className="mt-6 space-y-3">
-                                <p className="text-[10px] font-black text-blue-400 uppercase italic tracking-widest px-1">
-                                    Mutasi Pembayaran (History)
-                                </p>
-                                <div className="bg-white rounded-xl border border-blue-100/50 divide-y divide-blue-50 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-100">
-                                    {paidCurrentInstallments.map((inst) => (
-                                        <div key={inst.id} className="p-3 flex items-center justify-between group hover:bg-blue-50/30 transition-colors">
-                                            <div className="flex items-center gap-3">
-                                                <div className="p-1.5 rounded-lg border italic font-black text-[9px] bg-blue-50 text-blue-600 border-blue-100">
-                                                    BLN {inst.bulan_ke}
-                                                </div>
-                                                <div className="flex flex-col text-left">
-                                                    <span className="text-[10px] font-black text-gray-700 uppercase italic">Dibayar Pada</span>
-                                                    <span className="text-[10px] font-bold text-gray-400">
-                                                        {new Date(inst.tanggal_bayar).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}
-                                                    </span>
-                                                    <span className="text-[8px] font-black text-blue-500 uppercase italic">{inst.metode_bayar || 'MANUAL'}</span>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <span className="text-[11px] font-black text-blue-700 italic block">{formatCurrency(inst.amount)}</span>
-                                                <span className="text-[8px] font-black text-emerald-500 uppercase italic">BERHASIL</span>
-                                            </div>
-                                        </div>
-                                    ))}
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr className="bg-gray-50/50 border-b border-gray-100">
+                                                <th className="px-4 py-3 text-[9px] font-black text-gray-400 uppercase italic tracking-tight">Tanggal Tagih</th>
+                                                <th className="px-4 py-3 text-[9px] font-black text-gray-400 uppercase italic tracking-tight text-right">Pokok</th>
+                                                <th className="px-4 py-3 text-[9px] font-black text-gray-400 uppercase italic tracking-tight text-right">Bunga</th>
+                                                <th className="px-4 py-3 text-[9px] font-black text-gray-400 uppercase italic tracking-tight text-right">Jumlah</th>
+                                                <th className="px-4 py-3 text-[9px] font-black text-gray-400 uppercase italic tracking-tight text-right">Saldo Pokok</th>
+                                                <th className="px-4 py-3 text-[9px] font-black text-gray-400 uppercase italic tracking-tight text-center">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-50">
+                                            {(() => {
+                                                const principalAmt = parseFloat(loan.jumlah_pinjaman) || 0;
+                                                const tenorMonths = loan.tenor_bulan || 1;
+
+                                                let totalBungaAmt = 0;
+                                                if (loan.tipe_bunga === 'PERSENAN') {
+                                                    totalBungaAmt = principalAmt * (parseFloat(loan.nilai_bunga || 0) / 100) * (tenorMonths / 12);
+                                                } else if (loan.tipe_bunga === 'NOMINAL') {
+                                                    totalBungaAmt = parseFloat(loan.nilai_bunga || 0);
+                                                }
+
+                                                const stdPokok = Math.floor(principalAmt / tenorMonths);
+                                                const stdBunga = Math.round(totalBungaAmt / tenorMonths);
+
+                                                let sumPokok = 0;
+                                                let sumBunga = 0;
+                                                let sumTotal = 0;
+                                                let runningSaldo = principalAmt;
+
+                                                return (
+                                                    <>
+                                                        {/* Row 0: Starting Balance */}
+                                                        {currentInstallments.length > 0 && (
+                                                            <tr className="bg-gray-50/30">
+                                                                <td className="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase italic">
+                                                                    {/* Empty month as requested */}
+                                                                </td>
+                                                                <td className="px-4 py-3 text-[10px] font-black text-gray-300 italic text-right">-</td>
+                                                                <td className="px-4 py-3 text-[10px] font-black text-gray-300 italic text-right">-</td>
+                                                                <td className="px-4 py-3 text-[10px] font-black text-gray-300 italic text-right">-</td>
+                                                                <td className="px-4 py-3 text-[10px] font-black text-gray-900 italic text-right">
+                                                                    {formatCurrency(principalAmt)}
+                                                                </td>
+                                                                <td className="px-4 py-3 text-center">
+                                                                    <span className="text-[8px] font-black text-gray-300 uppercase italic">START</span>
+                                                                </td>
+                                                            </tr>
+                                                        )}
+
+                                                        {currentInstallments.map((inst, idx) => {
+                                                            const isLast = idx === currentInstallments.length - 1;
+
+                                                            let currentPokok = stdPokok;
+                                                            let currentBunga = stdBunga;
+
+                                                            if (isLast) {
+                                                                currentPokok = principalAmt - (stdPokok * (tenorMonths - 1));
+                                                                currentBunga = totalBungaAmt - (stdBunga * (tenorMonths - 1));
+                                                            }
+
+                                                            const currentTotal = currentPokok + currentBunga;
+                                                            runningSaldo -= currentPokok;
+
+                                                            sumPokok += currentPokok;
+                                                            sumBunga += currentBunga;
+                                                            sumTotal += currentTotal;
+
+                                                            return (
+                                                                <tr key={inst.id} className={`group hover:bg-gray-50/50 transition-colors ${inst.status === 'PAID' ? 'bg-blue-50/10' : ''}`}>
+                                                                    <td className="px-4 py-3 text-[10px] font-bold text-gray-600 uppercase italic">
+                                                                        {new Date(inst.tanggal_bayar).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
+                                                                    </td>
+                                                                    <td className="px-4 py-3 text-[10px] font-black text-gray-700 italic text-right">
+                                                                        {formatCurrency(currentPokok)}
+                                                                    </td>
+                                                                    <td className="px-4 py-3 text-[10px] font-black text-emerald-600 italic text-right">
+                                                                        {formatCurrency(currentBunga)}
+                                                                    </td>
+                                                                    <td className="px-4 py-3 text-[11px] font-black text-gray-900 italic text-right">
+                                                                        {formatCurrency(currentTotal)}
+                                                                    </td>
+                                                                    <td className="px-4 py-3 text-[10px] font-black text-gray-400 italic text-right">
+                                                                        {formatCurrency(Math.max(0, runningSaldo))}
+                                                                    </td>
+                                                                    <td className="px-4 py-3 text-center">
+                                                                        <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase italic ${inst.status === 'PAID'
+                                                                            ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                                                                            : new Date(inst.tanggal_bayar) < new Date()
+                                                                                ? 'bg-red-50 text-red-600 border border-red-100'
+                                                                                : 'bg-gray-50 text-gray-400 border border-gray-100 uppercase'
+                                                                            }`}>
+                                                                            {inst.status === 'PAID' ? 'LUNAS' : 'PENDING'}
+                                                                        </span>
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        })}
+                                                        <tr className="bg-gray-100/50 font-black border-t-2 border-gray-200">
+                                                            <td className="px-4 py-4 text-[11px] uppercase italic text-gray-900">JUMLAH</td>
+                                                            <td className="px-4 py-4 text-[11px] italic text-right text-gray-900">{formatCurrency(sumPokok)}</td>
+                                                            <td className="px-4 py-4 text-[11px] italic text-right text-emerald-700">{formatCurrency(sumBunga)}</td>
+                                                            <td className="px-4 py-4 text-[12px] italic text-right text-emerald-600 font-black">{formatCurrency(sumTotal)}</td>
+                                                            <td className="px-4 py-4" colSpan="2"></td>
+                                                        </tr>
+                                                    </>
+                                                );
+                                            })()}
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
-                        )}
+                        </div>
                     </div>
                 )}
 

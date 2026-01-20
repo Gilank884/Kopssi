@@ -62,10 +62,6 @@ const AddMemberForm = ({ onSave, isSubmitting }) => {
     // Valid options (initial static, then fetched)
     const [options, setOptions] = useState({
         companies: [],
-        units: [],
-        positions: ['Staff', 'Supervisor', 'Manager', 'Director'],
-        ops: ['Pilih Ops', 'OPS A', 'OPS B'],
-        locations: [],
         banks: ['BNI 46', 'BCA', 'MANDIRI', 'BRI']
     });
 
@@ -86,9 +82,7 @@ const AddMemberForm = ({ onSave, isSubmitting }) => {
 
                 setOptions(prev => ({
                     ...prev,
-                    companies: grouped['company'] || [],
-                    units: grouped['work_unit'] || [],
-                    locations: grouped['lokasi'] || []
+                    companies: grouped['company'] || []
                 }));
             }
         } catch (err) {
@@ -222,28 +216,16 @@ const AddMemberForm = ({ onSave, isSubmitting }) => {
                         </select>
                     </InputGroup>
                     <InputGroup label="Unit Kerja">
-                        <select name="work_unit" value={formData.work_unit} onChange={handleChange} className={selectClasses}>
-                            <option value="">Pilih Unit Kerja</option>
-                            {options.units.map(u => <option key={u} value={u}>{u}</option>)}
-                        </select>
+                        <input name="work_unit" value={formData.work_unit} onChange={handleChange} className={inputClasses} placeholder="Masukkan Unit Kerja" />
                     </InputGroup>
                     <InputGroup label="Jabatan">
-                        <select name="jabatan" value={formData.jabatan} onChange={handleChange} className={selectClasses}>
-                            <option value="">Pilih Jabatan</option>
-                            {options.positions.map(p => <option key={p} value={p}>{p}</option>)}
-                        </select>
+                        <input name="jabatan" value={formData.jabatan} onChange={handleChange} className={inputClasses} placeholder="Masukkan Jabatan" />
                     </InputGroup>
                     <InputGroup label="Area OPS">
-                        <select name="ops" value={formData.ops} onChange={handleChange} className={selectClasses}>
-                            <option value="">Pilih Ops</option>
-                            {options.ops.map(o => <option key={o} value={o}>{o}</option>)}
-                        </select>
+                        <input name="ops" value={formData.ops} onChange={handleChange} className={inputClasses} placeholder="Masukkan Area OPS" />
                     </InputGroup>
                     <InputGroup label="Lokasi Kerja">
-                        <select name="lokasi" value={formData.lokasi} onChange={handleChange} className={selectClasses}>
-                            <option value="">Pilih Lokasi</option>
-                            {options.locations.map(l => <option key={l} value={l}>{l}</option>)}
-                        </select>
+                        <input name="lokasi" value={formData.lokasi} onChange={handleChange} className={inputClasses} placeholder="Masukkan Lokasi" />
                     </InputGroup>
                 </div>
             </div>
