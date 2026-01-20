@@ -87,8 +87,8 @@ const InstallmentSummary = ({ loan, installments, userLoans, formatCurrency, sel
                                         <div key={inst.id} className="p-3 flex items-center justify-between group hover:bg-emerald-50/30 transition-colors">
                                             <div className="flex items-center gap-3">
                                                 <div className={`p-1.5 rounded-lg border italic font-black text-[9px] ${new Date(inst.tanggal_bayar) < new Date()
-                                                        ? 'bg-red-50 text-red-600 border-red-100'
-                                                        : 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                                                    ? 'bg-red-50 text-red-600 border-red-100'
+                                                    : 'bg-emerald-50 text-emerald-600 border-emerald-100'
                                                     }`}>
                                                     BLN {inst.bulan_ke}
                                                 </div>
@@ -102,6 +102,37 @@ const InstallmentSummary = ({ loan, installments, userLoans, formatCurrency, sel
                                                 {new Date(inst.tanggal_bayar) < new Date() && (
                                                     <span className="text-[8px] font-black text-red-500 uppercase italic">Terlambat</span>
                                                 )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Mutasi Pembayaran (Sudah Bayar) */}
+                        {paidCurrentInstallments.length > 0 && (
+                            <div className="mt-6 space-y-3">
+                                <p className="text-[10px] font-black text-blue-400 uppercase italic tracking-widest px-1">
+                                    Mutasi Pembayaran (History)
+                                </p>
+                                <div className="bg-white rounded-xl border border-blue-100/50 divide-y divide-blue-50 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-100">
+                                    {paidCurrentInstallments.map((inst) => (
+                                        <div key={inst.id} className="p-3 flex items-center justify-between group hover:bg-blue-50/30 transition-colors">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-1.5 rounded-lg border italic font-black text-[9px] bg-blue-50 text-blue-600 border-blue-100">
+                                                    BLN {inst.bulan_ke}
+                                                </div>
+                                                <div className="flex flex-col text-left">
+                                                    <span className="text-[10px] font-black text-gray-700 uppercase italic">Dibayar Pada</span>
+                                                    <span className="text-[10px] font-bold text-gray-400">
+                                                        {new Date(inst.tanggal_bayar).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}
+                                                    </span>
+                                                    <span className="text-[8px] font-black text-blue-500 uppercase italic">{inst.metode_bayar || 'MANUAL'}</span>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <span className="text-[11px] font-black text-blue-700 italic block">{formatCurrency(inst.amount)}</span>
+                                                <span className="text-[8px] font-black text-emerald-500 uppercase italic">BERHASIL</span>
                                             </div>
                                         </div>
                                     ))}
