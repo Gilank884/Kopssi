@@ -75,6 +75,39 @@ const InstallmentSummary = ({ loan, installments, userLoans, formatCurrency, sel
                                 <span>Sisa: {formatCurrency(currentRemaining)}</span>
                             </div>
                         </div>
+
+                        {/* List Angsuran Berjalan Pinjaman Ini */}
+                        {unpaidCurrentInstallments.length > 0 && (
+                            <div className="mt-6 space-y-3">
+                                <p className="text-[10px] font-black text-gray-400 uppercase italic tracking-widest px-1">
+                                    Daftar Angsuran Berjalan
+                                </p>
+                                <div className="bg-white rounded-xl border border-emerald-100/50 divide-y divide-emerald-50 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-emerald-100">
+                                    {unpaidCurrentInstallments.map((inst) => (
+                                        <div key={inst.id} className="p-3 flex items-center justify-between group hover:bg-emerald-50/30 transition-colors">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`p-1.5 rounded-lg border italic font-black text-[9px] ${new Date(inst.tanggal_bayar) < new Date()
+                                                        ? 'bg-red-50 text-red-600 border-red-100'
+                                                        : 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                                                    }`}>
+                                                    BLN {inst.bulan_ke}
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-[10px] font-black text-gray-700 uppercase italic">Jatuh Tempo</span>
+                                                    <span className="text-[10px] font-bold text-gray-400">{new Date(inst.tanggal_bayar).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <span className="text-[11px] font-black text-emerald-700 italic block">{formatCurrency(inst.amount)}</span>
+                                                {new Date(inst.tanggal_bayar) < new Date() && (
+                                                    <span className="text-[8px] font-black text-red-500 uppercase italic">Terlambat</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 
