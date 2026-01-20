@@ -70,7 +70,7 @@ const UploadSimpanan = () => {
             setLoading(true);
             const { data: members, error } = await supabase
                 .from('personal_data')
-                .select('nik, full_name')
+                .select('nik, full_name, tagihan_parkir, created_at')
                 .eq('company', selectedPT)
                 .eq('status', 'active');
 
@@ -81,7 +81,15 @@ const UploadSimpanan = () => {
                 return;
             }
 
-            exportMonitoringSimpanan(members, {}, 'TEMPLATE');
+            // Pass the target month/year for smart template calculation
+            const [yearStr, monthStr] = selectedMonth.split('-');
+            const yearNum = parseInt(yearStr, 10);
+            const monthNum = parseInt(monthStr, 10);
+
+            const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            const targetMonthStr = `${monthNames[monthNum - 1]} ${yearNum}`;
+
+            exportMonitoringSimpanan(members, { targetMonth: targetMonthStr, month: monthNum, year: yearNum }, 'TEMPLATE');
         } catch (err) {
             console.error('Error exporting template:', err);
             alert('Gagal mengunduh template');
@@ -134,7 +142,9 @@ const UploadSimpanan = () => {
                 const excelNIK = String(row.NIK || row['NIK'] || '').trim();
                 const amountPokok = parseFloat(row['Simpanan Pokok'] || 0);
                 const amountWajib = parseFloat(row['Simpanan Wajib'] || 0);
+                const amountWajibKhusus = parseFloat(row['Simpanan Wajib Khusus'] || 0);
                 const amountSukarela = parseFloat(row['Simpanan Sukarela'] || 0);
+                const amountParkir = parseFloat(row['PARKIR'] || 0);
 
                 const match = members.find(m => String(m.nik).trim() === excelNIK);
 
@@ -143,7 +153,9 @@ const UploadSimpanan = () => {
                     dbMatch: match,
                     amountPokok,
                     amountWajib,
+                    amountWajibKhusus,
                     amountSukarela,
+                    amountParkir,
                     status: match ? 'VALID' : 'INVALID'
                 };
             });
@@ -160,7 +172,7 @@ const UploadSimpanan = () => {
     };
 
     const handleProcessUpload = async () => {
-        const validItems = previewData.filter(r => r.status === 'VALID' && (r.amountPokok > 0 || r.amountWajib > 0 || r.amountSukarela > 0));
+        const validItems = previewData.filter(r => r.status === 'VALID' && (r.amountPokok > 0 || r.amountWajib > 0 || r.amountWajibKhusus > 0 || r.amountSukarela > 0 || r.amountParkir > 0));
         if (validItems.length === 0) {
             alert('Tidak ada data valid dengan nominal simpanan untuk diproses');
             return;
@@ -201,11 +213,35 @@ const UploadSimpanan = () => {
                         created_at: new Date().toISOString()
                     });
                 }
+                if (item.amountWajibKhusus > 0) {
+                    inserts.push({
+                        personal_data_id: item.dbMatch.id,
+                        type: 'WAJIB_KHUSUS',
+                        amount: item.amountWajibKhusus,
+                        status: 'PAID',
+                        transaction_type: 'SETOR',
+                        bulan_ke: bulanKe,
+                        jatuh_tempo: jatuhTempo,
+                        created_at: new Date().toISOString()
+                    });
+                }
                 if (item.amountSukarela > 0) {
                     inserts.push({
                         personal_data_id: item.dbMatch.id,
                         type: 'SUKARELA',
                         amount: item.amountSukarela,
+                        status: 'PAID',
+                        transaction_type: 'SETOR',
+                        bulan_ke: bulanKe,
+                        jatuh_tempo: jatuhTempo,
+                        created_at: new Date().toISOString()
+                    });
+                }
+                if (item.amountParkir > 0) {
+                    inserts.push({
+                        personal_data_id: item.dbMatch.id,
+                        type: 'PARKIR',
+                        amount: item.amountParkir,
                         status: 'PAID',
                         transaction_type: 'SETOR',
                         bulan_ke: bulanKe,
@@ -234,21 +270,21 @@ const UploadSimpanan = () => {
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="text-left">
-                    <h2 className="text-3xl font-black text-gray-900 italic uppercase tracking-tight">Bulk Input Simpanan</h2>
-                    <p className="text-sm text-gray-500 mt-1 font-medium italic uppercase tracking-wider">Input iuran anggota secara massal via Excel</p>
+        <div className="space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 text-left">
+                <div>
+                    <h2 className="text-2xl font-bold text-gray-800">Upload Simpanan Massal</h2>
+                    <p className="text-sm text-gray-500 mt-1">Input iuran anggota secara massal via Excel</p>
                 </div>
                 <div className="flex flex-col md:flex-row items-end gap-3">
-                    <div className="flex flex-col items-end gap-1">
-                        <label className="text-[10px] font-black text-gray-400 uppercase italic">Pilih Perusahaan (PT)</label>
+                    <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Pilih PT / Perusahaan</label>
                         <div className="relative">
                             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                             <select
                                 value={selectedPT}
                                 onChange={(e) => setSelectedPT(e.target.value)}
-                                className="pl-9 pr-8 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white font-bold appearance-none uppercase italic"
+                                className="pl-9 pr-8 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white font-bold appearance-none uppercase shadow-sm min-w-[200px]"
                             >
                                 <option value="ALL">Pilih PT</option>
                                 {companies.map(c => <option key={c} value={c}>{c}</option>)}
@@ -263,36 +299,36 @@ const UploadSimpanan = () => {
                             </div>
                         </div>
                     )}
-                    <div className="flex flex-col items-end gap-1">
-                        <label className="text-[10px] font-black text-gray-400 uppercase italic">Periode Simpanan</label>
+                    <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Periode</label>
                         <input
                             type="month"
                             value={selectedMonth}
                             onChange={(e) => setSelectedMonth(e.target.value)}
-                            className="px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white font-bold"
+                            className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white font-bold shadow-sm"
                         />
                     </div>
                     <button
                         onClick={handleExportTemplate}
                         disabled={loading}
-                        className="px-6 py-2 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-xs hover:bg-blue-700 shadow-lg shadow-blue-100 transition flex items-center gap-2 disabled:opacity-50"
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition-all flex items-center gap-2 shadow-sm disabled:opacity-50 h-[38px]"
                     >
-                        {loading && <Loader2 className="animate-spin" size={14} />}
-                        <Download size={14} /> Export Template
+                        {loading ? <Loader2 className="animate-spin" size={16} /> : <Download size={16} />}
+                        Export Template
                     </button>
                 </div>
             </div>
 
             {/* Upload Area */}
-            <div className="bg-white p-8 rounded-3xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center space-y-4 hover:border-emerald-400 transition-colors group">
-                <div className="p-4 bg-emerald-50 rounded-full text-emerald-600 group-hover:scale-110 transition-transform">
+            <div className="bg-white p-12 rounded-xl border border-gray-100 shadow-sm flex flex-col items-center justify-center space-y-4">
+                <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600">
                     <Upload size={32} />
                 </div>
                 <div className="text-center">
-                    <p className="text-lg font-bold text-gray-900">
+                    <p className="text-lg font-bold text-gray-800">
                         {file ? file.name : 'Pilih file Excel untuk diunggah'}
                     </p>
-                    <p className="text-sm text-gray-400">Gunakan template yang diunduh dari menu Monitoring Simpanan</p>
+                    <p className="text-sm text-gray-400">Gunakan template yang sesuai untuk mapping data nggota</p>
                 </div>
                 <input
                     type="file"
@@ -301,14 +337,12 @@ const UploadSimpanan = () => {
                     className="hidden"
                     id="excel-upload"
                 />
-                <div className="flex gap-3">
-                    <label
-                        htmlFor="excel-upload"
-                        className="px-6 py-2 bg-emerald-600 text-white rounded-xl font-black uppercase tracking-widest text-xs hover:bg-emerald-700 cursor-pointer shadow-lg shadow-emerald-100 transition"
-                    >
-                        {file ? 'Ganti File' : 'Cari File'}
-                    </label>
-                </div>
+                <label
+                    htmlFor="excel-upload"
+                    className="px-6 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold hover:bg-emerald-700 cursor-pointer transition-all shadow-sm"
+                >
+                    {file ? 'Ganti File' : 'Pilih File'}
+                </label>
             </div>
 
             {/* Guidance */}
@@ -328,96 +362,67 @@ const UploadSimpanan = () => {
                 </div>
             )}
 
-            {/* Statistics & Actions */}
+            {/* Preview Section */}
             {previewData.length > 0 && (
-                <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
                     <div className="flex gap-6">
                         <div className="text-center">
-                            <p className="text-[10px] font-black text-gray-400 uppercase italic">Anggota Valid</p>
-                            <p className="text-2xl font-black text-emerald-600 italic">{uploadStats.matched}</p>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase">Valid</p>
+                            <p className="text-xl font-bold text-emerald-600">{uploadStats.matched}</p>
                         </div>
                         <div className="text-center">
-                            <p className="text-[10px] font-black text-gray-400 uppercase italic">Tidak Ditemukan</p>
-                            <p className="text-2xl font-black text-red-500 italic">{uploadStats.unmatched}</p>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase">Error</p>
+                            <p className="text-xl font-bold text-red-500">{uploadStats.unmatched}</p>
                         </div>
                     </div>
                     <button
                         onClick={handleProcessUpload}
                         disabled={uploadStats.matched === 0 || processing}
-                        className="w-full md:w-auto px-8 py-3 bg-gray-900 text-white rounded-xl font-black uppercase tracking-widest text-xs hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        className="px-6 py-2 bg-gray-900 text-white rounded-lg text-sm font-bold hover:bg-black transition-all shadow-sm flex items-center gap-2"
                     >
-                        {processing ? (
-                            <>
-                                <Loader2 className="animate-spin" size={16} />
-                                Memproses...
-                            </>
-                        ) : (
-                            <>
-                                <CheckCircle2 size={16} />
-                                Proses Simpanan ({selectedMonth})
-                            </>
-                        )}
+                        {processing ? <Loader2 className="animate-spin" size={16} /> : <CheckCircle2 size={16} />}
+                        Simpan Data Ke Database
                     </button>
                 </div>
             )}
 
             {/* Preview Table */}
             {previewData.length > 0 && (
-                <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm">
-                    <div className="overflow-x-auto">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="overflow-x-auto text-left">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-gray-50 border-b border-gray-100 italic font-black text-[10px] uppercase tracking-widest text-gray-400">
-                                    <th className="px-6 py-4">Validasi</th>
-                                    <th className="px-6 py-4">NIK</th>
-                                    <th className="px-6 py-4">Nama Anggota</th>
-                                    <th className="px-6 py-4 text-right">Simp. Pokok</th>
-                                    <th className="px-6 py-4 text-right">Simp. Wajib</th>
-                                    <th className="px-6 py-4 text-right">Simp. Sukarela</th>
-                                    <th className="px-6 py-4 text-right">Total</th>
+                                <tr className="bg-emerald-50 border-b border-emerald-100">
+                                    <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic">Validasi</th>
+                                    <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic">NIK</th>
+                                    <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic">Peminjam</th>
+                                    <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic text-right">Pokok</th>
+                                    <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic text-right">Wajib</th>
+                                    <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic text-right">Wajib Khusus</th>
+                                    <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic text-right">Sukarela</th>
+                                    <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic text-right">Parkir</th>
+                                    <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic text-right">Total</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-50">
+                            <tbody className="divide-y divide-gray-100">
                                 {previewData.map((row, idx) => (
-                                    <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                                    <tr key={idx} className="hover:bg-emerald-50/30 transition-colors">
                                         <td className="px-6 py-4">
                                             {row.status === 'VALID' ? (
-                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-600 italic">
-                                                    <CheckCircle2 size={12} /> OK
-                                                </span>
+                                                <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-bold">MATCH</span>
                                             ) : (
-                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-50 text-red-500 italic">
-                                                    <AlertCircle size={12} /> Unknown
-                                                </span>
+                                                <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-[10px] font-bold">MISSING</span>
                                             )}
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <p className="text-sm font-bold text-gray-900 tabular-nums">{row.excelData.NIK || row.excelData['NIK'] || '-'}</p>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex flex-col">
-                                                <span className="text-sm font-black text-gray-900 uppercase italic">{row.dbMatch?.full_name || row.excelData['Nama Lengkap'] || '-'}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <p className="text-sm font-bold text-gray-600 font-mono">
-                                                Rp {(row.amountPokok || 0).toLocaleString('id-ID')}
-                                            </p>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <p className="text-sm font-bold text-gray-600 font-mono">
-                                                Rp {(row.amountWajib || 0).toLocaleString('id-ID')}
-                                            </p>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <p className="text-sm font-bold text-gray-600 font-mono">
-                                                Rp {(row.amountSukarela || 0).toLocaleString('id-ID')}
-                                            </p>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <p className="text-sm font-black text-emerald-600 tabular-nums italic font-mono">
-                                                Rp {(row.amountPokok + row.amountWajib + row.amountSukarela).toLocaleString('id-ID')}
-                                            </p>
+                                        <td className="px-6 py-4 text-sm text-gray-600">{row.excelData.NIK || row.excelData['NIK'] || '-'}</td>
+                                        <td className="px-6 py-4 font-bold text-gray-900 text-sm">{row.dbMatch?.full_name || row.excelData['Nama Lengkap'] || '-'}</td>
+                                        <td className="px-6 py-4 text-right text-sm text-gray-500">Rp {(row.amountPokok || 0).toLocaleString('id-ID')}</td>
+                                        <td className="px-6 py-4 text-right text-sm text-gray-500">Rp {(row.amountWajib || 0).toLocaleString('id-ID')}</td>
+                                        <td className="px-6 py-4 text-right text-sm text-gray-500">Rp {(row.amountWajibKhusus || 0).toLocaleString('id-ID')}</td>
+                                        <td className="px-6 py-4 text-right text-sm text-gray-500">Rp {(row.amountSukarela || 0).toLocaleString('id-ID')}</td>
+                                        <td className="px-6 py-4 text-right text-sm text-gray-500">Rp {(row.amountParkir || 0).toLocaleString('id-ID')}</td>
+                                        <td className="px-6 py-4 text-right font-bold text-emerald-700 text-sm">
+                                            Rp {(row.amountPokok + row.amountWajib + row.amountWajibKhusus + row.amountSukarela + row.amountParkir).toLocaleString('id-ID')}
                                         </td>
                                     </tr>
                                 ))}

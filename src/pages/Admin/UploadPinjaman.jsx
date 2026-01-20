@@ -35,7 +35,8 @@ const UploadPinjaman = () => {
                     let isHeader = false;
                     for (let c = range.s.c; c <= range.e.c; c++) {
                         const cell = worksheet[XLSX.utils.encode_cell({ r, c })];
-                        if (cell && String(cell.v).toUpperCase() === 'NIK') {
+                        const val = cell ? String(cell.v).toUpperCase() : '';
+                        if (val === 'NIK' || val === 'NOPEG') {
                             isHeader = true;
                             break;
                         }
@@ -78,20 +79,29 @@ const UploadPinjaman = () => {
             if (error) throw error;
 
             const results = excelData.map(row => {
-                // Try to find match by NIK + No Pinjaman + Angsuran Ke
-                const excelNIK = String(row.NIK || row.nik || '').trim();
-                const excelNoPinj = String(row['No Pinjaman'] || row.no_pinjaman || '').trim();
-                const excelBulan = String(row['Angsuran Ke'] || row.bulan_ke || '').trim();
-                const excelStatus = String(row.Status || row.status || '').toUpperCase();
+                // Mapping from Tagihan Excel: NOPEG, NAMAPEG, NoAnggota, JMLGAJI, KETERANGAN1, KETERANGAN2, KETERANGAN3, STATUS
+                const excelNIK = String(row.NOPEG || row.nik || row.NIK || '').trim();
+                const excelID = String(row.KETERANGAN2 || '').trim(); // Format: NoPinj-BulanKe
+                const excelNoPinj = String(row.KETERANGAN3 || row['No Pinjaman'] || '').trim();
+                const excelStatus = String(row.STATUS || row.status || '').toUpperCase();
 
-                // Only match if the status in Excel is PAID or LUNAS
-                const isPaidInExcel = excelStatus === 'PROCESSED' || excelStatus === 'PAID' || excelStatus === 'LUNAS';
+                // Only match if the status in Excel is PROCESSED or LUNAS
+                const isPaidInExcel = excelStatus === 'PROCESSED' || excelStatus === 'LUNAS' || excelStatus === 'PAID';
 
-                const match = isPaidInExcel ? unpaidAngsuran.find(db =>
-                    String(db.pinjaman?.personal_data?.nik).trim() === excelNIK &&
-                    String(db.pinjaman?.no_pinjaman).trim() === excelNoPinj &&
-                    (excelBulan === '' || String(db.bulan_ke).trim() === excelBulan)
-                ) : null;
+                const match = isPaidInExcel ? unpaidAngsuran.find(db => {
+                    const dbNIK = String(db.pinjaman?.personal_data?.nik).trim();
+                    const dbNoPinj = String(db.pinjaman?.no_pinjaman).trim();
+                    const dbBulan = String(db.bulan_ke).trim();
+                    const dbID = `${dbNoPinj}-${dbBulan}`;
+
+                    // Primary match by KETERANGAN2 (ID)
+                    if (excelID && excelID === dbID) return true;
+
+                    // Fallback match by NIK + NoPinj (if ID missing)
+                    if (!excelID && excelNIK === dbNIK && excelNoPinj === dbNoPinj) return true;
+
+                    return false;
+                }) : null;
 
                 return {
                     excelData: row,
@@ -145,11 +155,11 @@ const UploadPinjaman = () => {
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="text-left">
-                    <h2 className="text-3xl font-black text-gray-900 italic uppercase tracking-tight">Bulk Upload Angsuran</h2>
-                    <p className="text-sm text-gray-500 mt-1 font-medium italic uppercase tracking-wider">Update status angsuran pinjaman via Excel</p>
+        <div className="space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 text-left">
+                <div>
+                    <h2 className="text-2xl font-bold text-gray-800">Bulk Upload Angsuran</h2>
+                    <p className="text-sm text-gray-500 mt-1">Update status angsuran pinjaman via Excel</p>
                 </div>
             </div>
 
@@ -162,7 +172,7 @@ const UploadPinjaman = () => {
                     <p className="text-lg font-bold text-gray-900">
                         {file ? file.name : 'Pilih file Excel untuk diunggah'}
                     </p>
-                    <p className="text-sm text-gray-400">Pastikan format kolom sesuai (NIK, Nama, No Pinjaman, Angsuran Ke, Status)</p>
+                    <p className="text-sm text-gray-400">Pastikan format kolom sesuai (NOPEG, NAMAPEG, NoAnggota, KETERANGAN2, STATUS)</p>
                 </div>
                 <input
                     type="file"
@@ -186,10 +196,10 @@ const UploadPinjaman = () => {
                     <div className="text-xs space-y-2">
                         <p className="font-black uppercase tracking-tight italic text-sm">💡 Tips: Gunakan File Monitoring</p>
                         <p className="font-medium leading-relaxed opacity-90">
-                            Anda dapat mengunduh data dari menu <strong>Tagihan Angsuran</strong>, mengubah kolom <strong>Status</strong> menjadi <strong>PROCESSED</strong> untuk baris yang ingin dibayar, lalu unggah kembali file tersebut di sini.
+                            Anda dapat mengunduh data dari menu <strong>Tagihan Angsuran</strong>, mengubah kolom <strong>STATUS</strong> menjadi <strong>PROCESSED</strong> untuk tiap baris yang telah dibayar, lalu unggah kembali file tersebut di sini.
                         </p>
                         <ul className="list-disc ml-4 space-y-1 font-bold opacity-80 mt-2">
-                            <li>Kolom Wajib: <strong>NIK</strong>, <strong>No Pinjaman</strong>, <strong>Angsuran Ke</strong>, <strong>Status</strong></li>
+                            <li>Kolom Wajib: <strong>NOPEG</strong>, <strong>NoAnggota</strong>, <strong>KETERANGAN2</strong>, <strong>STATUS</strong></li>
                             <li>Hanya baris dengan Status <strong>PROCESSED</strong> yang akan diproses</li>
                             <li>Hanya data yang saat ini berstatus <strong>Kosong/UNPAID</strong> di sistem yang dapat diperbarui</li>
                         </ul>
@@ -197,87 +207,64 @@ const UploadPinjaman = () => {
                 </div>
             )}
 
-            {/* Statistics & Actions */}
+            {/* Preview Section */}
             {previewData.length > 0 && (
-                <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
                     <div className="flex gap-6">
                         <div className="text-center">
-                            <p className="text-[10px] font-black text-gray-400 uppercase italic">Matched</p>
-                            <p className="text-2xl font-black text-blue-600 italic">{uploadStats.matched}</p>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase">Matched</p>
+                            <p className="text-xl font-bold text-blue-600">{uploadStats.matched}</p>
                         </div>
                         <div className="text-center">
-                            <p className="text-[10px] font-black text-gray-400 uppercase italic">Unmatched</p>
-                            <p className="text-2xl font-black text-red-500 italic">{uploadStats.unmatched}</p>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase">Unmatched</p>
+                            <p className="text-xl font-bold text-red-500">{uploadStats.unmatched}</p>
                         </div>
                     </div>
 
                     <button
                         onClick={handleProcessPayments}
                         disabled={uploadStats.matched === 0 || processing}
-                        className="w-full md:w-auto px-8 py-3 bg-gray-900 text-white rounded-xl font-black uppercase tracking-widest text-xs hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        className="px-6 py-2 bg-gray-900 text-white rounded-lg text-sm font-bold hover:bg-black transition-all shadow-sm flex items-center gap-2"
                     >
-                        {processing ? (
-                            <>
-                                <Loader2 className="animate-spin" size={16} />
-                                Memproses...
-                            </>
-                        ) : (
-                            <>
-                                <CheckCircle2 size={16} />
-                                Proses Pembayaran PROCESSED
-                            </>
-                        )}
+                        {processing ? <Loader2 className="animate-spin" size={16} /> : <CheckCircle2 size={16} />}
+                        Update Data Angsuran
                     </button>
                 </div>
             )}
 
             {/* Preview Table */}
             {previewData.length > 0 && (
-                <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm">
-                    <div className="overflow-x-auto">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="overflow-x-auto text-left">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-gray-50 border-b border-gray-100 italic font-black text-[10px] uppercase tracking-widest text-gray-400">
-                                    <th className="px-6 py-4">Status</th>
-                                    <th className="px-6 py-4">Excel NIK</th>
-                                    <th className="px-6 py-4">No Pinjaman</th>
-                                    <th className="px-6 py-4">System Member</th>
-                                    <th className="px-6 py-4">Bulan Ke</th>
-                                    <th className="px-6 py-4">Amount</th>
+                                <tr className="bg-blue-50 border-b border-blue-100">
+                                    <th className="px-6 py-4 font-bold text-blue-800 text-sm italic">Validasi</th>
+                                    <th className="px-6 py-4 font-bold text-blue-800 text-sm italic">NOPEG (NIK)</th>
+                                    <th className="px-6 py-4 font-bold text-blue-800 text-sm italic text-center">NoAnggota</th>
+                                    <th className="px-6 py-4 font-bold text-blue-800 text-sm italic">ID Tagihan</th>
+                                    <th className="px-6 py-4 font-bold text-blue-800 text-sm italic">Nama Di Sistem</th>
+                                    <th className="px-6 py-4 font-bold text-blue-800 text-sm italic text-right">Nominal</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-50">
+                            <tbody className="divide-y divide-gray-100">
                                 {previewData.map((row, idx) => (
-                                    <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                                    <tr key={idx} className="hover:bg-blue-50/30 transition-colors">
                                         <td className="px-6 py-4">
                                             {row.status === 'MATCHED' ? (
-                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-600 italic">
-                                                    <CheckCircle2 size={12} /> OK
-                                                </span>
+                                                <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-bold">MATCH</span>
                                             ) : (
-                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-50 text-red-500 italic">
-                                                    <AlertCircle size={12} /> Unknown
-                                                </span>
+                                                <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-[10px] font-bold">MISSING</span>
                                             )}
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <p className="text-sm font-bold text-gray-900 tabular-nums">{row.excelData.NIK || row.excelData.nik || '-'}</p>
+                                        <td className="px-6 py-4 text-sm text-gray-600">{row.excelData.NOPEG || row.excelData.nik || '-'}</td>
+                                        <td className="px-6 py-4 text-center text-sm text-gray-600">{row.excelData.NoAnggota || '-'}</td>
+                                        <td className="px-6 py-4 text-sm text-gray-600 font-mono tracking-tighter">{row.excelData.KETERANGAN2 || '-'}</td>
+                                        <td className="px-6 py-4 font-bold text-gray-900 text-sm">
+                                            {row.dbMatch?.pinjaman?.personal_data?.full_name || 'No Match'}
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <p className="text-xs font-black text-gray-900 italic uppercase">{row.excelData['No Pinjaman'] || row.excelData.no_pinjaman || '-'}</p>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex flex-col">
-                                                <span className="text-sm font-black text-gray-900 uppercase italic">{row.dbMatch?.pinjaman?.personal_data?.full_name || row.excelData.Nama || '-'}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <p className="text-xs font-black text-gray-900">{row.dbMatch?.bulan_ke || row.excelData['Angsuran Ke'] || '-'}</p>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <p className="text-sm font-black text-gray-900 tabular-nums italic">
-                                                {row.dbMatch ? `Rp ${parseFloat(row.dbMatch.amount).toLocaleString('id-ID')}` : '-'}
-                                            </p>
+                                        <td className="px-6 py-4 text-right font-bold text-blue-700 text-sm">
+                                            {row.dbMatch ? `Rp ${parseFloat(row.dbMatch.amount).toLocaleString('id-ID')}` : '-'}
                                         </td>
                                     </tr>
                                 ))}

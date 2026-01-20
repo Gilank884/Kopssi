@@ -14,6 +14,8 @@ const Simpanan = () => {
     const [bills, setBills] = useState([]);
     const [pokok, setPokok] = useState(0);
     const [wajib, setWajib] = useState(0);
+    const [wajibKhusus, setWajibKhusus] = useState(0);
+    const [parkir, setParkir] = useState(0);
     const [totalSaldo, setTotalSaldo] = useState(0);
     const [loading, setLoading] = useState(true);
     const [hasData, setHasData] = useState(false);
@@ -50,7 +52,7 @@ const Simpanan = () => {
 
                 const { data: personalData } = await supabase
                     .from('personal_data')
-                    .select('id')
+                    .select('id, created_at')
                     .eq('user_id', userId)
                     .single();
 
@@ -91,6 +93,8 @@ const Simpanan = () => {
                             jatuh_tempo: item.jatuh_tempo,
                             amount_pokok: 0,
                             amount_wajib: 0,
+                            amount_wajib_khusus: 0,
+                            amount_parkir: 0,
                             status: 'UNPAID' // Explicitly set status for grouped bills
                         };
                     }
@@ -100,7 +104,55 @@ const Simpanan = () => {
                     if (item.type === 'WAJIB') {
                         groupedBills[key].amount_wajib = parseFloat(item.amount || 0);
                     }
+                    if (item.type === 'WAJIB_KHUSUS') {
+                        groupedBills[key].amount_wajib_khusus = parseFloat(item.amount || 0);
+                    }
+                    if (item.type === 'PARKIR') {
+                        groupedBills[key].amount_parkir = parseFloat(item.amount || 0);
+                    }
                 });
+
+                // --- Smart Logic: Virtual Bill Generation for Simpanan Pokok ---
+                if (personalData.created_at) {
+                    const enrollDate = new Date(personalData.created_at);
+                    const enrollDay = enrollDate.getDate();
+                    let m1Month = enrollDate.getMonth() + 1;
+                    let m1Year = enrollDate.getFullYear();
+
+                    if (enrollDay > 15) {
+                        m1Month += 1;
+                        if (m1Month > 12) { m1Month = 1; m1Year += 1; }
+                    }
+
+                    // Check Month 1, 2, 3
+                    [0, 1, 2].forEach(diff => {
+                        let targetM = m1Month + diff;
+                        let targetY = m1Year;
+                        while (targetM > 12) { targetM -= 12; targetY += 1; }
+
+                        // Check if this month already has a POKOK payment or unpaid record
+                        const monthKey = targetM;
+                        const hasPaid = paidTransactions.some(t => t.type === 'POKOK' && t.bulan_ke === monthKey && new Date(t.jatuh_tempo).getFullYear() === targetY);
+                        const hasUnpaid = unpaidBills.some(b => b.type === 'POKOK' && b.bulan_ke === monthKey && new Date(b.jatuh_tempo).getFullYear() === targetY);
+
+                        if (!hasPaid && !hasUnpaid) {
+                            if (!groupedBills[monthKey]) {
+                                groupedBills[monthKey] = {
+                                    id: `virtual_pokok_${monthKey}`,
+                                    bulan_ke: monthKey,
+                                    jatuh_tempo: `${targetY}-${String(monthKey).padStart(2, '0')}-01`,
+                                    amount_pokok: 0,
+                                    amount_wajib: 0,
+                                    amount_wajib_khusus: 0,
+                                    amount_parkir: 0,
+                                    status: 'UNPAID'
+                                };
+                            }
+                            groupedBills[monthKey].amount_pokok = (diff === 0) ? 100000 : 50000;
+                        }
+                    });
+                }
+                // -------------------------------------------------------------
 
                 setBills(Object.values(groupedBills).sort((a, b) => a.bulan_ke - b.bulan_ke));
 
@@ -110,6 +162,8 @@ const Simpanan = () => {
                     if (paidTransactions.length > 0) {
                         let totalP = 0;
                         let totalW = 0;
+                        let totalWK = 0;
+                        let totalParkir = 0;
                         let currentBalance = 0;
 
                         const sortedForCalc = [...paidTransactions].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
@@ -120,10 +174,14 @@ const Simpanan = () => {
                                 currentBalance += amount;
                                 if (item.type === 'POKOK') totalP += amount;
                                 if (item.type === 'WAJIB') totalW += amount;
+                                if (item.type === 'WAJIB_KHUSUS') totalWK += amount;
+                                if (item.type === 'PARKIR') totalParkir += amount;
                             } else if (item.transaction_type === 'TARIK') {
                                 currentBalance -= amount;
                                 if (item.type === 'POKOK') totalP -= amount;
                                 if (item.type === 'WAJIB') totalW -= amount;
+                                if (item.type === 'WAJIB_KHUSUS') totalWK -= amount;
+                                if (item.type === 'PARKIR') totalParkir -= amount;
                             }
                             item.balanceSnapshot = currentBalance;
                         });
@@ -139,7 +197,12 @@ const Simpanan = () => {
 
                         setPokok(totalP);
                         setWajib(totalW);
-                        setTotalSaldo(currentBalance);
+                        setPokok(totalP);
+                        setWajib(totalW);
+                        setWajibKhusus(totalWK);
+                        setParkir(totalParkir);
+                        setTotalSaldo(totalP + totalW + totalWK); // Exclude parkir from member total balance
+                        setHistory(displayList);
                         setHistory(displayList);
                     }
                 } else {
@@ -174,7 +237,7 @@ const Simpanan = () => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <SimpananCard title="Simpanan Pokok" amount={formatCurrency(pokok)} />
                 <SimpananCard title="Simpanan Wajib" amount={formatCurrency(wajib)} />
-
+                <SimpananCard title="Simpanan Wajib Khusus" amount={formatCurrency(wajibKhusus)} />
                 <SimpananCard title="Total Saldo" amount={formatCurrency(totalSaldo)} color="green" />
             </div>
 
@@ -198,13 +261,14 @@ const Simpanan = () => {
                                     <th className="px-6 py-4 font-black">Jatuh Tempo</th>
                                     <th className="px-6 py-4 font-black text-right">Simp. Pokok</th>
                                     <th className="px-6 py-4 font-black text-right">Simp. Wajib</th>
+                                    <th className="px-6 py-4 font-black text-right">Simp. Wajib Khusus</th>
                                     <th className="px-6 py-4 font-black text-right">Total Tagihan</th>
                                     <th className="px-6 py-4 font-black text-center">Status</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100 italic">
                                 {bills.map((bill) => {
-                                    const totalBill = parseFloat(bill.amount_pokok || 0) + parseFloat(bill.amount_wajib || 0);
+                                    const totalBill = parseFloat(bill.amount_pokok || 0) + parseFloat(bill.amount_wajib || 0) + parseFloat(bill.amount_wajib_khusus || 0); // Exclude parkir from member total bill
                                     return (
                                         <tr key={bill.id} className="hover:bg-gray-50 transition-colors group">
                                             <td className="px-6 py-4 text-center w-24">
@@ -218,6 +282,9 @@ const Simpanan = () => {
                                             </td>
                                             <td className="px-6 py-4 text-right text-xs font-medium text-gray-500 font-mono">
                                                 {formatCurrency(bill.amount_wajib)}
+                                            </td>
+                                            <td className="px-6 py-4 text-right text-xs font-medium text-gray-500 font-mono">
+                                                {formatCurrency(bill.amount_wajib_khusus)}
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <span className="text-sm font-black text-gray-800 font-mono">
@@ -244,35 +311,35 @@ const Simpanan = () => {
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center text-left">
                     <h3 className="font-bold text-gray-800 text-lg uppercase italic tracking-tighter">Riwayat Transaksi</h3>
-                    <button className="px-4 py-2 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest rounded-lg border border-emerald-100 hover:bg-emerald-100 transition-all shadow-sm">Download Laporan</button>
+                    <button className="px-4 py-2 bg-emerald-50 text-emerald-600 text-[10px] font-bold uppercase rounded-lg border border-emerald-100 hover:bg-emerald-100 transition-all shadow-sm">Download Laporan</button>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
-                        <thead className="bg-gray-50 text-gray-400 text-[10px] font-black uppercase tracking-widest border-b border-gray-100">
+                        <thead className="bg-gray-50 text-gray-400 text-[10px] font-bold uppercase tracking-widest border-b border-gray-100">
                             <tr>
-                                <th className="px-6 py-4 font-black text-left">Tanggal</th>
-                                <th className="px-6 py-4 font-black">Jenis Simpanan</th>
-                                <th className="px-6 py-4 font-black">Transaksi</th>
-                                <th className="px-6 py-4 font-black text-right">Nominal</th>
-                                <th className="px-6 py-4 font-black text-right">Saldo Akhir</th>
+                                <th className="px-6 py-4 text-left">Tanggal</th>
+                                <th className="px-6 py-4">Jenis Simpanan</th>
+                                <th className="px-6 py-4">Transaksi</th>
+                                <th className="px-6 py-4 text-right">Nominal</th>
+                                <th className="px-6 py-4 text-right">Saldo Akhir</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {history.map((item) => (
-                                <tr key={item.id} className="hover:bg-gray-50 transition-colors italic group">
-                                    <td className="px-6 py-4 text-gray-500 text-xs font-bold">{item.date}</td>
-                                    <td className="px-6 py-4 text-gray-700 text-xs font-black uppercase tracking-tight">{item.type}</td>
+                                <tr key={item.id} className="hover:bg-gray-50 transition-colors italic group text-sm">
+                                    <td className="px-6 py-4 text-gray-500 font-bold">{item.date}</td>
+                                    <td className="px-6 py-4 text-gray-700 font-bold uppercase tracking-tight">{item.type}</td>
                                     <td className="px-6 py-4">
-                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter border shadow-sm ${item.status === 'Setor' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-red-100 text-red-700 border-red-200'
+                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-tighter border shadow-sm ${item.status === 'Setor' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-red-100 text-red-700 border-red-200'
                                             }`}>
                                             {item.status === 'Setor' ? <ArrowUpRight size={10} /> : <ArrowDownLeft size={10} />}
                                             {item.status}
                                         </span>
                                     </td>
-                                    <td className={`px-6 py-4 text-right text-sm font-black font-mono ${item.status === 'Setor' ? 'text-emerald-600' : 'text-red-600'}`}>
+                                    <td className={`px-6 py-4 text-right font-bold font-mono ${item.status === 'Setor' ? 'text-emerald-600' : 'text-red-600'}`}>
                                         {item.status === 'Setor' ? '+' : '-'} {formatCurrency(item.nominal)}
                                     </td>
-                                    <td className="px-6 py-4 text-right text-sm font-black text-gray-800 font-mono group-hover:text-emerald-700 transition-colors">{formatCurrency(item.balance)}</td>
+                                    <td className="px-6 py-4 text-right font-bold text-gray-800 font-mono group-hover:text-emerald-700 transition-colors">{formatCurrency(item.balance)}</td>
                                 </tr>
                             ))}
                         </tbody>

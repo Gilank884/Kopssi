@@ -66,21 +66,52 @@ export const exportMonitoringSimpanan = (data, range, mode = 'DATA') => {
     let filename;
 
     if (mode === 'TEMPLATE') {
-        // Template for bulk upload: NIK, Nama, Simpanan Pokok, Simpanan Wajib, Simpanan Sukarela
-        headers = [['NIK', 'Nama Lengkap', 'Simpanan Pokok', 'Simpanan Wajib', 'Simpanan Sukarela']];
-        rows = data.map(member => [
-            member.nik || '-',
-            member.full_name || '-',
-            0,      // Default Simpanan Pokok
-            75000,  // Default Simpanan Wajib
-            0       // Default Simpanan Sukarela
-        ]);
-        filename = `Template_Upload_Simpanan_${new Date().toISOString().slice(0, 10)}.xlsx`;
+        const targetMonth = range.month; // 1-12
+        const targetYear = range.year;
+
+        // Template for bulk upload: NIK, Nama, Simpanan Pokok, Simpanan Wajib, Simpanan Wajib Khusus, Simpanan Sukarela, PARKIR
+        headers = [['NIK', 'Nama Lengkap', 'Simpanan Pokok', 'Simpanan Wajib', 'Simpanan Wajib Khusus', 'Simpanan Sukarela', 'PARKIR']];
+        rows = data.map(member => {
+            // Calculate Simpanan Pokok based on enrollment date
+            let nominalPokok = 0;
+            if (member.created_at) {
+                const enrollDate = new Date(member.created_at);
+                const enrollDay = enrollDate.getDate();
+                let m1Month = enrollDate.getMonth() + 1; // 1-12
+                let m1Year = enrollDate.getFullYear();
+
+                if (enrollDay > 15) {
+                    m1Month += 1;
+                    if (m1Month > 12) {
+                        m1Month = 1;
+                        m1Year += 1;
+                    }
+                }
+
+                // Calculate Month indices for comparison
+                const monthDiff = (targetYear - m1Year) * 12 + (targetMonth - m1Month);
+
+                if (monthDiff === 0) nominalPokok = 100000;      // Month 1
+                else if (monthDiff === 1) nominalPokok = 50000;  // Month 2
+                else if (monthDiff === 2) nominalPokok = 50000;  // Month 3
+            }
+
+            return [
+                member.nik || '-',
+                member.full_name || '-',
+                nominalPokok,
+                75000,  // Default Simpanan Wajib
+                0,      // Default Simpanan Wajib Khusus
+                0,      // Default Simpanan Sukarela
+                member.tagihan_parkir ? 82500 : 0 // Default PARKIR based on tagihan_parkir flag
+            ];
+        });
+        filename = `Template_Upload_Simpanan_${range.targetMonth || new Date().toISOString().slice(0, 10)}.xlsx`;
     } else {
         // Columns synchronized with historical view - MUST keep original format
-        headers = [['NIK', 'Nama', 'Referensi', 'Status', 'Bulan Ke', 'Jatuh Tempo', 'Simp. Pokok', 'Simp. Wajib', 'Simp. Sukarela', 'Total']];
+        headers = [['NIK', 'Nama', 'Referensi', 'Status', 'Bulan Ke', 'Jatuh Tempo', 'Simp. Pokok', 'Simp. Wajib', 'Simp. Wajib Khusus', 'Simp. Sukarela', 'PARKIR', 'Total']];
         rows = data.map(bill => {
-            const total = parseFloat(bill.amount_pokok || 0) + parseFloat(bill.amount_wajib || 0) + parseFloat(bill.amount_sukarela || 0);
+            const total = parseFloat(bill.amount_pokok || 0) + parseFloat(bill.amount_wajib || 0) + parseFloat(bill.amount_wajib_khusus || 0) + parseFloat(bill.amount_sukarela || 0) + parseFloat(bill.amount_parkir || 0);
             return [
                 bill.personal_data?.nik || '-',
                 bill.personal_data?.full_name || '-',
@@ -90,7 +121,9 @@ export const exportMonitoringSimpanan = (data, range, mode = 'DATA') => {
                 bill.jatuh_tempo ? new Date(bill.jatuh_tempo).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-',
                 bill.amount_pokok || 0,
                 bill.amount_wajib || 0,
+                bill.amount_wajib_khusus || 0,
                 bill.amount_sukarela || 0,
+                bill.amount_parkir || 0,
                 total
             ];
         });
@@ -124,23 +157,33 @@ export const exportMonitoringPinjaman = (data, range) => {
 };
 
 export const exportMonitoringAngsuran = (data, range) => {
-    // Columns synchronized with UploadPinjaman.jsx: NIK, Nama, No Pinjaman, Angsuran Ke, Status
-    const headers = [['NIK', 'Nama', 'No Pinjaman', 'Angsuran Ke', 'Status', 'Nominal', 'Tgl Bayar']];
-    const rows = data.map(inst => [
-        inst.pinjaman?.personal_data?.nik || '-',
-        inst.pinjaman?.personal_data?.full_name || '-',
-        inst.pinjaman?.no_pinjaman || '-',
-        inst.bulan_ke,
-        inst.status === 'PROCESSED' ? 'LUNAS' : 'Belum Terbayar',
-        formatNum(inst.amount),
-        inst.tanggal_bayar ? new Date(inst.tanggal_bayar).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-'
-    ]);
+    // New Format: NOPEG, NAMAPEG, NOREKDE, NoAnggota, JMLGAJI, KETERANGAN1, KETERANGAN2, KETERANGAN3, JABATAN, LOKASI, STATUS
+    const headers = [['NOPEG', 'NAMAPEG', 'NOREKDE', 'NoAnggota', 'JMLGAJI', 'KETERANGAN1', 'KETERANGAN2', 'KETERANGAN3', 'JABATAN', 'LOKASI', 'STATUS']];
+
+    const rows = data.map(inst => {
+        const personal = inst.pinjaman?.personal_data || {};
+        const noPinjaman = inst.pinjaman?.no_pinjaman || '';
+
+        return [
+            personal.nik || '-',
+            personal.full_name || '-',
+            '', // NOREKDE
+            personal.no_anggota || '-',
+            inst.amount,
+            inst.tanggal_bayar ? new Date(inst.tanggal_bayar).toLocaleDateString('id-ID') : '-', // KETERANGAN1 (Due Date)
+            `${noPinjaman}-${inst.bulan_ke}`, // KETERANGAN2 (ID for matching)
+            noPinjaman, // KETERANGAN3
+            personal.work_unit || '-', // JABATAN
+            personal.company || '-', // LOKASI
+            '' // STATUS (User will fill with PROCESSED)
+        ];
+    });
 
     const ws = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Angsuran');
+    XLSX.utils.book_append_sheet(wb, ws, 'Tagihan_Angsuran');
 
-    XLSX.writeFile(wb, `Monitoring_Angsuran_${range.startDate}_${range.endDate}.xlsx`);
+    XLSX.writeFile(wb, `Tagihan_Angsuran_${range.startDate}_${range.endDate}.xlsx`);
 };
 
 export const exportDisbursementDelivery = (data) => {

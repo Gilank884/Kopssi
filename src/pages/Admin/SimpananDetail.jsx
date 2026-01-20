@@ -13,6 +13,8 @@ const SimpananDetail = () => {
         total: 0,
         pokok: 0,
         wajib: 0,
+        wajibKhusus: 0,
+        parkir: 0,
         sukarela: 0
     });
 
@@ -46,7 +48,7 @@ const SimpananDetail = () => {
             setSavings(savingsData || []);
 
             // Calculate Summary
-            let sPokok = 0, sWajib = 0, sSukarela = 0;
+            let sPokok = 0, sWajib = 0, sWajibKhusus = 0, sParkir = 0, sSukarela = 0;
             (savingsData || []).forEach(s => {
                 const amt = parseFloat(s.amount || 0);
                 // Note: Assuming 'amount' is positive. 
@@ -55,18 +57,24 @@ const SimpananDetail = () => {
                 if (s.transaction_type === 'TARIK') {
                     if (s.type === 'POKOK') sPokok -= amt;
                     else if (s.type === 'WAJIB') sWajib -= amt;
+                    else if (s.type === 'WAJIB_KHUSUS') sWajibKhusus -= amt;
+                    else if (s.type === 'PARKIR') sParkir -= amt;
                     else if (s.type === 'SUKARELA') sSukarela -= amt;
                 } else {
                     if (s.type === 'POKOK') sPokok += amt;
                     else if (s.type === 'WAJIB') sWajib += amt;
+                    else if (s.type === 'WAJIB_KHUSUS') sWajibKhusus += amt;
+                    else if (s.type === 'PARKIR') sParkir += amt;
                     else if (s.type === 'SUKARELA') sSukarela += amt;
                 }
             });
 
             setSummary({
-                total: sPokok + sWajib + sSukarela,
+                total: sPokok + sWajib + sWajibKhusus + sParkir + sSukarela,
                 pokok: sPokok,
                 wajib: sWajib,
+                wajibKhusus: sWajibKhusus,
+                parkir: sParkir,
                 sukarela: sSukarela
             });
 
@@ -93,31 +101,31 @@ const SimpananDetail = () => {
     }
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="space-y-6">
             {/* Header */}
             <div className="flex items-center gap-4">
                 <button
                     onClick={() => navigate(-1)}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors border border-gray-100 shadow-sm"
                 >
                     <ArrowLeft size={20} className="text-gray-600" />
                 </button>
                 <div>
-                    <h2 className="text-2xl font-black text-gray-900 italic uppercase tracking-tight">Detail Simpanan</h2>
+                    <h2 className="text-2xl font-bold text-gray-800">Detail Simpanan Anggota</h2>
                     <p className="text-sm text-gray-500">Informasi lengkap saldo dan riwayat transaksi</p>
                 </div>
             </div>
 
             {/* Member Card */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                 <div className="flex flex-col md:flex-row gap-6 md:items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 font-bold text-xl uppercase">
+                        <div className="w-16 h-16 bg-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-xl uppercase shadow-sm">
                             {member.full_name?.substring(0, 2)}
                         </div>
                         <div>
-                            <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight">{member.full_name}</h3>
-                            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-gray-500 font-medium">
+                            <h3 className="text-lg font-bold text-gray-900">{member.full_name}</h3>
+                            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-gray-500 font-medium italic">
                                 <span className="flex items-center gap-1"><User size={14} /> {member.no_npp}</span>
                                 <span className="flex items-center gap-1"><Building size={14} /> {member.company}</span>
                                 <span className="flex items-center gap-1"><CreditCard size={14} /> {member.bank_gaji} - {member.rek_gaji}</span>
@@ -125,44 +133,39 @@ const SimpananDetail = () => {
                         </div>
                     </div>
                     <div className="text-right">
-                        <p className="text-sm text-gray-500 uppercase tracking-widest font-bold mb-1">Total Saldo Simpanan</p>
-                        <h2 className="text-3xl font-black text-emerald-600 tracking-tight italic">{formatCurrency(summary.total)}</h2>
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Total Saldo Simpanan</p>
+                        <h2 className="text-3xl font-bold text-emerald-600">{formatCurrency(summary.total)}</h2>
                     </div>
                 </div>
             </div>
 
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="p-5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl text-white shadow-lg overflow-hidden relative group">
-                    <div className="relative z-10">
-                        <p className="text-xs font-black uppercase tracking-widest opacity-80 mb-1">Simpanan Pokok</p>
-                        <h3 className="text-2xl font-black tracking-tight">{formatCurrency(summary.pokok)}</h3>
-                    </div>
-                    <Wallet className="absolute -right-4 -bottom-4 opacity-20 rotate-12 group-hover:scale-110 transition-transform" size={80} />
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Simp. Pokok</p>
+                    <h3 className="text-lg font-bold text-gray-800">{formatCurrency(summary.pokok)}</h3>
                 </div>
-                <div className="p-5 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl text-white shadow-lg overflow-hidden relative group">
-                    <div className="relative z-10">
-                        <p className="text-xs font-black uppercase tracking-widest opacity-80 mb-1">Simpanan Wajib</p>
-                        <h3 className="text-2xl font-black tracking-tight">{formatCurrency(summary.wajib)}</h3>
-                    </div>
-                    <TrendingUp className="absolute -right-4 -bottom-4 opacity-20 rotate-12 group-hover:scale-110 transition-transform" size={80} />
+                <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Simp. Wajib</p>
+                    <h3 className="text-lg font-bold text-gray-800">{formatCurrency(summary.wajib)}</h3>
                 </div>
-                <div className="p-5 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl text-white shadow-lg overflow-hidden relative group">
-                    <div className="relative z-10">
-                        <p className="text-xs font-black uppercase tracking-widest opacity-80 mb-1">Simpanan Sukarela</p>
-                        <h3 className="text-2xl font-black tracking-tight">{formatCurrency(summary.sukarela)}</h3>
-                    </div>
-                    <History className="absolute -right-4 -bottom-4 opacity-20 rotate-12 group-hover:scale-110 transition-transform" size={80} />
+                <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Simp. Wajib Khusus</p>
+                    <h3 className="text-lg font-bold text-gray-800">{formatCurrency(summary.wajibKhusus)}</h3>
+                </div>
+                <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Simp. Sukarela</p>
+                    <h3 className="text-lg font-bold text-gray-800">{formatCurrency(summary.sukarela)}</h3>
+                </div>
+                <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Uang Parkir</p>
+                    <h3 className="text-lg font-bold text-gray-800">{formatCurrency(summary.parkir)}</h3>
                 </div>
             </div>
 
             {/* Transaction History */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-6 border-b border-gray-100">
-                    <h3 className="text-lg font-black text-gray-900 italic uppercase tracking-tight flex items-center gap-2">
-                        <History size={20} className="text-emerald-500" />
-                        Riwayat Transaksi
-                    </h3>
+                <div className="p-5 border-b border-gray-100 flex justify-between items-center text-left">
+                    <h3 className="font-bold text-gray-800 text-lg uppercase italic tracking-tighter">Riwayat Transaksi</h3>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">

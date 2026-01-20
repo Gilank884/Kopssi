@@ -6,6 +6,15 @@ const TagihanAngsuran = () => {
     const [installments, setInstallments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [startDate, setStartDate] = useState(() => {
+        const d = new Date();
+        return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0];
+    });
+    const [endDate, setEndDate] = useState(() => {
+        const d = new Date();
+        const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+        return new Date(d.getFullYear(), d.getMonth(), lastDay).toISOString().split('T')[0];
+    });
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -32,7 +41,7 @@ const TagihanAngsuran = () => {
     useEffect(() => {
         fetchInstallments();
         fetchCompanies();
-    }, []);
+    }, [startDate, endDate]);
 
     const fetchInstallments = async () => {
         try {
@@ -48,7 +57,8 @@ const TagihanAngsuran = () => {
                             full_name,
                             nik,
                             work_unit,
-                            company
+                            company,
+                            no_anggota
                         )
                     )
                 `)
@@ -58,35 +68,22 @@ const TagihanAngsuran = () => {
 
             if (error) throw error;
 
-            // Group by loan and find the next bill (earliest UNPAID)
-            const loanGroups = {};
-            (data || []).forEach(inst => {
-                if (!loanGroups[inst.pinjaman_id]) {
-                    loanGroups[inst.pinjaman_id] = [];
-                }
-                loanGroups[inst.pinjaman_id].push(inst);
+            const installmentsToShow = (data || []).filter(inst => {
+                // Strictly show only Unpaid / Empty status
+                if (inst.status === 'PROCESSED') return false;
+
+                const iDate = inst.tanggal_bayar ? inst.tanggal_bayar.split('T')[0] : null;
+
+                // Show if unpaid and Due on or before endDate (Current + Overdue)
+                if (iDate && iDate <= endDate) return true;
+
+                return false;
             });
 
-            const nextInstallments = [];
-            Object.values(loanGroups).forEach(group => {
-                // Sort by bulan_ke ASC
-                group.sort((a, b) => a.bulan_ke - b.bulan_ke);
+            // Sort by tanggal_bayar (due date) DESC
+            installmentsToShow.sort((a, b) => new Date(a.tanggal_bayar) - new Date(b.tanggal_bayar));
 
-                // Find first UNPAID (closest bill)
-                const firstUnpaid = group.find(i => !i.status || i.status === 'UNPAID');
-
-                if (firstUnpaid) {
-                    nextInstallments.push(firstUnpaid);
-                }
-                // If all paid, we don't push anything (exclude fully paid loans)
-            });
-
-            // Apply Date Filter only for specific views if needed, 
-            // but for "Next Bill" Tagihan, we usually show them regardless of date range 
-            // unless we want to see what is due "In this range".
-            // Since we don't have a strict due_date field yet, we show all current obligations.
-
-            setInstallments(nextInstallments);
+            setInstallments(installmentsToShow);
         } catch (error) {
             console.error('Error fetching installments:', error);
             alert('Gagal memuat data angsuran');
@@ -151,19 +148,36 @@ const TagihanAngsuran = () => {
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchTerm, filterCompany]);
+    }, [searchTerm, filterCompany, startDate, endDate]);
 
     const formatCurrency = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="text-left">
-                    <h2 className="text-3xl font-black text-gray-900 italic uppercase tracking-tight">Tagihan Angsuran</h2>
-                    <p className="text-sm text-gray-500 mt-1 font-medium italic uppercase tracking-wider">Lacak status pembayaran angsuran pinjaman anggota</p>
+        <div className="space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 text-left">
+                <div>
+                    <h2 className="text-2xl font-bold text-gray-800">Tagihan Angsuran</h2>
+                    <p className="text-sm text-gray-500 mt-1">Lacak status pembayaran angsuran pinjaman anggota</p>
                 </div>
 
                 <div className="flex flex-wrap gap-3">
+                    <div className="flex items-center gap-2 bg-white px-3 py-1 border border-gray-100 rounded-2xl shadow-sm">
+                        <CalendarDays size={16} className="text-emerald-500" />
+                        <input
+                            type="date"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            className="bg-transparent border-none text-xs font-bold focus:outline-none"
+                        />
+                        <span className="text-gray-300 text-[10px] font-black italic">s/d</span>
+                        <input
+                            type="date"
+                            value={endDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                            className="bg-transparent border-none text-xs font-bold focus:outline-none"
+                        />
+                    </div>
+
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                         <input
@@ -171,7 +185,7 @@ const TagihanAngsuran = () => {
                             placeholder="Cari nama, NIK, atau No Pin..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-64 text-sm shadow-sm"
+                            className="pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-64 text-sm shadow-sm font-bold placeholder:font-normal"
                         />
                     </div>
                     <div className="flex items-center gap-3">
