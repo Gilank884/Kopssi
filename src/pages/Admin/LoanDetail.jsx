@@ -269,33 +269,6 @@ const LoanDetail = () => {
 
     if (!loan) return <div className="p-8 text-center text-gray-500 font-bold uppercase italic">Data pinjaman tidak ditemukan</div>;
 
-    // Helper untuk hitung pokok dari sebuah angsuran
-    const calculatePrincipal = (inst) => {
-        const amount = parseFloat(inst.amount);
-        const l = inst.pinjaman;
-        if (!l) return 0;
-
-        let monthlyInterest = 0;
-        const principal = parseFloat(l.jumlah_pinjaman || 0);
-        const tenor = l.tenor_bulan || 1;
-
-        if (l.tipe_bunga === 'PERSENAN') {
-            const annualRate = parseFloat(l.nilai_bunga || 0);
-            monthlyInterest = (principal * (annualRate / 100)) / 12;
-        } else if (l.tipe_bunga === 'NOMINAL') {
-            monthlyInterest = parseFloat(l.nilai_bunga || 0) / tenor;
-        }
-        return amount - monthlyInterest;
-    };
-
-    // Stats untuk PINJAMAN SAAT INI (Current Loan) & USER-WIDE
-    const currentInstallments = installments.filter(i => i.pinjaman_id === id);
-    const unpaidCurrentInstallments = currentInstallments.filter(i => i.status !== 'PAID');
-    const currentRemaining = unpaidCurrentInstallments.reduce((sum, i) => sum + parseFloat(i.amount), 0);
-
-    const totalPaidPrincipal = installments
-        .filter(i => i.status === 'PAID')
-        .reduce((sum, i) => sum + calculatePrincipal(i), 0);
 
     return (
         <div className="space-y-6 pb-20 animate-in fade-in duration-500">
@@ -326,18 +299,10 @@ const LoanDetail = () => {
                 {/* Main Content Areas */}
                 <div className="lg:col-span-2 space-y-6">
                     {/* Financial Summary Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                            <p className="text-[10px] font-black text-gray-400 uppercase italic mb-1 tracking-widest">Pinjaman Ini</p>
+                    <div className="grid grid-cols-1">
+                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+                            <p className="text-[10px] font-black text-gray-400 uppercase italic tracking-widest">Pinjaman Ini</p>
                             <h3 className="text-xl font-black text-gray-900 italic">{formatCurrency(loan.jumlah_pinjaman)}</h3>
-                        </div>
-                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                            <p className="text-[10px] font-black text-gray-400 uppercase italic mb-1 tracking-widest">Pokok Terbayar (User)</p>
-                            <h3 className="text-xl font-black text-emerald-600 italic">{formatCurrency(totalPaidPrincipal)}</h3>
-                        </div>
-                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                            <p className="text-[10px] font-black text-gray-400 uppercase italic mb-1 tracking-widest">Sisa Kewajiban (Ini)</p>
-                            <h3 className="text-xl font-black text-red-600 italic">{formatCurrency(currentRemaining)}</h3>
                         </div>
                     </div>
 

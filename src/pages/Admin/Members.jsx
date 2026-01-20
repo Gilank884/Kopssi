@@ -4,7 +4,7 @@ import { Search, Filter, MoreHorizontal, X, User, Phone, Briefcase, MapPin, Cred
 import { supabase } from '../../lib/supabaseClient';
 
 
-const MemberDetailModal = ({ member, onClose, onDeactivate, onSetPassive }) => {
+const MemberDetailModal = ({ member, onClose, onActivate, onDeactivate, onSetPassive }) => {
     if (!member) return null;
 
     const sections = [
@@ -129,6 +129,44 @@ const MemberDetailModal = ({ member, onClose, onDeactivate, onSetPassive }) => {
                             </button>
                         </>
                     )}
+
+                    {(member.status?.toLowerCase() === 'pasif') && (
+                        <>
+                            <button
+                                onClick={() => {
+                                    if (window.confirm(`Apakah Anda yakin ingin MENGAKTIFKAN kembali anggota ${member.full_name}?`)) {
+                                        onActivate(member.id);
+                                    }
+                                }}
+                                className="px-6 py-2 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 text-sm font-bold hover:bg-emerald-100 transition-colors uppercase tracking-tight"
+                            >
+                                Aktifkan Anggota
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (window.confirm(`Apakah Anda yakin ingin MENONAKTIFKAN anggota ${member.full_name}?\n\nSeluruh simpanan akan dikembalikan dan pinjaman berjalan akan diperhitungkan.`)) {
+                                        onDeactivate(member.id);
+                                    }
+                                }}
+                                className="px-6 py-2 rounded-lg bg-red-50 text-red-600 border border-red-100 text-sm font-bold hover:bg-red-100 transition-colors uppercase tracking-tight"
+                            >
+                                Non-Aktifkan Anggota
+                            </button>
+                        </>
+                    )}
+
+                    {(member.status?.toLowerCase() === 'non_active' || member.status?.toLowerCase() === 'nonaktif') && (
+                        <button
+                            onClick={() => {
+                                if (window.confirm(`Apakah Anda yakin ingin MENGAKTIFKAN kembali anggota ${member.full_name}?`)) {
+                                    onActivate(member.id);
+                                }
+                            }}
+                            className="px-6 py-2 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 text-sm font-bold hover:bg-emerald-100 transition-colors uppercase tracking-tight"
+                        >
+                            Aktifkan Anggota
+                        </button>
+                    )}
                     <button
                         onClick={onClose}
                         className="px-6 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
@@ -151,6 +189,34 @@ const MemberList = () => {
     const [selectedMember, setSelectedMember] = useState(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
+
+    const handleActivateMember = async (memberId) => {
+        try {
+            setIsProcessing(true);
+            const { error } = await supabase
+                .from('personal_data')
+                .update({
+                    status: 'ACTIVE',
+                    keluar_anggota: null,
+                    tanggal_keluar: null,
+                    sebab_keluar: null,
+                    exit_realisasi_status: null,
+                    exit_realisasi_date: null
+                })
+                .eq('id', memberId);
+
+            if (error) throw error;
+
+            alert('Anggota berhasil diaktifkan kembali!');
+            setIsDetailModalOpen(false);
+            fetchMembers();
+        } catch (err) {
+            console.error("Error activating member:", err);
+            alert("Gagal mengaktifkan anggota: " + err.message);
+        } finally {
+            setIsProcessing(false);
+        }
+    };
 
     const handleSetPassiveMember = async (memberId) => {
         try {
@@ -388,6 +454,48 @@ const MemberList = () => {
                                                         </button>
                                                     </>
                                                 )}
+                                                {member.status?.toLowerCase() === 'pasif' && (
+                                                    <>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                if (window.confirm(`Apakah Anda yakin ingin MENGAKTIFKAN kembali anggota ${member.full_name}?`)) {
+                                                                    handleActivateMember(member.id);
+                                                                }
+                                                            }}
+                                                            className="p-2 text-gray-400 hover:text-emerald-600 transition-colors rounded-full hover:bg-white border border-transparent hover:border-emerald-100"
+                                                            title="Aktifkan Anggota"
+                                                        >
+                                                            <CheckCircle2 size={18} />
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                if (window.confirm(`Apakah Anda yakin ingin MENONAKTIFKAN anggota ${member.full_name}?`)) {
+                                                                    handleDeactivateMember(member.id);
+                                                                }
+                                                            }}
+                                                            className="p-2 text-gray-400 hover:text-red-600 transition-colors rounded-full hover:bg-white border border-transparent hover:border-red-100"
+                                                            title="Non-Aktifkan Anggota"
+                                                        >
+                                                            <Trash2 size={18} />
+                                                        </button>
+                                                    </>
+                                                )}
+                                                {(member.status?.toLowerCase() === 'non_active' || member.status?.toLowerCase() === 'nonaktif') && (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            if (window.confirm(`Apakah Anda yakin ingin MENGAKTIFKAN kembali anggota ${member.full_name}?`)) {
+                                                                handleActivateMember(member.id);
+                                                            }
+                                                        }}
+                                                        className="p-2 text-gray-400 hover:text-emerald-600 transition-colors rounded-full hover:bg-white border border-transparent hover:border-emerald-100"
+                                                        title="Aktifkan Anggota"
+                                                    >
+                                                        <CheckCircle2 size={18} />
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -416,6 +524,7 @@ const MemberList = () => {
                 <MemberDetailModal
                     member={selectedMember}
                     onClose={() => setIsDetailModalOpen(false)}
+                    onActivate={handleActivateMember}
                     onDeactivate={handleDeactivateMember}
                     onSetPassive={handleSetPassiveMember}
                 />
