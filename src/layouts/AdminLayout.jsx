@@ -20,7 +20,9 @@ import {
     Send,
     Search,
     UserCircle,
-    CheckCircle
+    CheckCircle,
+    Percent,
+    Landmark
 } from 'lucide-react';
 import LogoutModal from '../components/LogoutModal';
 
@@ -83,7 +85,7 @@ const AdminLayout = () => {
             icon: <Banknote size={20} />,
             children: [
                 { path: '/admin/monitor-simpanan', label: 'Monitoring Simpanan', icon: <Banknote size={18} /> },
-                { path: '/admin/monitor-angsuran', label: 'Monitoring Angsuran', icon: <ClipboardCheck size={18} /> },
+                { path: '/admin/tagihan-angsuran', label: 'Tagihan Angsuran', icon: <ClipboardCheck size={18} /> },
                 { path: '/admin/transaksi', label: 'Transaksi', icon: <ArrowLeftRight size={18} /> },
             ]
         },
@@ -104,9 +106,14 @@ const AdminLayout = () => {
             ]
         },
         {
-            path: '/admin/reports',
             label: 'Laporan',
-            icon: <FileBarChart size={20} />
+            icon: <FileBarChart size={20} />,
+            children: [
+                { path: '/admin/reports/members', label: 'Laporan Anggota', icon: <Users size={18} /> },
+                { path: '/admin/reports/installments', label: 'Laporan Angsuran', icon: <Banknote size={18} /> },
+                { path: '/admin/reports/interest', label: 'Laporan Pendapatan Bunga', icon: <Percent size={18} /> },
+                { path: '/admin/reports/outstanding', label: 'Laporan Sisa Pinjaman', icon: <Landmark size={18} /> },
+            ]
         }
     ];
 

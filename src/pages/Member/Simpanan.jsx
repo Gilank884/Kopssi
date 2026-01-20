@@ -75,7 +75,7 @@ const Simpanan = () => {
                 (simpananData || []).forEach(item => {
                     if (item.status === 'UNPAID' && item.bulan_ke) {
                         unpaidBills.push(item);
-                    } else if (item.status === 'PAID') {
+                    } else if (item.status === 'PROCESSED' || item.status === 'PAID') {
                         paidTransactions.push(item);
                     }
                 });
@@ -187,7 +187,7 @@ const Simpanan = () => {
                             <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-0.5">Iuran Wajib & Pokok Berjalan</p>
                         </div>
                         <div className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-[10px] font-black uppercase tracking-tighter border border-amber-200 shadow-sm">
-                            {bills.filter(b => b.status !== 'PAID').length} Tagihan Belum Lunas
+                            {bills.filter(b => b.status !== 'PROCESSED' && b.status !== 'PAID').length} Tagihan Belum Lunas
                         </div>
                     </div>
                     <div className="overflow-x-auto">
@@ -225,11 +225,11 @@ const Simpanan = () => {
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 text-center">
-                                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter shadow-sm border ${bill.status === 'PAID'
+                                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter shadow-sm border ${(bill.status === 'PROCESSED' || bill.status === 'PAID')
                                                     ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
-                                                    : 'bg-amber-100 text-amber-700 border-amber-200'
+                                                    : ''
                                                     }`}>
-                                                    {bill.status === 'PAID' ? 'Lunas' : 'Belum Bayar'}
+                                                    {(bill.status === 'PROCESSED' || bill.status === 'PAID') ? 'LUNAS' : ''}
                                                 </span>
                                             </td>
                                         </tr>

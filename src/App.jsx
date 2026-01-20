@@ -18,20 +18,23 @@ import AssesmentPinjaman from './pages/Admin/AssesmentPinjaman';
 import PencairanPinjaman from './pages/Admin/PencairanPinjaman';
 import PencairanDetail from './pages/Admin/PencairanDetail';
 import MemberList from './pages/Admin/Members';
-import AdminReports from './pages/Admin/Reports';
 import MonitorSimpanan from './pages/Admin/MonitorSimpanan';
 import TransactionPage from './pages/Admin/Transaksi';
 import AssesmentDetail from './pages/Admin/AssesmentDetail';
 import UploadSimpanan from './pages/Admin/UploadSimpanan';
 import UploadPinjaman from './pages/Admin/UploadPinjaman';
 import MonitorPinjaman from './pages/Admin/MonitorPinjaman';
-import MonitorAngsuran from './pages/Admin/MonitorAngsuran';
+import TagihanAngsuran from './pages/Admin/TagihanAngsuran';
 import AddMember from './pages/Admin/AddMember';
 import MasterData from './pages/Admin/MasterData';
 import LoanDetail from './pages/Admin/LoanDetail';
 import DisbursementDelivery from './pages/Admin/DisbursementDelivery';
 import RealisasiKaryawan from './pages/Admin/RealisasiKaryawan';
 import SimpananDetail from './pages/Admin/SimpananDetail';
+import MemberReport from './pages/Admin/Reports/MemberReport';
+import InstallmentReport from './pages/Admin/Reports/InstallmentReport';
+import InterestReport from './pages/Admin/Reports/InterestReport';
+import OutstandingLoanReport from './pages/Admin/Reports/OutstandingLoanReport';
 
 function App() {
   return (
@@ -70,8 +73,11 @@ function App() {
             <Route path="monitor-simpanan" element={<MonitorSimpanan />} />
             <Route path="monitor-simpanan/:id" element={<SimpananDetail />} />
             <Route path="monitor-pinjaman" element={<MonitorPinjaman />} />
-            <Route path="monitor-angsuran" element={<MonitorAngsuran />} />
-            <Route path="reports" element={<AdminReports />} />
+            <Route path="tagihan-angsuran" element={<TagihanAngsuran />} />
+            <Route path="reports/members" element={<MemberReport />} />
+            <Route path="reports/installments" element={<InstallmentReport />} />
+            <Route path="reports/interest" element={<InterestReport />} />
+            <Route path="reports/outstanding" element={<OutstandingLoanReport />} />
             <Route path="transaksi" element={<TransactionPage />} />
             <Route path="upload-simpanan" element={<UploadSimpanan />} />
             <Route path="upload-pinjaman" element={<UploadPinjaman />} />

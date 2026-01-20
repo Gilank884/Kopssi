@@ -73,7 +73,7 @@ const UploadPinjaman = () => {
                         )
                     )
                 `)
-                .eq('status', 'UNPAID');
+                .or('status.is.null,status.eq.UNPAID');
 
             if (error) throw error;
 
@@ -85,7 +85,7 @@ const UploadPinjaman = () => {
                 const excelStatus = String(row.Status || row.status || '').toUpperCase();
 
                 // Only match if the status in Excel is PAID or LUNAS
-                const isPaidInExcel = excelStatus === 'PAID' || excelStatus === 'LUNAS';
+                const isPaidInExcel = excelStatus === 'PROCESSED' || excelStatus === 'PAID' || excelStatus === 'LUNAS';
 
                 const match = isPaidInExcel ? unpaidAngsuran.find(db =>
                     String(db.pinjaman?.personal_data?.nik).trim() === excelNIK &&
@@ -125,7 +125,7 @@ const UploadPinjaman = () => {
             const { error } = await supabase
                 .from('angsuran')
                 .update({
-                    status: 'PAID',
+                    status: 'PROCESSED',
                     tanggal_bayar: now
                 })
                 .in('id', idsToUpdate);
@@ -186,12 +186,12 @@ const UploadPinjaman = () => {
                     <div className="text-xs space-y-2">
                         <p className="font-black uppercase tracking-tight italic text-sm">💡 Tips: Gunakan File Monitoring</p>
                         <p className="font-medium leading-relaxed opacity-90">
-                            Anda dapat mengunduh data dari menu <strong>Monitoring Angsuran</strong>, mengubah kolom <strong>Status</strong> menjadi <strong>PAID</strong> atau <strong>LUNAS</strong> untuk baris yang ingin dibayar, lalu unggah kembali file tersebut di sini.
+                            Anda dapat mengunduh data dari menu <strong>Tagihan Angsuran</strong>, mengubah kolom <strong>Status</strong> menjadi <strong>PROCESSED</strong> untuk baris yang ingin dibayar, lalu unggah kembali file tersebut di sini.
                         </p>
                         <ul className="list-disc ml-4 space-y-1 font-bold opacity-80 mt-2">
                             <li>Kolom Wajib: <strong>NIK</strong>, <strong>No Pinjaman</strong>, <strong>Angsuran Ke</strong>, <strong>Status</strong></li>
-                            <li>Hanya baris dengan Status <strong>PAID</strong> / <strong>LUNAS</strong> yang akan diproses</li>
-                            <li>Hanya data yang saat ini berstatus <strong>UNPAID</strong> di sistem yang dapat diperbarui</li>
+                            <li>Hanya baris dengan Status <strong>PROCESSED</strong> yang akan diproses</li>
+                            <li>Hanya data yang saat ini berstatus <strong>Kosong/UNPAID</strong> di sistem yang dapat diperbarui</li>
                         </ul>
                     </div>
                 </div>
@@ -224,7 +224,7 @@ const UploadPinjaman = () => {
                         ) : (
                             <>
                                 <CheckCircle2 size={16} />
-                                Proses Pembayaran LUNAS
+                                Proses Pembayaran PROCESSED
                             </>
                         )}
                     </button>

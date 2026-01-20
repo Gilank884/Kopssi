@@ -201,7 +201,7 @@ untuk selanjutnya disebut :
 
     pasalLeft(
         'Pasal 4\nCARA PEMBAYARAN ANGSURAN',
-        `Terhadap Fasilitas Pinjaman ini, PEMINJAM diwajibkan melakukan pembayaran dalam bentuk :\n1. Diangsur melalui potong gaji Pegawai ALIH DAYA JST tanggal 25 setiap bulannya.`
+        `Terhadap Fasilitas Pinjaman ini, PEMINJAM diwajibkan melakukan pembayaran dalam bentuk :\n1. Diangsur melalui potong gaji Pegawai ALIH DAYA JST tanggal 15 setiap bulannya.`
     );
 
     pasalLeft(

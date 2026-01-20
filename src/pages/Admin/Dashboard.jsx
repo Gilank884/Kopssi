@@ -118,14 +118,14 @@ const AdminOverview = () => {
                     .from('simpanan')
                     .select('personal_data_id, amount, transaction_type, type')
                     .in('personal_data_id', allExitIds)
-                    .eq('status', 'PAID');
+                    .or('status.eq.PROCESSED,status.eq.PAID');
 
                 // Bulk Fetch Unpaid Installments
                 const { data: allUnpaid } = await supabase
                     .from('angsuran')
                     .select('personal_data_id, pinjaman(jumlah_pinjaman, tenor_bulan, nilai_bunga, tipe_bunga, jumlah_pinjaman)')
                     .in('personal_data_id', allExitIds)
-                    .eq('status', 'UNPAID');
+                    .or('status.is.null,status.eq.UNPAID');
 
                 allExitIds.forEach(id => {
                     // Savings

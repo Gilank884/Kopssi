@@ -131,14 +131,14 @@ const Pinjaman = () => {
 
                 if (angsuran) {
                     const sortedAngsuran = angsuran.sort((a, b) => a.bulan_ke - b.bulan_ke);
-                    const nextInstallment = sortedAngsuran.find(a => a.status !== 'PAID');
+                    const nextInstallment = sortedAngsuran.find(a => !a.status || a.status === 'UNPAID');
 
                     if (nextInstallment) {
                         nextBill = parseFloat(nextInstallment.amount);
                     }
 
                     sortedAngsuran.forEach(a => {
-                        if (a.status === 'PAID') {
+                        if (a.status === 'PROCESSED' || a.status === 'PAID') {
                             pokokTerbayar += parseFloat(a.amount);
                             paidMonths++;
                         } else {
@@ -289,7 +289,7 @@ const Pinjaman = () => {
                             <div className="bg-white h-2 rounded-full" style={{ width: `${progressPercent}%` }}></div>
                         </div>
                         <div className="flex justify-between text-xs text-blue-200">
-                            <span>{summary.paidMonths} Angsuran Paid</span>
+                            <span>{summary.paidMonths} Angsuran LUNAS</span>
                             <span>{summary.remainingMonths} Remaining</span>
                         </div>
                     </div>

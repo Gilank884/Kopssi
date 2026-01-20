@@ -83,7 +83,7 @@ const MonitorPinjaman = () => {
                         )
                     )
                 `)
-                .eq('status', 'UNPAID')
+                .or('status.is.null,status.eq.UNPAID')
                 .order('id', { ascending: true });
 
             if (instError) throw instError;
@@ -114,7 +114,7 @@ const MonitorPinjaman = () => {
             const { error } = await supabase
                 .from('angsuran')
                 .update({
-                    status: 'PAID',
+                    status: 'PROCESSED',
                     tanggal_bayar: now
                 })
                 .eq('id', installment.id);

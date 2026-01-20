@@ -285,7 +285,7 @@ const MemberList = () => {
             setLoading(true);
             const { data, error } = await supabase
                 .from('personal_data')
-                .select('*')
+                .select('*, users(role)')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -305,6 +305,13 @@ const MemberList = () => {
 
 
     const filteredMembers = members.filter(m => {
+        // Exclude Admins
+        if (m.users?.role === 'ADMIN') return false;
+
+        // Exclude Unverified members (pending, DONE VERIFIKASI)
+        const status = m.status?.toLowerCase();
+        if (!status || status === 'pending' || status === 'done verifikasi') return false;
+
         const matchesSearch = m.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             m.no_npp?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             m.nik?.includes(searchTerm);

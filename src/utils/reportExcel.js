@@ -12,7 +12,7 @@ export const exportMonthlyFinancialExcel = (stats) => {
         [''],
         ['Kategori', 'Keterangan', 'Jumlah'],
         ['PENDAPATAN', 'Total Simpanan Masuk (Setor)', formatNum(stats.simpananSetor)],
-        ['PENDAPATAN', 'Total Angsuran Pinjaman (Paid)', formatNum(stats.totalAngsuran)],
+        ['PENDAPATAN', 'Total Angsuran Pinjaman (PROCESSED)', formatNum(stats.totalAngsuran)],
         ['', 'TOTAL PENDAPATAN', formatNum(stats.monthlyIncome)],
         [''],
         ['PENGELUARAN', 'Total Penarikan Simpanan (Tarik)', formatNum(stats.simpananTarik)],
@@ -85,7 +85,7 @@ export const exportMonitoringSimpanan = (data, range, mode = 'DATA') => {
                 bill.personal_data?.nik || '-',
                 bill.personal_data?.full_name || '-',
                 bill.id,
-                bill.status,
+                bill.status === 'PROCESSED' ? 'PROCESSED' : '',
                 bill.bulan_ke,
                 bill.jatuh_tempo ? new Date(bill.jatuh_tempo).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-',
                 bill.amount_pokok || 0,
@@ -131,7 +131,7 @@ export const exportMonitoringAngsuran = (data, range) => {
         inst.pinjaman?.personal_data?.full_name || '-',
         inst.pinjaman?.no_pinjaman || '-',
         inst.bulan_ke,
-        inst.status,
+        inst.status === 'PROCESSED' ? 'LUNAS' : 'Belum Terbayar',
         formatNum(inst.amount),
         inst.tanggal_bayar ? new Date(inst.tanggal_bayar).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-'
     ]);
@@ -580,4 +580,121 @@ export const exportExitRealisasi = (data) => {
     XLSX.utils.book_append_sheet(wb, ws, 'Realisasi Karyawan');
 
     XLSX.writeFile(wb, `Realisasi_Karyawan_${new Date().toISOString().slice(0, 10)}.xlsx`);
+};
+
+export const exportMembersReportExcel = (data) => {
+    const headers = [['No', 'Nama Lengkap', 'NIK', 'No Anggota', 'Unit Kerja', 'PT/Company', 'No HP', 'Status']];
+    const rows = data.map((m, i) => [
+        i + 1,
+        m.full_name || '-',
+        m.nik || '-',
+        m.no_anggota || '-',
+        m.work_unit || '-',
+        m.company || '-',
+        m.phone || '-',
+        m.status || '-'
+    ]);
+
+    const ws = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Data Anggota');
+    XLSX.writeFile(wb, `Laporan_Anggota_${new Date().toISOString().slice(0, 10)}.xlsx`);
+};
+
+export const exportPaidInstallmentsReportExcel = (data) => {
+    const headers = [['No', 'No Pinjaman', 'No Anggota', 'Nama', 'Jenis Pinjaman', 'Tgl Angsur', 'Tenor', 'Jumlah Pinjam', 'Pokok', 'Bunga', 'Total Angsur', 'Kategori Pinjaman']];
+
+    let totalPokok = 0;
+    let totalBunga = 0;
+    let totalBayar = 0;
+
+    const rows = data.map((inst, i) => {
+        const loan = inst.pinjaman || {};
+        const member = loan.personal_data || {};
+
+        const principal = parseFloat(loan.jumlah_pinjaman || 0);
+        const tenor = loan.tenor_bulan || 1;
+        let totalInterest = 0;
+
+        if (loan.tipe_bunga === 'PERSENAN') {
+            totalInterest = principal * (parseFloat(loan.nilai_bunga || 0) / 100) * (tenor / 12);
+        } else {
+            totalInterest = parseFloat(loan.nilai_bunga || 0);
+        }
+
+        const bungaPerBulan = Math.round(totalInterest / tenor);
+        const pokokPerBulan = Math.round(principal / tenor);
+        const totalPerBulan = inst.amount || (pokokPerBulan + bungaPerBulan);
+
+        totalPokok += pokokPerBulan;
+        totalBunga += bungaPerBulan;
+        totalBayar += totalPerBulan;
+
+        return [
+            i + 1,
+            loan.no_pinjaman || '-',
+            member.no_anggota || '-',
+            member.full_name || '-',
+            loan.jenis_pinjaman || '-',
+            inst.tanggal_bayar ? new Date(inst.tanggal_bayar).toLocaleDateString('id-ID') : '-',
+            tenor,
+            formatNum(principal),
+            formatNum(pokokPerBulan),
+            formatNum(bungaPerBulan),
+            formatNum(totalPerBulan),
+            loan.kategori || '-'
+        ];
+    });
+
+    // Add Total Row
+    const totalRow = [
+        '', '', '', '', '', '', '', 'TOTAL',
+        formatNum(totalPokok),
+        formatNum(totalBunga),
+        formatNum(totalBayar),
+        ''
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet([...headers, ...rows, totalRow]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Laporan Angsuran');
+    XLSX.writeFile(wb, `Laporan_Angsuran_${new Date().toISOString().slice(0, 10)}.xlsx`);
+};
+
+export const exportInterestIncomeReportExcel = (data) => {
+    const headers = [['No', 'Nama', 'No Pinjaman', 'Angsuran Ke', 'Pendapatan Bunga', 'Tgl Bayar']];
+    const rows = data.map((item, i) => [
+        i + 1,
+        item.nama || '-',
+        item.no_pinjaman || '-',
+        item.bulan_ke,
+        formatNum(item.interest_amount),
+        item.tanggal_bayar ? new Date(item.tanggal_bayar).toLocaleDateString('id-ID') : '-'
+    ]);
+
+    const ws = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Pendapatan Bunga');
+    XLSX.writeFile(wb, `Laporan_Pendapatan_Bunga_${new Date().toISOString().slice(0, 10)}.xlsx`);
+};
+
+export const exportOutstandingLoansReportExcel = (data) => {
+    const headers = [['No', 'No Pinjaman', 'Nama', 'Jenis Pinjaman', 'Tenor', 'Plafon', 'Sisa Pokok', 'Sisa Bunga', 'Angsuran/Bln', 'Kategori']];
+    const rows = data.map((l, i) => [
+        i + 1,
+        l.no_pinjaman || '-',
+        l.personal_data?.full_name || '-',
+        l.jenis_pinjaman || '-',
+        `${l.tenor_bulan} Bln`,
+        formatNum(l.jumlah_pinjaman),
+        formatNum(l.sisa_pokok),
+        formatNum(l.sisa_bunga),
+        formatNum(l.monthly_installment),
+        l.kategori || '-'
+    ]);
+
+    const ws = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Sisa Pinjaman');
+    XLSX.writeFile(wb, `Laporan_Sisa_Pinjaman_${new Date().toISOString().slice(0, 10)}.xlsx`);
 };

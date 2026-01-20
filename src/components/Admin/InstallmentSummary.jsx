@@ -8,8 +8,8 @@ const InstallmentSummary = ({ loan, installments, userLoans, formatCurrency, sel
     // Stats untuk PINJAMAN SAAT INI (Current Loan)
     const currentInstallments = installments.filter(i => i.pinjaman_id === loanId);
     const hasCurrentInstallments = currentInstallments.length > 0;
-    const paidCurrentInstallments = currentInstallments.filter(i => i.status === 'PAID');
-    const unpaidCurrentInstallments = currentInstallments.filter(i => i.status !== 'PAID');
+    const paidCurrentInstallments = currentInstallments.filter(i => i.status === 'PROCESSED' || i.status === 'PAID');
+    const unpaidCurrentInstallments = currentInstallments.filter(i => i.status !== 'PROCESSED' && i.status !== 'PAID');
 
     const currentTotalPaid = paidCurrentInstallments.reduce((sum, i) => sum + parseFloat(i.amount), 0);
     const currentRemaining = unpaidCurrentInstallments.reduce((sum, i) => sum + parseFloat(i.amount), 0);
@@ -21,7 +21,7 @@ const InstallmentSummary = ({ loan, installments, userLoans, formatCurrency, sel
 
     const otherLoans = userLoans.filter(l => l.id !== loanId && l.status === 'DICAIRKAN');
     const resolvedOtherLoans = otherLoans.filter(l => {
-        const paidCount = installments.filter(i => i.pinjaman_id === l.id && i.status === 'PAID').length;
+        const paidCount = installments.filter(i => i.pinjaman_id === l.id && (i.status === 'PROCESSED' || i.status === 'PAID')).length;
         return paidCount < (l.tenor_bulan || 0);
     });
 
@@ -53,7 +53,7 @@ const InstallmentSummary = ({ loan, installments, userLoans, formatCurrency, sel
                                     : 'bg-amber-50 text-amber-700 border-amber-200'
                                 }`}
                             >
-                                {currentPaidCount === loan.tenor_bulan ? 'LUNAS' : 'BERJALAN'}
+                                {currentPaidCount === loan.tenor_bulan ? 'FULLY PROCESSED' : 'BERJALAN'}
                             </span>
                         </div>
 
@@ -161,7 +161,7 @@ const InstallmentSummary = ({ loan, installments, userLoans, formatCurrency, sel
                                                             return (
                                                                 <tr key={inst.id} className={`group hover:bg-gray-50/50 transition-colors ${inst.status === 'PAID' ? 'bg-blue-50/10' : ''}`}>
                                                                     <td className="px-4 py-3 text-[10px] font-bold text-gray-600 uppercase italic">
-                                                                        {new Date(inst.tanggal_bayar).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
+                                                                        {new Date(inst.tanggal_bayar).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}
                                                                     </td>
                                                                     <td className="px-4 py-3 text-[10px] font-black text-gray-700 italic text-right">
                                                                         {formatCurrency(currentPokok)}
@@ -176,13 +176,13 @@ const InstallmentSummary = ({ loan, installments, userLoans, formatCurrency, sel
                                                                         {formatCurrency(Math.max(0, runningSaldo))}
                                                                     </td>
                                                                     <td className="px-4 py-3 text-center">
-                                                                        <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase italic ${inst.status === 'PAID'
+                                                                        <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase italic ${(inst.status === 'PROCESSED' || inst.status === 'PAID')
                                                                             ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
                                                                             : new Date(inst.tanggal_bayar) < new Date()
                                                                                 ? 'bg-red-50 text-red-600 border border-red-100'
                                                                                 : 'bg-gray-50 text-gray-400 border border-gray-100 uppercase'
                                                                             }`}>
-                                                                            {inst.status === 'PAID' ? 'LUNAS' : 'PENDING'}
+                                                                            {(inst.status === 'PROCESSED' || inst.status === 'PAID') ? 'LUNAS' : ''}
                                                                         </span>
                                                                     </td>
                                                                 </tr>
@@ -215,8 +215,8 @@ const InstallmentSummary = ({ loan, installments, userLoans, formatCurrency, sel
                         <div className="grid grid-cols-1 gap-4">
                             {resolvedOtherLoans.map((ol) => {
                                 const olInstallments = installments.filter(i => i.pinjaman_id === ol.id);
-                                const paidOlInstallments = olInstallments.filter(i => i.status === 'PAID');
-                                const unpaidOlInstallments = olInstallments.filter(i => i.status !== 'PAID');
+                                const paidOlInstallments = olInstallments.filter(i => i.status === 'PROCESSED' || i.status === 'PAID');
+                                const unpaidOlInstallments = olInstallments.filter(i => i.status !== 'PROCESSED' && i.status !== 'PAID');
 
                                 const tenor = ol.tenor_bulan || 1;
                                 const paidCount = paidOlInstallments.length;
@@ -295,7 +295,7 @@ const InstallmentSummary = ({ loan, installments, userLoans, formatCurrency, sel
                                             </div>
                                         ) : (
                                             <div className="p-4 text-center text-[10px] font-bold text-gray-400 italic">
-                                                Semua angsuran sudah lunas.
+                                                Semua angsuran sudah PROCESSED.
                                             </div>
                                         )}
                                     </div>
@@ -340,7 +340,7 @@ const InstallmentSummary = ({ loan, installments, userLoans, formatCurrency, sel
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 };
 

@@ -191,7 +191,7 @@ const LoanDetail = () => {
                 const { error: patchError } = await supabase
                     .from('angsuran')
                     .update({
-                        status: 'PAID',
+                        status: 'PROCESSED',
                         tanggal_bayar: new Date().toISOString(),
                         metode_bayar: 'POTONG_PENCAIRAN',
                         keterangan: `Dipotong dari pencairan pinjaman ${loan.no_pinjaman}`
@@ -217,17 +217,26 @@ const LoanDetail = () => {
 
             const installmentsToCreate = [];
             const today = new Date();
+            const dayOfDisbursement = today.getDate();
 
             for (let i = 1; i <= tenor; i++) {
-                const dueDate = new Date(today);
-                dueDate.setMonth(today.getMonth() + i);
+                // Set initial date to 15th of current month at noon to avoid timezone shifts
+                const dueDate = new Date(today.getFullYear(), today.getMonth(), 15, 12, 0, 0);
+
+                if (dayOfDisbursement >= 16) {
+                    // If disbursed on 16th or later, first installment (i=1) is next month
+                    dueDate.setMonth(dueDate.getMonth() + i);
+                } else {
+                    // If disbursed on 15th or earlier, first installment (i=1) is current month
+                    dueDate.setMonth(dueDate.getMonth() + (i - 1));
+                }
 
                 installmentsToCreate.push({
                     pinjaman_id: loan.id,
                     bulan_ke: i,
                     amount: monthlyAmount,
                     tanggal_bayar: dueDate.toISOString(),
-                    status: 'UNPAID'
+                    status: null
                 });
             }
 

@@ -2,15 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { Search, CheckCircle, Clock, Banknote, CalendarDays, FileText, Download } from 'lucide-react';
 
-const MonitorAngsuran = () => {
+const TagihanAngsuran = () => {
     const [installments, setInstallments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [startDate, setStartDate] = useState(() => {
-        const d = new Date();
-        return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0];
-    });
-    const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -37,13 +32,12 @@ const MonitorAngsuran = () => {
     useEffect(() => {
         fetchInstallments();
         fetchCompanies();
-    }, [startDate, endDate, filterStatus]);
+    }, []);
 
     const fetchInstallments = async () => {
         try {
             setLoading(true);
 
-            // Fetch all installments
             let query = supabase
                 .from('angsuran')
                 .select(`
@@ -59,10 +53,6 @@ const MonitorAngsuran = () => {
                     )
                 `)
                 .order('created_at', { ascending: false });
-
-            if (filterStatus !== 'ALL') {
-                query = query.eq('status', filterStatus);
-            }
 
             const { data, error } = await query;
 
@@ -82,63 +72,21 @@ const MonitorAngsuran = () => {
                 // Sort by bulan_ke ASC
                 group.sort((a, b) => a.bulan_ke - b.bulan_ke);
 
-                // Find first UNPAID
-                const firstUnpaid = group.find(i => i.status === 'UNPAID');
+                // Find first UNPAID (closest bill)
+                const firstUnpaid = group.find(i => !i.status || i.status === 'UNPAID');
 
                 if (firstUnpaid) {
                     nextInstallments.push(firstUnpaid);
-                } else {
-                    // If all paid, maybe show the last paid one to indicate completion?
-                    // Or don't show if we only care about monitoring "bills to pay".
-                    // If filterStatus is 'PAID', we might want to see them.
-                    // If filterStatus is 'ALL', seeing the last status is good.
-                    // Let's take the last one (max bulan_ke)
-                    const lastPaid = group[group.length - 1];
-                    nextInstallments.push(lastPaid);
                 }
+                // If all paid, we don't push anything (exclude fully paid loans)
             });
 
-            // Apply Date Filter to the SELECTED installments
-            const filteredByDate = nextInstallments.filter(inst => {
-                // Use tanggal_bayar if exists (for paid), or created_at/estimated due date?
-                // For UNPAID, we might want to see if it due in this range?
-                // The current code used created_at which is generation time, not due date.
-                // UNPAID usually doesn't have tanggal_bayar set (it's null).
-                // If we want "Bulan Terdekat", we usually just want to see it regardless of date filter 
-                // OR we check if the 'due date' (which we calculate dynamically in other places) is in range.
-                // Since this page used `created_at` before, let's keep it simple: 
-                // IF UNPAID, we likely want to see it always if it's the next bill. 
-                // BUT user kept date filters. 
-                // Let's filter based on: if PAID -> tanggal_bayar. If UNPAID -> maybe don't filter by date? 
-                // Or use the "estimated" date (created_at + X months).
-                // EXISTING CODE used `inst.created_at`. Let's stick to `inst.created_at` or disable date filter for UNPAID if user wants "Bulan Terdekat".
-                // Actually, "Monitoring Angsuran" usually implies "What is due this month?".
-                // If I filtered to "Next Bill", and then apply date filter `2026-01-01` to `2026-01-31`, 
-                // I expect to see bills due in Jan 2026. 
-                // Since `angsuran` table doesn't seem to have a strict `due_date` column in the select above (it selects *), 
-                // let's assume `tanggal_bayar` is the relevant date for PAID. 
-                // For UNPAID, `tanggal_bayar` is null.
-                // We should probably rely on the logic that `MonitorAngsuran` usually shows what happened or is happening.
+            // Apply Date Filter only for specific views if needed, 
+            // but for "Next Bill" Tagihan, we usually show them regardless of date range 
+            // unless we want to see what is due "In this range".
+            // Since we don't have a strict due_date field yet, we show all current obligations.
 
-                // User said: "tampilkan jangan semua data angsuran tapi hanya bulan terdekat saja"
-                // This implies simpler view. 
-                // I will return `nextInstallments` directly for now to ensure we see the unique list. 
-                // If the user wants to filter by date, they can, but filtering `nextInstallments` by `created_at` (which is loan creation + 0s for all insts) is wrong.
-                // Installments are created at bulk. `created_at` is same for all 12 installments.
-                // So filtering by `created_at` was likely WRONG before too (it would show ALL 12 if range covered loan creation).
-                // Let's REMOVE date filter for UNPAID to ensure we see the current obligation. 
-                // Or filter by `tanggal_bayar` if PAID.
-
-                if (inst.status === 'PAID') {
-                    const pDate = new Date(inst.tanggal_bayar).toISOString().split('T')[0];
-                    return pDate >= startDate && pDate <= endDate;
-                }
-                // For UNPAID, show all (since it's the "current" one) OR maybe we don't apply date filter?
-                // Let's show all UNPAID next bills.
-                return true;
-            });
-
-            setInstallments(filteredByDate);
+            setInstallments(nextInstallments);
         } catch (error) {
             console.error('Error fetching installments:', error);
             alert('Gagal memuat data angsuran');
@@ -148,7 +96,7 @@ const MonitorAngsuran = () => {
     };
 
     const handleMarkAsPaid = async (installment) => {
-        if (!window.confirm(`Tandai angsuran ke-${installment.bulan_ke} untuk ${installment.pinjaman?.personal_data?.full_name} sebagai LUNAS?`)) return;
+        if (!window.confirm(`Tandai angsuran ke-${installment.bulan_ke} untuk ${installment.pinjaman?.personal_data?.full_name} sebagai PROCESSED?`)) return;
 
         try {
             setUpdatingId(installment.id);
@@ -157,7 +105,7 @@ const MonitorAngsuran = () => {
             const { error } = await supabase
                 .from('angsuran')
                 .update({
-                    status: 'PAID',
+                    status: 'PROCESSED',
                     tanggal_bayar: now
                 })
                 .eq('id', installment.id);
@@ -165,7 +113,7 @@ const MonitorAngsuran = () => {
             if (error) throw error;
 
             // Update local state
-            setInstallments(prev => prev.map(i => i.id === installment.id ? { ...i, status: 'PAID', tanggal_bayar: now } : i));
+            setInstallments(prev => prev.map(i => i.id === installment.id ? { ...i, status: 'PROCESSED', tanggal_bayar: now } : i));
             alert('Angsuran berhasil dibayar!');
         } catch (error) {
             console.error('Error updating payment:', error);
@@ -178,7 +126,10 @@ const MonitorAngsuran = () => {
     const handleExportExcel = async () => {
         try {
             const { exportMonitoringAngsuran } = await import('../../utils/reportExcel');
-            exportMonitoringAngsuran(filteredInstallments, { startDate, endDate });
+            exportMonitoringAngsuran(filteredInstallments, {
+                startDate: new Date().toISOString().split('T')[0],
+                endDate: new Date().toISOString().split('T')[0]
+            });
         } catch (err) {
             console.error('Excel export error:', err);
         }
@@ -200,7 +151,7 @@ const MonitorAngsuran = () => {
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchTerm, filterCompany, startDate, endDate, filterStatus]);
+    }, [searchTerm, filterCompany]);
 
     const formatCurrency = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
 
@@ -208,7 +159,7 @@ const MonitorAngsuran = () => {
         <div className="space-y-6 animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="text-left">
-                    <h2 className="text-3xl font-black text-gray-900 italic uppercase tracking-tight">Monitoring Angsuran</h2>
+                    <h2 className="text-3xl font-black text-gray-900 italic uppercase tracking-tight">Tagihan Angsuran</h2>
                     <p className="text-sm text-gray-500 mt-1 font-medium italic uppercase tracking-wider">Lacak status pembayaran angsuran pinjaman anggota</p>
                 </div>
 
@@ -223,22 +174,7 @@ const MonitorAngsuran = () => {
                             className="pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-64 text-sm shadow-sm"
                         />
                     </div>
-                    <div className="flex items-center gap-2">
-                        <input
-                            type="date"
-                            value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
-                            className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white shadow-sm font-bold"
-                        />
-                        <span className="text-gray-400 font-bold">s/d</span>
-                        <input
-                            type="date"
-                            value={endDate}
-                            onChange={(e) => setEndDate(e.target.value)}
-                            className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white shadow-sm font-bold"
-                        />
-                    </div>
-                    <div className="relative">
+                    <div className="flex items-center gap-3">
                         <select
                             value={filterCompany}
                             onChange={(e) => setFilterCompany(e.target.value)}
@@ -249,22 +185,14 @@ const MonitorAngsuran = () => {
                                 <option key={c} value={c}>{c}</option>
                             ))}
                         </select>
+
+                        <button
+                            onClick={handleExportExcel}
+                            className="flex items-center gap-2 px-4 py-2 bg-white text-emerald-600 border-2 border-emerald-100 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-emerald-50 transition-all shadow-sm"
+                        >
+                            <Download size={16} /> Export
+                        </button>
                     </div>
-                    <select
-                        value={filterStatus}
-                        onChange={(e) => setFilterStatus(e.target.value)}
-                        className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white shadow-sm font-bold"
-                    >
-                        <option value="ALL">Semua Status</option>
-                        <option value="UNPAID">Belum Bayar</option>
-                        <option value="PAID">Lunas</option>
-                    </select>
-                    <button
-                        onClick={handleExportExcel}
-                        className="flex items-center gap-2 px-4 py-2 bg-white text-emerald-600 border-2 border-emerald-100 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-emerald-50 transition-all shadow-sm"
-                    >
-                        <Download size={16} /> Export
-                    </button>
                 </div>
             </div>
 
@@ -320,19 +248,19 @@ const MonitorAngsuran = () => {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-center">
-                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter border ${inst.status === 'PAID'
+                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter border ${inst.status === 'PROCESSED'
                                                 ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
                                                 : 'bg-amber-100 text-amber-700 border-amber-200'
                                                 }`}>
-                                                {inst.status === 'PAID' ? <CheckCircle size={10} /> : <Clock size={10} />}
-                                                {inst.status === 'PAID' ? 'LUNAS' : 'BELUM BAYAR'}
+                                                {inst.status === 'PROCESSED' ? <CheckCircle size={10} /> : null}
+                                                {inst.status === 'PROCESSED' ? 'LUNAS' : 'Belum Terbayar'}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-center text-[10px] font-bold text-gray-500 italic">
                                             {inst.tanggal_bayar ? new Date(inst.tanggal_bayar).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-'}
                                         </td>
                                         <td className="px-6 py-4 text-center">
-                                            {inst.status !== 'PAID' ? (
+                                            {inst.status !== 'PROCESSED' ? (
                                                 <button
                                                     onClick={() => handleMarkAsPaid(inst)}
                                                     disabled={updatingId === inst.id}
@@ -398,4 +326,4 @@ const MonitorAngsuran = () => {
     );
 };
 
-export default MonitorAngsuran;
+export default TagihanAngsuran;

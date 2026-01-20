@@ -173,13 +173,12 @@ const Angsuran = () => {
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-center text-left">
-                                        {item.status === 'PAID' ? (
+                                        {item.status === 'PROCESSED' ? (
                                             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-700 uppercase tracking-tighter shadow-sm border border-emerald-200">
-                                                <CheckCircle size={10} /> TERBAYAR
+                                                <CheckCircle size={10} /> LUNAS
                                             </span>
                                         ) : (
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black bg-amber-100 text-amber-700 uppercase tracking-tighter shadow-sm border border-amber-200">
-                                                <Clock size={10} /> OUTSTANDING
+                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter">
                                             </span>
                                         )}
                                     </td>
@@ -201,14 +200,12 @@ const Angsuran = () => {
                                     </div>
                                     <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest italic">{item.date}</p>
                                 </div>
-                                {item.status === 'PAID' ? (
+                                {item.status === 'PROCESSED' ? (
                                     <span className="px-2 py-0.5 rounded-full text-[8px] font-black bg-emerald-100 text-emerald-700 uppercase tracking-tighter border border-emerald-200">
-                                        TERBAYAR
+                                        LUNAS
                                     </span>
                                 ) : (
-                                    <span className="px-2 py-0.5 rounded-full text-[8px] font-black bg-amber-100 text-amber-700 uppercase tracking-tighter border border-amber-200">
-                                        HARUS DIBAYAR
-                                    </span>
+                                    <span></span>
                                 )}
                             </div>
 
@@ -228,7 +225,7 @@ const Angsuran = () => {
                     ))}
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

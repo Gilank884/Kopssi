@@ -154,7 +154,7 @@ const Overview = () => {
 
                     if (angsuranData) {
                         const unpaidItems = angsuranData
-                            .filter(a => a.status !== 'PAID')
+                            .filter(a => a.status !== 'PROCESSED' && a.status !== 'PAID')
                             .sort((a, b) => new Date(a.tanggal_bayar) - new Date(b.tanggal_bayar));
 
                         if (unpaidItems.length > 0) {
