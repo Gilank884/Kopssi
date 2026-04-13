@@ -27,7 +27,7 @@ import {
 import LogoutModal from '../components/LogoutModal';
 
 const AdminLayout = () => {
-    const [isSidebarOpen, setSidebarOpen] = useState(true);
+    const [isSidebarOpen, setSidebarOpen] = useState(window.innerWidth > 1024);
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
     const [openMenus, setOpenMenus] = useState({});
     const [pendingCount, setPendingCount] = useState(0);
@@ -37,6 +37,26 @@ const AdminLayout = () => {
     const [countExit, setCountExit] = useState(0);
     const navigate = useNavigate();
     const location = useLocation();
+
+    // Auto-close sidebar on mobile when route changes
+    useEffect(() => {
+        if (window.innerWidth < 1024) {
+            setSidebarOpen(false);
+        }
+    }, [location.pathname]);
+
+    // Handle resize to adjust sidebar
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth >= 1024) {
+                setSidebarOpen(true);
+            } else {
+                setSidebarOpen(false);
+            }
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const handleLogoutClick = () => setIsLogoutModalOpen(true);
 
@@ -260,27 +280,35 @@ const AdminLayout = () => {
             .find(i => i.path === location.pathname) || { label: 'Admin Panel' };
 
     return (
-        <div className="flex h-screen bg-gray-50 text-gray-800 font-sans">
+        <div className="flex h-screen bg-neutral-50 text-slate-800 font-sans overflow-hidden">
+            {/* MOBILE OVERLAY */}
+            {isSidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300"
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
+
             {/* SIDEBAR */}
-            <aside className={`bg-slate-900 border-r border-slate-800 shadow-xl
-                ${isSidebarOpen ? 'w-72' : 'w-20'}
-                fixed md:relative h-full z-30 transition-all duration-300 ease-in-out flex flex-col`}
+            <aside className={`bg-[#0f172a] border-r border-slate-800/50 shadow-2xl
+                ${isSidebarOpen ? 'translate-x-0 w-72' : '-translate-x-full lg:translate-x-0 lg:w-24'}
+                fixed lg:relative h-full z-50 transition-all duration-300 ease-in-out flex flex-col`}
             >
                 {/* BRANDING */}
                 <div className="h-20 flex items-center justify-center border-b border-slate-800/50 relative overflow-hidden group">
                     <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     {isSidebarOpen ? (
-                        <div className="flex items-center gap-3 z-10 animate-in fade-in duration-300">
-                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center text-white font-bold shadow-lg shadow-emerald-500/30">
+                        <div className="flex items-center gap-3 z-10 animate-in fade-in zoom-in duration-300">
+                            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-black shadow-lg shadow-emerald-500/20">
                                 K
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-lg font-black text-white tracking-tight">KOPSSI</span>
-                                <span className="text-[10px] uppercase text-slate-400 font-bold tracking-widest leading-none">Admin Panel</span>
+                                <span className="text-xl font-black text-white tracking-tight leading-none">KOPSSI</span>
+                                <span className="text-[10px] uppercase text-slate-400 font-black tracking-widest mt-1 opacity-70">Admin Panel</span>
                             </div>
                         </div>
                     ) : (
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-emerald-500/30">
+                        <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-emerald-500/20 transform hover:scale-110 transition-transform cursor-pointer" onClick={() => setSidebarOpen(true)}>
                             K
                         </div>
                     )}
@@ -409,59 +437,58 @@ const AdminLayout = () => {
             <div className="flex-1 flex flex-col overflow-hidden relative">
 
                 {/* HEADER */}
-                <header className="h-20 bg-white/80 backdrop-blur-md border-b border-gray-200/60 sticky top-0 z-20 px-8 flex items-center justify-between transition-all duration-300 shadow-sm">
-                    <div className="flex items-center gap-6">
+                <header className="h-20 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 sticky top-0 z-30 px-4 md:px-8 flex items-center justify-between transition-all duration-300 shadow-sm">
+                    <div className="flex items-center gap-3 md:gap-6">
                         <button
                             onClick={() => setSidebarOpen(!isSidebarOpen)}
-                            className="p-2 rounded-xl text-gray-400 hover:bg-gray-100 hover:text-gray-900 transition-all active:scale-95"
+                            className="p-2.5 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-90"
                         >
-                            <Menu size={24} />
+                            <Menu size={22} />
                         </button>
 
-                        <div className="flex flex-col hidden md:block">
-                            <h1 className="text-xl font-black text-gray-800 tracking-tight leading-none">
+                        <div className="flex flex-col">
+                            <h1 className="text-lg md:text-xl font-black text-slate-800 tracking-tight leading-none truncate max-w-[150px] md:max-w-none">
                                 {currentItem.label}
                             </h1>
-                            <span className="text-xs font-medium text-gray-400 mt-1">
+                            <span className="text-[10px] md:text-xs font-bold text-slate-400 mt-1 uppercase tracking-wider hidden sm:block">
                                 {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                             </span>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-5">
+                    <div className="flex items-center gap-2 md:gap-5">
                         {/* Search Bar - Hidden on small screens */}
-                        <div className="hidden md:flex items-center bg-gray-100 rounded-full px-4 py-2 border border-transparent focus-within:border-emerald-300 focus-within:ring-4 focus-within:ring-emerald-500/10 transition-all w-64">
+                        <div className="hidden lg:flex items-center bg-gray-100 rounded-2xl px-4 py-2 border border-transparent focus-within:border-emerald-300 focus-within:ring-4 focus-within:ring-emerald-500/5 transition-all w-64">
                             <Search size={16} className="text-gray-400" />
                             <input
                                 type="text"
-                                placeholder="Cari menu atau data..."
+                                placeholder="Pencarian cepat..."
                                 className="bg-transparent border-none focus:outline-none text-sm ml-2 w-full font-medium text-gray-600 placeholder:text-gray-400"
                             />
                         </div>
 
-                        <div className="h-8 w-px bg-gray-200 mx-1 hidden md:block"></div>
+                        <div className="h-8 w-px bg-gray-200 mx-1 hidden sm:block"></div>
 
-                        <button className="relative p-2 text-gray-400 hover:bg-gray-100 rounded-xl transition-colors group">
-                            <Bell size={22} className="group-hover:text-gray-700" />
-                            <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+                        <button className="relative p-2.5 text-slate-400 hover:bg-slate-100 rounded-xl transition-all group active:scale-90">
+                            <Bell size={20} className="group-hover:text-slate-700" />
+                            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white shadow-sm"></span>
                         </button>
 
-                        <div className="flex items-center gap-3 pl-2 border-l border-transparent md:border-gray-200 cursor-pointer hover:bg-gray-50 p-1.5 pr-3 rounded-full transition-all group">
-                            <div className="w-10 h-10 bg-gradient-to-br from-emerald-100 to-teal-50 rounded-full flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100 group-hover:scale-105 transition-transform">
+                        <div className="flex items-center gap-3 md:pl-2 border-l border-transparent md:border-gray-200 cursor-pointer hover:bg-gray-50 p-1 md:p-1.5 md:pr-3 rounded-full transition-all group">
+                            <div className="w-9 h-9 md:w-10 md:h-10 bg-gradient-to-br from-emerald-100 to-teal-50 rounded-full flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100 group-hover:scale-105 transition-transform overflow-hidden">
                                 <UserCircle size={24} />
                             </div>
-                            <div className="hidden md:flex flex-col text-right">
-                                <span className="text-sm font-black text-gray-800 leading-tight group-hover:text-emerald-700 transition-colors">Admin Super</span>
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Administrator</span>
+                            <div className="hidden sm:flex flex-col text-left">
+                                <span className="text-[13px] font-black text-slate-800 leading-tight group-hover:text-emerald-700 transition-colors">Admin Super</span>
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Administrator</span>
                             </div>
-                            <ChevronDown size={14} className="text-gray-300 group-hover:text-gray-500 transition-colors hidden md:block" />
                         </div>
                     </div>
                 </header>
 
                 {/* MAIN CONTENT */}
-                <main className="flex-1 overflow-auto bg-gray-50/50 p-6 md:p-8 scroll-smooth">
-                    <div className="max-w-[1600px] mx-auto animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <main className="flex-1 overflow-auto bg-[#f8fafc] p-4 md:p-8 scroll-smooth">
+                    <div className="max-w-[1700px] mx-auto animate-in fade-in slide-in-from-bottom-3 duration-700 delay-150">
                         <Outlet />
                     </div>
                 </main>

@@ -157,142 +157,147 @@ const Transaksi = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="text-left">
-                    <h2 className="text-2xl font-bold text-gray-800">Monitoring Transaksi</h2>
-                    <p className="text-sm text-gray-500 mt-1">Lacak seluruh aktivitas pembayaran iuran dan angsuran anggota</p>
+            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+                <div className="text-left space-y-1">
+                    <h2 className="text-2xl md:text-3xl font-black text-slate-800 italic uppercase tracking-tight leading-none">Monitoring Transaksi</h2>
+                    <p className="text-[11px] md:text-sm text-slate-500 font-medium italic uppercase tracking-wider">Lacak seluruh aktivitas keuangan anggota secara real-time</p>
                 </div>
-                <div className="flex flex-col md:flex-row gap-3">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+
+                <div className="flex flex-col md:flex-row flex-wrap gap-3 items-stretch md:items-end">
+                    <div className="relative flex-grow md:flex-grow-0">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={17} />
                         <input
                             type="text"
-                            placeholder="Cari anggota atau referensi..."
+                            placeholder="Cari anggota / referensi..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-64 text-sm"
+                            className="pl-10 pr-4 py-2.5 md:py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-64 text-sm font-medium shadow-sm transition-all"
                         />
                     </div>
-                    <div className="flex items-center gap-2">
+
+                    <div className="flex items-center gap-2 flex-grow md:flex-grow-0">
                         <input
                             type="date"
                             value={startDate}
                             onChange={(e) => setStartDate(e.target.value)}
-                            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white font-bold"
+                            className="w-full px-4 py-2.5 md:py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs md:text-sm bg-white font-bold transition-all shadow-sm"
                         />
-                        <span className="text-gray-400 font-bold">s/d</span>
+                        <span className="text-slate-400 font-bold px-1 hidden sm:block">s/d</span>
                         <input
                             type="date"
                             value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
-                            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white font-bold"
+                            className="w-full px-4 py-2.5 md:py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs md:text-sm bg-white font-bold transition-all shadow-sm"
                         />
                     </div>
-                    <select
-                        value={filterCompany}
-                        onChange={(e) => setFilterCompany(e.target.value)}
-                        className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white font-bold uppercase tracking-tight italic"
-                    >
-                        <option value="ALL">SEMUA PT</option>
-                        {companies.map(c => (
-                            <option key={c} value={c}>{c}</option>
-                        ))}
-                    </select>
-                    <select
-                        value={filterStatus}
-                        onChange={(e) => setFilterStatus(e.target.value)}
-                        className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white"
-                    >
-                        <option value="ALL">Semua Status</option>
-                        <option value="UNPAID">Belum Bayar</option>
-                        <option value="PAID">Lunas</option>
-                    </select>
+
+                    <div className="grid grid-cols-2 gap-3 flex-grow md:flex-grow-0">
+                        <div className="relative">
+                            <select
+                                value={filterCompany}
+                                onChange={(e) => setFilterCompany(e.target.value)}
+                                className="w-full pl-4 pr-8 py-2.5 md:py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-[11px] bg-white font-black uppercase tracking-tight italic appearance-none shadow-sm transition-all"
+                            >
+                                <option value="ALL">SEMUA PT</option>
+                                {companies.map(c => (
+                                    <option key={c} value={c}>{c}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="relative">
+                            <select
+                                value={filterStatus}
+                                onChange={(e) => setFilterStatus(e.target.value)}
+                                className="w-full pl-4 pr-8 py-2.5 md:py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-[11px] bg-white font-black uppercase tracking-tight italic appearance-none shadow-sm transition-all"
+                            >
+                                <option value="ALL">SEMUA STATUS</option>
+                                <option value="UNPAID">PENDING</option>
+                                <option value="PAID">LUNAS</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden text-left">
-                <div className="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
-                    <div>
-                        <h3 className="font-bold text-gray-800 text-lg italic uppercase tracking-tighter">Daftar Transaksi</h3>
-                        <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Aktivitas Keuangan Anggota</p>
+            <div className="bg-white rounded-[32px] shadow-xl shadow-emerald-900/5 border border-slate-100 overflow-hidden text-left">
+                <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                    <div className="space-y-1">
+                        <h3 className="font-black text-slate-800 text-lg italic uppercase tracking-tighter leading-none">Daftar Transaksi</h3>
+                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest italic opacity-70">Log Aktivitas Keuangan Anggota</p>
                     </div>
-                    <div className="flex gap-4">
+                    <div className="hidden sm:flex gap-4">
                         <div className="text-right">
-                            <p className="text-[10px] font-black text-gray-400 uppercase">Total Transaksi</p>
-                            <p className="font-mono font-bold text-sm text-emerald-600">{filteredTransactions.length}</p>
+                            <p className="text-[10px] font-black text-slate-400 uppercase italic">Total Records</p>
+                            <p className="font-mono font-black text-sm text-emerald-600 italic">{filteredTransactions.length}</p>
                         </div>
                     </div>
                 </div>
 
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead className="bg-gray-50 border-b border-gray-200 text-gray-600 text-[10px] font-black uppercase tracking-widest">
+                <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead className="bg-slate-50/50 border-b border-slate-100 text-slate-400 text-[10px] font-black uppercase tracking-widest italic">
                             <tr>
-                                <th className="px-6 py-4">Anggota</th>
-                                <th className="px-6 py-4">Jenis / Kategori</th>
-                                <th className="px-6 py-4">Referensi</th>
-                                <th className="px-6 py-4">Tanggal / Tempo</th>
-                                <th className="px-6 py-4 text-right">Nominal</th>
-                                <th className="px-6 py-4 text-center">Status</th>
+                                <th className="px-6 py-5">Anggota</th>
+                                <th className="px-6 py-5">Jenis / Kategori</th>
+                                <th className="px-6 py-5">Referensi</th>
+                                <th className="px-6 py-5">Tanggal / Tempo</th>
+                                <th className="px-6 py-5 text-right">Nominal</th>
+                                <th className="px-6 py-5 text-center">Status</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100 italic">
+                        <tbody className="divide-y divide-slate-50 italic">
                             {loading ? (
                                 <tr>
-                                    <td colSpan="6" className="px-6 py-12 text-center text-gray-500">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-                                        Memuat data...
+                                    <td colSpan="6" className="px-6 py-12 text-center text-slate-500">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto"></div>
                                     </td>
                                 </tr>
                             ) : filteredTransactions.length === 0 ? (
                                 <tr>
-                                    <td colSpan="6" className="px-6 py-12 text-center text-gray-500">
-                                        <AlertCircle className="mx-auto text-gray-300 mb-4" size={48} />
-                                        <p className="font-medium not-italic">Tidak ada transaksi ditemukan untuk filter ini</p>
+                                    <td colSpan="6" className="px-6 py-20 text-center text-slate-400 not-italic">
+                                        <AlertCircle className="mx-auto opacity-20 mb-4" size={48} />
+                                        <p className="font-black uppercase text-[10px] tracking-widest italic">Belum ada data transaksi</p>
                                     </td>
                                 </tr>
                             ) : (
                                 paginatedTransactions.map((trx) => (
-                                    <tr key={trx.id} className="hover:bg-emerald-50/30 transition-colors group">
-                                        <td className="px-6 py-4">
+                                    <tr key={trx.id} className="hover:bg-emerald-50/50 transition-colors group">
+                                        <td className="px-6 py-5">
                                             <div className="flex flex-col">
-                                                <span className="text-sm font-black text-gray-900 not-italic uppercase tracking-tighter">
+                                                <span className="text-[13px] font-black text-slate-800 not-italic uppercase tracking-tight leading-none mb-1">
                                                     {trx.member}
                                                 </span>
-                                                <span className="text-[10px] text-gray-400 font-mono tracking-tighter">
-                                                    {trx.nik}
+                                                <span className="text-[10px] text-slate-400 font-mono tracking-tighter">
+                                                    {trx.nik} • {trx.company}
                                                 </span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4">
+                                        <td className="px-6 py-5">
                                             <div className="flex flex-col">
-                                                <span className={`text-[10px] font-black uppercase tracking-widest ${trx.type === 'SIMPANAN' ? 'text-blue-600' : 'text-purple-600'}`}>
+                                                <span className={`text-[10px] font-black uppercase tracking-widest leading-none mb-1 ${trx.type === 'SIMPANAN' ? 'text-blue-600' : 'text-purple-600'}`}>
                                                     {trx.type}
                                                 </span>
-                                                <span className="text-xs text-gray-500 font-bold uppercase">{trx.category}</span>
+                                                <span className="text-[11px] text-slate-500 font-bold uppercase">{trx.category}</span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <span className="text-xs font-mono font-bold text-gray-600 bg-gray-100 px-2 py-0.5 rounded">
+                                        <td className="px-6 py-5">
+                                            <span className="text-[10px] font-mono font-black text-slate-500 bg-slate-100 px-2 py-1 rounded-lg uppercase tracking-widest">
                                                 {trx.reference}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <span className="text-xs font-bold text-gray-500 flex items-center gap-1.5">
-                                                <Calendar size={12} /> {formatDate(trx.date)}
-                                            </span>
+                                        <td className="px-6 py-5 text-[11px] font-black text-slate-400 flex items-center gap-2 pt-8">
+                                            <Calendar size={13} /> {formatDate(trx.date)}
                                         </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <span className="text-sm font-black text-gray-800 font-mono">
+                                        <td className="px-6 py-5 text-right">
+                                            <span className="text-sm font-black text-slate-800 font-mono italic">
                                                 {formatCurrency(trx.amount)}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter shadow-sm border ${trx.status === 'PAID'
-                                                ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
-                                                : 'bg-amber-100 text-amber-700 border-amber-200'
+                                        <td className="px-6 py-5 text-center">
+                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm border ${trx.status === 'PAID'
+                                                ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                                                : 'bg-amber-50 text-amber-600 border-amber-100'
                                                 }`}>
-                                                {trx.status === 'PAID' ? <CheckCircle size={10} /> : <Clock size={10} />}
                                                 {trx.status === 'PAID' ? 'LUNAS' : 'PENDING'}
                                             </span>
                                         </td>
@@ -301,6 +306,55 @@ const Transaksi = () => {
                             )}
                         </tbody>
                     </table>
+                </div>
+
+                {/* Mobile View Card Container */}
+                <div className="md:hidden divide-y divide-slate-100">
+                    {loading ? (
+                        <div className="p-20 text-center">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto"></div>
+                        </div>
+                    ) : filteredTransactions.length === 0 ? (
+                        <div className="p-12 text-center opacity-30 italic">
+                            <AlertCircle size={40} className="mx-auto mb-2" />
+                            <p className="font-black uppercase text-[10px] tracking-widest">Tidak ada data</p>
+                        </div>
+                    ) : (
+                        paginatedTransactions.map((trx) => (
+                            <div key={trx.id} className="p-4 active:bg-slate-50 transition-colors space-y-3">
+                                <div className="flex justify-between items-start">
+                                    <div className="flex flex-col">
+                                        <span className="text-[13px] font-black text-slate-800 uppercase italic tracking-tight leading-none mb-1">
+                                            {trx.member}
+                                        </span>
+                                        <span className={`text-[9px] font-black uppercase tracking-widest ${trx.type === 'SIMPANAN' ? 'text-blue-600' : 'text-purple-600'}`}>
+                                            {trx.type} • {trx.category}
+                                        </span>
+                                    </div>
+                                    <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border ${trx.status === 'PAID'
+                                        ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                                        : 'bg-amber-50 text-amber-700 border-amber-100'
+                                        }`}>
+                                        {trx.status === 'PAID' ? 'LUNAS' : 'PENDING'}
+                                    </span>
+                                </div>
+                                <div className="flex items-center justify-between bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                                    <div className="flex flex-col">
+                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Nominal</span>
+                                        <span className="text-[13px] font-black text-slate-800 font-mono italic">{formatCurrency(trx.amount)}</span>
+                                    </div>
+                                    <div className="text-right flex flex-col items-end">
+                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">Referensi</span>
+                                        <span className="text-[10px] font-black text-slate-600 uppercase font-mono">{trx.reference}</span>
+                                    </div>
+                                </div>
+                                <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 italic">
+                                    <span>{formatDate(trx.date)}</span>
+                                    <span className="uppercase text-[9px]">{trx.company}</span>
+                                </div>
+                            </div>
+                        ))
+                    )}
                 </div>
 
                 {/* PAGINATION FOOTER */}

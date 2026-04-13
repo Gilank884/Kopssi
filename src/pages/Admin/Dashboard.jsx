@@ -234,13 +234,13 @@ const AdminOverview = () => {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div className="space-y-1">
-                    <h2 className="text-3xl font-black text-gray-800 uppercase tracking-tight italic">Dashboard Koperasi</h2>
-                    <p className="text-sm text-gray-500 font-medium">Ringkasan aktivitas dan performa sistem hari ini</p>
+                    <h2 className="text-2xl md:text-3xl font-black text-slate-800 uppercase tracking-tight italic leading-none">Dashboard Koperasi</h2>
+                    <p className="text-[11px] md:text-sm text-slate-500 font-medium italic">Ringkasan aktivitas dan performa sistem hari ini</p>
                 </div>
-                <div className="px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-xl">
-                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest italic">Status Sistem</p>
+                <div className="px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-2xl w-full sm:w-auto">
+                    <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest italic">Status Sistem</p>
                     <p className="text-xs font-bold text-emerald-800">Operational • Optimal</p>
                 </div>
             </div>
@@ -275,7 +275,7 @@ const AdminOverview = () => {
             </div>
 
             {/* Secondary Stats Group */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 text-left">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
                 <HighlightCard
                     title="Pending Realisasi"
                     value={formatCurrency(stats.unrealizedTotal)}

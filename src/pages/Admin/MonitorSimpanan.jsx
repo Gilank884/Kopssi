@@ -118,29 +118,29 @@ const MonitorSimpanan = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 text-left">
-                <div>
-                    <h2 className="text-2xl font-black text-gray-900 italic uppercase tracking-tight">Monitoring Simpanan</h2>
-                    <p className="text-sm text-gray-500 mt-1">Pantau total simpanan anggota dan riwayat transaksi</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-left">
+                <div className="space-y-1">
+                    <h2 className="text-2xl md:text-3xl font-black text-slate-800 italic uppercase tracking-tight leading-none">Monitoring Simpanan</h2>
+                    <p className="text-[11px] md:text-sm text-slate-500 font-medium italic mt-1 uppercase tracking-wider">Pantau total simpanan anggota dan riwayat transaksi</p>
                 </div>
-                <div className="flex flex-wrap gap-3">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                    <div className="relative flex-grow sm:flex-grow-0">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={17} />
                         <input
                             type="text"
                             placeholder="Cari Nama / NPP..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-64 text-sm shadow-sm font-medium"
+                            className="pl-10 pr-4 py-2.5 sm:py-2 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-64 text-sm shadow-sm font-medium transition-all"
                         />
                     </div>
 
                     <div className="relative">
-                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={15} />
                         <select
                             value={filterCompany}
                             onChange={(e) => setFilterCompany(e.target.value)}
-                            className="pl-9 pr-8 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white shadow-sm appearance-none font-bold uppercase tracking-tight italic"
+                            className="w-full pl-9 pr-8 py-2.5 sm:py-2 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-[11px] font-black uppercase tracking-tight italic appearance-none shadow-sm transition-all"
                         >
                             <option value="ALL">SEMUA PT</option>
                             {companies.map(c => (
@@ -148,84 +148,130 @@ const MonitorSimpanan = () => {
                             ))}
                         </select>
                     </div>
-
-                    {/* Export could be re-enabled if needed */}
                 </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead className="bg-gray-50 border-b border-gray-200 text-gray-600 text-[11px] font-black uppercase tracking-widest">
+            <div className="bg-white rounded-[32px] shadow-xl shadow-emerald-900/5 border border-slate-100 overflow-hidden">
+                <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead className="bg-slate-50/50 border-b border-slate-100 italic">
                             <tr>
-                                <th className="px-6 py-4">Anggota</th>
-                                <th className="px-6 py-4">Perusahaan</th>
-                                <th className="px-6 py-4 text-right">Total Simpanan</th>
-                                <th className="px-6 py-4 text-center">Aksi</th>
+                                <th className="px-6 py-5 font-black uppercase text-[10px] text-slate-400 tracking-widest">Anggota</th>
+                                <th className="px-6 py-5 font-black uppercase text-[10px] text-slate-400 tracking-widest">Perusahaan</th>
+                                <th className="px-6 py-5 font-black uppercase text-[10px] text-slate-400 tracking-widest text-right">Total Simpanan</th>
+                                <th className="px-6 py-5 font-black uppercase text-[10px] text-slate-400 tracking-widest text-center">Detail</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody className="divide-y divide-slate-50">
                             {loading ? (
                                 <tr>
-                                    <td colSpan="4" className="px-6 py-12 text-center text-gray-500">
+                                    <td colSpan="4" className="px-6 py-20 text-center text-slate-500">
                                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-                                        Memuat data anggota...
+                                        <p className="text-[10px] font-black uppercase tracking-widest italic opacity-50">Memuat data...</p>
                                     </td>
                                 </tr>
                             ) : filteredMembers.length === 0 ? (
                                 <tr>
-                                    <td colSpan="4" className="px-6 py-12 text-center text-gray-500">
-                                        <User className="mx-auto text-gray-300 mb-4" size={48} />
-                                        <p>Tidak ada anggota ditemukan</p>
+                                    <td colSpan="4" className="px-6 py-20 text-center text-slate-400 italic">
+                                        <User className="mx-auto opacity-20 mb-4" size={48} />
+                                        <p className="font-bold text-sm">Tidak ada anggota ditemukan</p>
                                     </td>
                                 </tr>
                             ) : (
                                 paginatedMembers.map((m) => (
                                     <tr
                                         key={m.id}
-                                        className="hover:bg-emerald-50/30 transition-colors group cursor-pointer"
+                                        className="hover:bg-emerald-50/50 transition-colors group cursor-pointer"
                                         onClick={() => navigate(`/admin/monitor-simpanan/${m.id}`)}
                                     >
-                                        <td className="px-6 py-4">
+                                        <td className="px-6 py-5">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 font-bold text-xs">
+                                                <div className="w-10 h-10 bg-emerald-50/50 rounded-full flex items-center justify-center text-emerald-600 font-black text-xs uppercase border border-emerald-100 italic">
                                                     {m.full_name?.substring(0, 2)}
                                                 </div>
-                                                <div>
-                                                    <p className="text-sm font-black text-gray-900 uppercase tracking-tight">{m.full_name}</p>
-                                                    <p className="text-[10px] text-gray-400 font-mono flex items-center gap-1">
-                                                        <User size={10} /> {m.no_npp}
+                                                <div className="flex flex-col">
+                                                    <p className="text-[13px] font-black text-slate-800 uppercase italic tracking-tight leading-none">{m.full_name}</p>
+                                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1 mt-1">
+                                                        {m.no_npp || '-'}
                                                     </p>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <span className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase tracking-tight">
-                                                <Building size={14} className="text-gray-400" />
+                                        <td className="px-6 py-5">
+                                            <span className="text-[11px] font-bold text-slate-500 uppercase italic tracking-tight">
                                                 {m.company || '-'}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <span className="text-sm font-black text-emerald-600 font-mono tracking-tight bg-emerald-50 px-3 py-1 rounded-lg">
+                                        <td className="px-6 py-5 text-right">
+                                            <span className="text-sm font-black text-emerald-700 font-mono italic">
                                                 {formatCurrency(m.total_simpanan)}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    navigate(`/admin/monitor-simpanan/${m.id}`);
-                                                }}
-                                                className="p-2 bg-white border border-gray-200 text-gray-400 rounded-lg hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all shadow-sm"
-                                            >
-                                                <ArrowRight size={16} />
-                                            </button>
+                                        <td className="px-6 py-5 text-center">
+                                            <div className="flex justify-center">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        navigate(`/admin/monitor-simpanan/${m.id}`);
+                                                    }}
+                                                    className="p-2 text-slate-300 hover:text-emerald-600 transition-colors rounded-xl hover:bg-white border border-transparent shadow-sm hover:border-emerald-100"
+                                                >
+                                                    <ArrowRight size={18} />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
                             )}
                         </tbody>
                     </table>
+                </div>
+
+                {/* Mobile View Card Container */}
+                <div className="md:hidden divide-y divide-slate-100 italic">
+                    {loading ? (
+                        <div className="p-20 text-center">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto"></div>
+                        </div>
+                    ) : filteredMembers.length === 0 ? (
+                        <div className="p-12 text-center opacity-30">
+                            <User size={40} className="mx-auto mb-2" />
+                            <p className="font-black uppercase text-[10px] italic">Data tidak ditemukan</p>
+                        </div>
+                    ) : (
+                        paginatedMembers.map((m) => (
+                            <div
+                                key={m.id}
+                                onClick={() => navigate(`/admin/monitor-simpanan/${m.id}`)}
+                                className="p-4 active:bg-slate-50 transition-colors space-y-3"
+                            >
+                                <div className="flex justify-between items-start">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600 font-black text-xs uppercase border border-emerald-100">
+                                            {m.full_name?.substring(0, 2)}
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="font-black text-slate-800 text-[13px] uppercase tracking-tight leading-none">{m.full_name}</span>
+                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">NPP: {m.no_npp || '-'}</span>
+                                        </div>
+                                    </div>
+                                    <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100">
+                                        Detail →
+                                    </span>
+                                </div>
+                                <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-2xl border border-slate-100">
+                                    <div className="flex flex-col">
+                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Total Simpanan</span>
+                                        <span className="text-[13px] font-black text-emerald-700 font-mono">{formatCurrency(m.total_simpanan)}</span>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Perusahaan</span>
+                                        <div className="text-[10px] font-bold text-slate-600 uppercase tracking-tight">{m.company || '-'}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    )}
                 </div>
 
                 {/* PAGINATION FOOTER */}

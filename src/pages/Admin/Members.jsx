@@ -334,61 +334,59 @@ const MemberList = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 text-left">
-                <div>
-                    <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight">Database Anggota</h2>
-                    <p className="text-sm text-gray-500 font-medium">Manajemen data seluruh anggota koperasi</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-left">
+                <div className="space-y-1">
+                    <h2 className="text-2xl md:text-3xl font-black text-slate-800 uppercase tracking-tight italic leading-none">Database Anggota</h2>
+                    <p className="text-[11px] md:text-sm text-slate-500 font-medium italic">Manajemen data seluruh anggota koperasi</p>
                 </div>
-                <div className="flex gap-2">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                    <div className="relative flex-grow sm:flex-grow-0">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={17} />
                         <input
                             type="text"
                             placeholder="Cari anggota..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 w-full md:w-64 text-sm font-medium"
+                            className="pl-10 pr-4 py-2.5 sm:py-2 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 w-full md:w-64 text-sm font-medium shadow-sm transition-all"
                         />
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        <div className="relative">
-                            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                            <select
-                                value={filterCompany}
-                                onChange={(e) => setFilterCompany(e.target.value)}
-                                className="pl-9 pr-10 py-2 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-[11px] font-black uppercase tracking-tight italic appearance-none"
-                            >
-                                <option value="ALL">SEMUA PERUSAHAAN</option>
-                                {companies.map(c => (
-                                    <option key={c} value={c}>{c}</option>
-                                ))}
-                            </select>
-                        </div>
+                    <div className="relative">
+                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={15} />
+                        <select
+                            value={filterCompany}
+                            onChange={(e) => setFilterCompany(e.target.value)}
+                            className="w-full pl-9 pr-8 py-2.5 sm:py-2 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-[11px] font-black uppercase tracking-tight italic appearance-none shadow-sm transition-all"
+                        >
+                            <option value="ALL">SEMUA PERUSAHAAN</option>
+                            {companies.map(c => (
+                                <option key={c} value={c}>{c}</option>
+                            ))}
+                        </select>
                     </div>
                 </div>
             </div>
 
-            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead className="bg-gray-50/50 border-b border-gray-100 italic">
+            <div className="bg-white rounded-[32px] shadow-xl shadow-blue-900/5 border border-slate-100 overflow-hidden">
+                <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead className="bg-slate-50/50 border-b border-slate-100 italic">
                             <tr>
-                                <th className="px-6 py-4 font-black uppercase text-[10px] text-gray-400 tracking-widest">NPP</th>
-                                <th className="px-6 py-4 font-black uppercase text-[10px] text-gray-400 tracking-widest">Nama Lengkap</th>
-                                <th className="px-6 py-4 font-black uppercase text-[10px] text-gray-400 tracking-widest">NIK</th>
-                                <th className="px-6 py-4 font-black uppercase text-[10px] text-gray-400 tracking-widest">Perusahaan</th>
-                                <th className="px-6 py-4 font-black uppercase text-[10px] text-gray-400 tracking-widest">Status</th>
-                                <th className="px-6 py-4 font-black uppercase text-[10px] text-gray-400 tracking-widest text-center">Aksi</th>
+                                <th className="px-6 py-4 font-black uppercase text-[10px] text-slate-400 tracking-widest">NPP</th>
+                                <th className="px-6 py-4 font-black uppercase text-[10px] text-slate-400 tracking-widest">Nama Lengkap</th>
+                                <th className="px-6 py-4 font-black uppercase text-[10px] text-slate-400 tracking-widest">NIK</th>
+                                <th className="px-6 py-4 font-black uppercase text-[10px] text-slate-400 tracking-widest">Perusahaan</th>
+                                <th className="px-6 py-4 font-black uppercase text-[10px] text-slate-400 tracking-widest">Status</th>
+                                <th className="px-6 py-4 font-black uppercase text-[10px] text-slate-400 tracking-widest text-center">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-50">
+                        <tbody className="divide-y divide-slate-50">
                             {filteredMembers.length > 0 ? (
                                 filteredMembers.map((member) => (
                                     <tr
                                         key={member.id}
                                         onClick={() => handleRowClick(member)}
-                                        className="hover:bg-blue-50/30 transition-colors cursor-pointer group"
+                                        className="hover:bg-blue-50/50 transition-colors cursor-pointer group"
                                     >
                                         <td className="px-6 py-4 text-xs font-bold text-blue-600 font-mono tracking-tighter uppercase">{member.no_npp || '-'}</td>
                                         <td className="px-6 py-4">
@@ -396,11 +394,11 @@ const MemberList = () => {
                                                 <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-black text-[10px] uppercase border border-blue-100 italic">
                                                     {member.full_name?.charAt(0)}
                                                 </div>
-                                                <span className="font-bold text-gray-900 text-sm uppercase italic tracking-tight">{member.full_name}</span>
+                                                <span className="font-black text-slate-800 text-sm uppercase italic tracking-tight">{member.full_name}</span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-[10px] font-bold font-mono text-gray-400">{member.nik}</td>
-                                        <td className="px-6 py-4 text-xs font-bold text-gray-600 uppercase italic tracking-tight overflow-hidden text-ellipsis whitespace-nowrap max-w-[150px]">{member.company || '-'}</td>
+                                        <td className="px-6 py-4 text-[10px] font-bold font-mono text-slate-400">{member.nik}</td>
+                                        <td className="px-6 py-4 text-xs font-bold text-slate-500 uppercase italic tracking-tight truncate max-w-[150px]">{member.company || '-'}</td>
                                         <td className="px-6 py-4">
                                             <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest italic transition-all ${member.status?.toLowerCase() === 'active' || member.status?.toLowerCase() === 'verified'
                                                 ? 'bg-emerald-50 text-emerald-600'
@@ -428,81 +426,11 @@ const MemberList = () => {
                                                         e.stopPropagation();
                                                         handleRowClick(member);
                                                     }}
-                                                    className="p-2 text-gray-400 hover:text-blue-600 transition-colors rounded-full hover:bg-white border border-transparent hover:border-blue-100"
-                                                    title="Detail Anggota"
+                                                    className="p-2 text-slate-300 hover:text-blue-600 transition-colors rounded-full hover:bg-white border border-transparent shadow-sm hover:border-blue-100"
+                                                    title="Detail"
                                                 >
                                                     <MoreHorizontal size={18} />
                                                 </button>
-                                                {(member.status?.toLowerCase() === 'active' || member.status?.toLowerCase() === 'verified' || !member.status) && (
-                                                    <>
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                if (window.confirm(`Apakah Anda yakin ingin MEMASIFKAN anggota ${member.full_name}?`)) {
-                                                                    handleSetPassiveMember(member.id);
-                                                                }
-                                                            }}
-                                                            className="p-2 text-gray-400 hover:text-amber-600 transition-colors rounded-full hover:bg-white border border-transparent hover:border-amber-100"
-                                                            title="Pasifkan Anggota"
-                                                        >
-                                                            <UserMinus size={18} />
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                if (window.confirm(`Apakah Anda yakin ingin MENONAKTIFKAN anggota ${member.full_name}?`)) {
-                                                                    handleDeactivateMember(member.id);
-                                                                }
-                                                            }}
-                                                            className="p-2 text-gray-400 hover:text-red-600 transition-colors rounded-full hover:bg-white border border-transparent hover:border-red-100"
-                                                            title="Non-Aktifkan Anggota"
-                                                        >
-                                                            <Trash2 size={18} />
-                                                        </button>
-                                                    </>
-                                                )}
-                                                {member.status?.toLowerCase() === 'pasif' && (
-                                                    <>
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                if (window.confirm(`Apakah Anda yakin ingin MENGAKTIFKAN kembali anggota ${member.full_name}?`)) {
-                                                                    handleActivateMember(member.id);
-                                                                }
-                                                            }}
-                                                            className="p-2 text-gray-400 hover:text-emerald-600 transition-colors rounded-full hover:bg-white border border-transparent hover:border-emerald-100"
-                                                            title="Aktifkan Anggota"
-                                                        >
-                                                            <CheckCircle2 size={18} />
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                if (window.confirm(`Apakah Anda yakin ingin MENONAKTIFKAN anggota ${member.full_name}?`)) {
-                                                                    handleDeactivateMember(member.id);
-                                                                }
-                                                            }}
-                                                            className="p-2 text-gray-400 hover:text-red-600 transition-colors rounded-full hover:bg-white border border-transparent hover:border-red-100"
-                                                            title="Non-Aktifkan Anggota"
-                                                        >
-                                                            <Trash2 size={18} />
-                                                        </button>
-                                                    </>
-                                                )}
-                                                {(member.status?.toLowerCase() === 'non_active' || member.status?.toLowerCase() === 'nonaktif') && (
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            if (window.confirm(`Apakah Anda yakin ingin MENGAKTIFKAN kembali anggota ${member.full_name}?`)) {
-                                                                handleActivateMember(member.id);
-                                                            }
-                                                        }}
-                                                        className="p-2 text-gray-400 hover:text-emerald-600 transition-colors rounded-full hover:bg-white border border-transparent hover:border-emerald-100"
-                                                        title="Aktifkan Anggota"
-                                                    >
-                                                        <CheckCircle2 size={18} />
-                                                    </button>
-                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -512,7 +440,7 @@ const MemberList = () => {
                                     <td colSpan="6" className="px-6 py-20 text-center">
                                         <div className="flex flex-col items-center gap-2 opacity-30">
                                             <Search size={48} />
-                                            <p className="font-black uppercase tracking-widest text-xs italic">Data anggota tidak ditemukan</p>
+                                            <p className="font-black uppercase tracking-widest text-[10px] italic">Data anggota tidak ditemukan</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -520,8 +448,52 @@ const MemberList = () => {
                         </tbody>
                     </table>
                 </div>
-                <div className="px-8 py-4 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-gray-400 italic">
-                    <p>Total {filteredMembers.length} Anggota Terdaftar</p>
+
+                {/* Mobile View Card Container */}
+                <div className="md:hidden divide-y divide-slate-100">
+                    {filteredMembers.length > 0 ? (
+                        filteredMembers.map((member) => (
+                            <div
+                                key={member.id}
+                                onClick={() => handleRowClick(member)}
+                                className="p-4 active:bg-slate-50 transition-colors"
+                            >
+                                <div className="flex justify-between items-start mb-2">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-black text-xs uppercase border border-blue-100 italic">
+                                            {member.full_name?.charAt(0)}
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="font-black text-slate-800 text-[13px] uppercase italic leading-none">{member.full_name}</span>
+                                            <span className="text-[10px] font-bold text-blue-600 font-mono tracking-tighter uppercase mt-1">NPP: {member.no_npp || '-'}</span>
+                                        </div>
+                                    </div>
+                                    <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest italic border ${member.status?.toLowerCase() === 'active' || member.status?.toLowerCase() === 'verified'
+                                        ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                                        : member.status?.toLowerCase() === 'pasif'
+                                            ? 'bg-amber-100 text-amber-700 border-amber-200'
+                                            : 'bg-red-50 text-red-600 border-red-100'
+                                        }`}>
+                                        {member.status?.toUpperCase() === 'NON_ACTIVE' ? 'NON AKTIF' : member.status?.toUpperCase()}
+                                    </span>
+                                </div>
+                                <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 italic">
+                                    <span>NIK: {member.nik}</span>
+                                    <span className="text-slate-500 uppercase">{member.company || '-'}</span>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="p-12 text-center opacity-30">
+                            <Search size={40} className="mx-auto mb-2" />
+                            <p className="font-black uppercase text-[10px] italic tracking-widest">Tidak ada data</p>
+                        </div>
+                    )}
+                </div>
+
+                <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-400 italic">
+                    <p>Total {filteredMembers.length} Anggota</p>
+                    <span className="md:hidden">Klik kartu untuk detail</span>
                 </div>
             </div>
 
