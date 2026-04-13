@@ -334,33 +334,31 @@ const MemberList = () => {
 
     return (
         <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-500 max-w-[1600px] mx-auto">
-            {/* Header Section */}
-            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
-                <div className="text-left">
-                    <h2 className="text-2xl md:text-3xl font-black text-gray-900 italic tracking-tight">Database Anggota</h2>
-                    <p className="text-xs md:text-sm text-gray-500 mt-1 font-medium italic">Manajemen data seluruh anggota koperasi</p>
+            {/* Unified Header Card */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                {/* Title Row */}
+                <div className="px-5 pt-5 pb-4 border-b border-gray-100">
+                    <h2 className="text-xl md:text-2xl font-black text-gray-900 italic tracking-tight leading-none">Database Anggota</h2>
+                    <p className="text-[11px] text-gray-400 mt-1 font-medium italic tracking-tight">Manajemen data seluruh anggota koperasi</p>
                 </div>
-                {/* Filters Wrapper */}
-                <div className="flex flex-col md:flex-row flex-wrap gap-3 items-stretch md:items-end">
-                    {/* Search Field */}
-                    <div className="relative flex-grow md:flex-grow-0">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={17} />
+                {/* Filters Row */}
+                <div className="px-5 py-3 flex flex-col sm:flex-row flex-wrap gap-3 items-center bg-gray-50/60">
+                    <div className="relative flex-grow sm:max-w-xs w-full">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={15} />
                         <input
                             type="text"
                             placeholder="Cari anggota..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10 pr-4 py-2.5 md:py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-64 text-sm shadow-sm font-medium"
+                            className="pl-9 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full text-xs font-medium bg-white shadow-sm"
                         />
                     </div>
-
-                    {/* Company Select */}
-                    <div className="relative">
-                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={15} />
+                    <div className="relative w-full sm:w-auto">
+                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={13} />
                         <select
                             value={filterCompany}
                             onChange={(e) => setFilterCompany(e.target.value)}
-                            className="w-full pl-9 pr-8 py-2.5 md:py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white shadow-sm font-bold tracking-tight italic appearance-none"
+                            className="w-full pl-8 pr-8 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs bg-white font-bold tracking-tight italic appearance-none shadow-sm"
                         >
                             <option value="ALL">Semua Perusahaan</option>
                             {companies.map(c => (

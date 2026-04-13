@@ -156,11 +156,11 @@ const UploadPinjaman = () => {
 
     return (
         <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-500 max-w-[1600px] mx-auto">
-            {/* Header Section */}
-            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
-                <div className="text-left">
-                    <h2 className="text-2xl md:text-3xl font-black text-gray-900 italic tracking-tight">Bulk Upload Angsuran</h2>
-                    <p className="text-xs md:text-sm text-gray-500 mt-1 font-medium italic">Update status angsuran pinjaman via Excel</p>
+            {/* Unified Header Card */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="px-5 pt-5 pb-4 border-b border-gray-100">
+                    <h2 className="text-xl md:text-2xl font-black text-gray-900 italic tracking-tight leading-none">Bulk Upload Angsuran</h2>
+                    <p className="text-[11px] text-gray-400 mt-1 font-medium italic tracking-tight">Update status angsuran pinjaman via Excel</p>
                 </div>
             </div>
 

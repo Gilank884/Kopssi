@@ -86,28 +86,29 @@ const MasterData = () => {
 
     return (
         <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-500 max-w-[1600px] mx-auto">
-            {/* Header Section */}
-            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
-                <div className="text-left">
-                    <h2 className="text-2xl md:text-3xl font-black text-gray-900 italic tracking-tight">Master Data</h2>
-                    <p className="text-xs md:text-sm text-gray-500 mt-1 font-medium italic tracking-tight">Kelola data referensi seperti PT dan kategori pinjaman</p>
+            {/* Unified Header Card */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                {/* Title Row */}
+                <div className="px-5 pt-5 pb-4 border-b border-gray-100">
+                    <h2 className="text-xl md:text-2xl font-black text-gray-900 italic tracking-tight leading-none">Master Data</h2>
+                    <p className="text-[11px] text-gray-400 mt-1 font-medium italic tracking-tight">Kelola data referensi seperti PT dan kategori pinjaman</p>
                 </div>
-            </div>
-
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-wrap gap-2">
-                {tabs.map(tab => (
-                    <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === tab.id
-                            ? 'bg-emerald-600 text-white shadow-md'
-                            : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                {/* Tab Row */}
+                <div className="px-5 py-3 flex flex-wrap gap-2 bg-gray-50/60">
+                    {tabs.map(tab => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === tab.id
+                                ? 'bg-emerald-600 text-white shadow-sm'
+                                : 'bg-white text-gray-500 hover:bg-gray-100 border border-gray-200'
                             }`}
-                    >
-                        {tab.icon}
-                        {tab.label}
-                    </button>
-                ))}
+                        >
+                            {tab.icon}
+                            {tab.label}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

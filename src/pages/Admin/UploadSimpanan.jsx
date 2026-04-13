@@ -271,48 +271,46 @@ const UploadSimpanan = () => {
 
     return (
         <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-500 max-w-[1600px] mx-auto">
-            {/* Header Section */}
-            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
-                <div className="text-left">
-                    <h2 className="text-2xl md:text-3xl font-black text-gray-900 italic uppercase tracking-tight">Upload Simpanan Massal</h2>
-                    <p className="text-xs md:text-sm text-gray-500 mt-1 font-medium italic uppercase tracking-wider">Input iuran anggota secara massal via Excel</p>
+            {/* Unified Header Card */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                {/* Title Row */}
+                <div className="px-5 pt-5 pb-4 border-b border-gray-100">
+                    <h2 className="text-xl md:text-2xl font-black text-gray-900 italic tracking-tight leading-none">Upload Simpanan Massal</h2>
+                    <p className="text-[11px] text-gray-400 mt-1 font-medium italic tracking-tight">Input iuran anggota secara massal via Excel</p>
                 </div>
-                {/* Filters Wrapper */}
-                <div className="flex flex-col md:flex-row flex-wrap gap-3 items-stretch md:items-end">
-                    <div className="relative flex-grow md:flex-grow-0">
+                {/* Filters Row */}
+                <div className="px-5 py-3 flex flex-col sm:flex-row flex-wrap gap-3 items-center bg-gray-50/60">
+                    <div className="relative w-full sm:w-auto">
                         <select
                             value={selectedPT}
                             onChange={(e) => setSelectedPT(e.target.value)}
-                            className="w-full pl-4 pr-8 py-2.5 md:py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white font-bold appearance-none uppercase shadow-sm min-w-[200px]"
+                            className="w-full pl-4 pr-8 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs bg-white font-bold appearance-none shadow-sm min-w-[200px]"
                         >
-                            <option value="ALL">PILIH PT</option>
+                            <option value="ALL">Pilih PT</option>
                             {companies.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                     </div>
-
                     {selectedPT !== 'ALL' && (
-                        <div className="flex flex-col items-center md:items-end gap-1 animate-in zoom-in duration-300">
-                            <label className="text-[10px] font-black text-gray-400 uppercase italic">Jumlah Karyawan</label>
-                            <div className="w-full md:w-auto px-4 py-2 bg-blue-50 border border-blue-100 rounded-xl text-sm font-black text-blue-600 italic text-center">
-                                {memberCount} ORANG
+                        <div className="flex items-center gap-2 animate-in zoom-in duration-300">
+                            <span className="text-[10px] font-black text-gray-400 italic">Jumlah Karyawan:</span>
+                            <div className="px-3 py-1.5 bg-blue-50 border border-blue-100 rounded-xl text-xs font-black text-blue-600 italic">
+                                {memberCount} Orang
                             </div>
                         </div>
                     )}
-
                     <input
                         type="month"
                         value={selectedMonth}
                         onChange={(e) => setSelectedMonth(e.target.value)}
-                        className="px-4 py-2.5 md:py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white font-bold shadow-sm"
+                        className="px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs bg-white font-bold shadow-sm w-full sm:w-auto"
                     />
-
                     <button
                         onClick={handleExportTemplate}
                         disabled={loading}
-                        className="px-6 py-2.5 md:py-2 bg-blue-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 h-[42px] md:h-[40px]"
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-[11px] font-black hover:bg-blue-700 transition-all shadow-sm disabled:opacity-50 w-full sm:w-auto justify-center"
                     >
-                        {loading ? <Loader2 className="animate-spin" size={16} /> : <Download size={16} />}
-                        EXPORT TEMPLATE
+                        {loading ? <Loader2 className="animate-spin" size={14} /> : <Download size={14} />}
+                        Export Template
                     </button>
                 </div>
             </div>
