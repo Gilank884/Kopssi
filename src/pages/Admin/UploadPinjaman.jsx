@@ -155,11 +155,12 @@ const UploadPinjaman = () => {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 text-left">
-                <div>
-                    <h2 className="text-2xl font-bold text-gray-800">Bulk Upload Angsuran</h2>
-                    <p className="text-sm text-gray-500 mt-1">Update status angsuran pinjaman via Excel</p>
+        <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-500 max-w-[1600px] mx-auto">
+            {/* Header Section */}
+            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+                <div className="text-left">
+                    <h2 className="text-2xl md:text-3xl font-black text-gray-900 italic tracking-tight">Bulk Upload Angsuran</h2>
+                    <p className="text-xs md:text-sm text-gray-500 mt-1 font-medium italic">Update status angsuran pinjaman via Excel</p>
                 </div>
             </div>
 
@@ -183,7 +184,7 @@ const UploadPinjaman = () => {
                 />
                 <label
                     htmlFor="excel-upload-pinjaman"
-                    className="px-6 py-2 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-xs hover:bg-blue-700 cursor-pointer shadow-lg shadow-blue-100 transition"
+                    className="px-6 py-2 bg-blue-600 text-white rounded-xl font-black text-xs hover:bg-blue-700 cursor-pointer shadow-lg shadow-blue-100 transition"
                 >
                     {file ? 'Ganti File' : 'Cari File'}
                 </label>
@@ -194,7 +195,7 @@ const UploadPinjaman = () => {
                 <div className="bg-blue-50 border border-blue-100 p-6 rounded-2xl flex gap-4 text-blue-900 shadow-sm shadow-blue-100/50">
                     <Info size={24} className="shrink-0" />
                     <div className="text-xs space-y-2">
-                        <p className="font-black uppercase tracking-tight italic text-sm">💡 Tips: Gunakan File Monitoring</p>
+                        <p className="font-black italic text-sm">💡 Tips: Gunakan File Monitoring</p>
                         <p className="font-medium leading-relaxed opacity-90">
                             Anda dapat mengunduh data dari menu <strong>Tagihan Angsuran</strong>, mengubah kolom <strong>STATUS</strong> menjadi <strong>PROCESSED</strong> untuk tiap baris yang telah dibayar, lalu unggah kembali file tersebut di sini.
                         </p>
@@ -212,11 +213,11 @@ const UploadPinjaman = () => {
                 <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
                     <div className="flex gap-6">
                         <div className="text-center">
-                            <p className="text-[10px] font-bold text-gray-400 uppercase">Matched</p>
+                            <p className="text-[10px] font-bold text-gray-400">Matched</p>
                             <p className="text-xl font-bold text-blue-600">{uploadStats.matched}</p>
                         </div>
                         <div className="text-center">
-                            <p className="text-[10px] font-bold text-gray-400 uppercase">Unmatched</p>
+                            <p className="text-[10px] font-bold text-gray-400">Unmatched</p>
                             <p className="text-xl font-bold text-red-500">{uploadStats.unmatched}</p>
                         </div>
                     </div>
@@ -231,40 +232,41 @@ const UploadPinjaman = () => {
                     </button>
                 </div>
             )}
-
             {/* Preview Table */}
             {previewData.length > 0 && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div className="overflow-x-auto text-left">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-blue-50 border-b border-blue-100">
-                                    <th className="px-6 py-4 font-bold text-blue-800 text-sm italic">Validasi</th>
-                                    <th className="px-6 py-4 font-bold text-blue-800 text-sm italic">NOPEG (NIK)</th>
-                                    <th className="px-6 py-4 font-bold text-blue-800 text-sm italic text-center">NoAnggota</th>
-                                    <th className="px-6 py-4 font-bold text-blue-800 text-sm italic">ID Tagihan</th>
-                                    <th className="px-6 py-4 font-bold text-blue-800 text-sm italic">Nama Di Sistem</th>
-                                    <th className="px-6 py-4 font-bold text-blue-800 text-sm italic text-right">Nominal</th>
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div className="overflow-auto max-h-[60vh] text-left">
+                        <table className="w-full text-left border-collapse table-auto">
+                            <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
+                                <tr>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Validasi</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center">Nopeg</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">ID Tagihan</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Anggota</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic text-right">Nominal</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100">
+                            <tbody className="divide-y divide-slate-200">
                                 {previewData.map((row, idx) => (
-                                    <tr key={idx} className="hover:bg-blue-50/30 transition-colors">
-                                        <td className="px-6 py-4">
+                                    <tr key={idx} className="hover:bg-blue-50 transition-colors group">
+                                        <td className="px-2 py-1 border-r border-slate-200">
                                             {row.status === 'MATCHED' ? (
-                                                <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-bold">MATCH</span>
+                                                <span className="px-1.5 py-0.5 bg-emerald-600 text-white rounded text-[8px] font-black italic shadow-sm">Match</span>
                                             ) : (
-                                                <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-[10px] font-bold">MISSING</span>
+                                                <span className="px-1.5 py-0.5 bg-red-100 text-red-700 rounded text-[8px] font-black italic">Missing</span>
                                             )}
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-gray-600">{row.excelData.NOPEG || row.excelData.nik || '-'}</td>
-                                        <td className="px-6 py-4 text-center text-sm text-gray-600">{row.excelData.NoAnggota || '-'}</td>
-                                        <td className="px-6 py-4 text-sm text-gray-600 font-mono tracking-tighter">{row.excelData.KETERANGAN2 || '-'}</td>
-                                        <td className="px-6 py-4 font-bold text-gray-900 text-sm">
+                                        <td className="px-2 py-1 text-[10px] font-bold text-slate-500 font-mono italic text-center border-r border-slate-200 whitespace-nowrap leading-none">
+                                            {row.excelData.NOPEG || row.excelData.nik || '-'}
+                                        </td>
+                                        <td className="px-2 py-1 text-[10px] font-bold text-slate-400 font-mono border-r border-slate-200 tracking-tighter leading-none whitespace-nowrap">
+                                            {row.excelData.KETERANGAN2 || '-'}
+                                        </td>
+                                        <td className="px-2 py-1 text-[11px] font-black text-slate-900 italic tracking-tight border-r border-slate-200 leading-none truncate max-w-[200px]">
                                             {row.dbMatch?.pinjaman?.personal_data?.full_name || 'No Match'}
                                         </td>
-                                        <td className="px-6 py-4 text-right font-bold text-blue-700 text-sm">
-                                            {row.dbMatch ? `Rp ${parseFloat(row.dbMatch.amount).toLocaleString('id-ID')}` : '-'}
+                                        <td className="px-2 py-1 text-right font-black text-blue-700 text-[11px] font-mono italic leading-none whitespace-nowrap">
+                                            {row.dbMatch ? parseFloat(row.dbMatch.amount).toLocaleString('id-ID') : '-'}
                                         </td>
                                     </tr>
                                 ))}

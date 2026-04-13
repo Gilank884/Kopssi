@@ -87,20 +87,20 @@ const InstallmentSummary = ({ loan, installments, userLoans, formatCurrency, sel
                                 </span>
                             </div>
 
-                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-left border-collapse">
-                                        <thead>
-                                            <tr className="bg-gray-50/50 border-b border-gray-100">
-                                                <th className="px-4 py-3 text-[9px] font-black text-gray-400 uppercase italic tracking-tight">Tanggal Tagih</th>
-                                                <th className="px-4 py-3 text-[9px] font-black text-gray-400 uppercase italic tracking-tight text-right">Pokok</th>
-                                                <th className="px-4 py-3 text-[9px] font-black text-gray-400 uppercase italic tracking-tight text-right">Bunga</th>
-                                                <th className="px-4 py-3 text-[9px] font-black text-gray-400 uppercase italic tracking-tight text-right">Jumlah</th>
-                                                <th className="px-4 py-3 text-[9px] font-black text-gray-400 uppercase italic tracking-tight text-right">Saldo Pokok</th>
-                                                <th className="px-4 py-3 text-[9px] font-black text-gray-400 uppercase italic tracking-tight text-center">Status</th>
+                        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                                <div className="overflow-auto max-h-[40vh] text-left">
+                                    <table className="w-full text-left border-collapse table-auto">
+                                        <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
+                                            <tr>
+                                                <th className="px-2 py-2 text-[10px] font-black text-slate-700 uppercase italic tracking-widest border-r border-slate-200">Tgl Tagih</th>
+                                                <th className="px-2 py-2 text-[10px] font-black text-slate-700 uppercase italic tracking-widest border-r border-slate-200 text-right">Pokok</th>
+                                                <th className="px-2 py-2 text-[10px] font-black text-slate-700 uppercase italic tracking-widest border-r border-slate-200 text-right">Bunga</th>
+                                                <th className="px-2 py-2 text-[10px] font-black text-slate-700 uppercase italic tracking-widest border-r border-slate-200 text-right">Jumlah</th>
+                                                <th className="px-2 py-2 text-[10px] font-black text-slate-700 uppercase italic tracking-widest border-r border-slate-200 text-right">Saldo Pokok</th>
+                                                <th className="px-2 py-2 text-[10px] font-black text-slate-700 uppercase italic tracking-widest text-center">Status</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-gray-50">
+                                        <tbody className="divide-y divide-slate-200">
                                             {(() => {
                                                 const principalAmt = parseFloat(loan.jumlah_pinjaman) || 0;
                                                 const tenorMonths = loan.tenor_bulan || 1;
@@ -122,20 +122,17 @@ const InstallmentSummary = ({ loan, installments, userLoans, formatCurrency, sel
 
                                                 return (
                                                     <>
-                                                        {/* Row 0: Starting Balance */}
                                                         {currentInstallments.length > 0 && (
-                                                            <tr className="bg-gray-50/30">
-                                                                <td className="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase italic">
-                                                                    {/* Empty month as requested */}
+                                                            <tr className="bg-slate-50/50">
+                                                                <td className="px-2 py-1 text-[10px] font-black text-slate-400 uppercase italic border-r border-slate-200">-</td>
+                                                                <td className="px-2 py-1 text-[10px] font-black text-slate-300 italic text-right border-r border-slate-200">-</td>
+                                                                <td className="px-2 py-1 text-[10px] font-black text-slate-300 italic text-right border-r border-slate-200">-</td>
+                                                                <td className="px-2 py-1 text-[10px] font-black text-slate-300 italic text-right border-r border-slate-200">-</td>
+                                                                <td className="px-2 py-1 text-[11px] font-black text-slate-900 italic text-right border-r border-slate-200 bg-slate-100/30">
+                                                                    {formatCurrency(principalAmt).replace(/Rp\s?/, '')}
                                                                 </td>
-                                                                <td className="px-4 py-3 text-[10px] font-black text-gray-300 italic text-right">-</td>
-                                                                <td className="px-4 py-3 text-[10px] font-black text-gray-300 italic text-right">-</td>
-                                                                <td className="px-4 py-3 text-[10px] font-black text-gray-300 italic text-right">-</td>
-                                                                <td className="px-4 py-3 text-[10px] font-black text-gray-900 italic text-right">
-                                                                    {formatCurrency(principalAmt)}
-                                                                </td>
-                                                                <td className="px-4 py-3 text-center">
-                                                                    <span className="text-[8px] font-black text-gray-300 uppercase italic">START</span>
+                                                                <td className="px-2 py-1 text-center">
+                                                                    <span className="text-[8px] font-black text-slate-300 uppercase italic">START</span>
                                                                 </td>
                                                             </tr>
                                                         )}
@@ -159,41 +156,41 @@ const InstallmentSummary = ({ loan, installments, userLoans, formatCurrency, sel
                                                             sumTotal += currentTotal;
 
                                                             return (
-                                                                <tr key={inst.id} className={`group hover:bg-gray-50/50 transition-colors ${inst.status === 'PAID' ? 'bg-blue-50/10' : ''}`}>
-                                                                    <td className="px-4 py-3 text-[10px] font-bold text-gray-600 uppercase italic">
-                                                                        {new Date(inst.tanggal_bayar).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}
+                                                                <tr key={inst.id} className={`group hover:bg-emerald-50 transition-colors ${inst.status === 'PAID' ? 'bg-blue-50/10' : ''}`}>
+                                                                    <td className="px-2 py-1 text-[10px] font-bold text-slate-600 uppercase italic border-r border-slate-200 whitespace-nowrap">
+                                                                        {new Date(inst.tanggal_bayar).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                                                                     </td>
-                                                                    <td className="px-4 py-3 text-[10px] font-black text-gray-700 italic text-right">
-                                                                        {formatCurrency(currentPokok)}
+                                                                    <td className="px-2 py-1 text-[10px] font-black text-slate-700 italic text-right border-r border-slate-200 font-mono">
+                                                                        {formatCurrency(currentPokok).replace(/Rp\s?/, '')}
                                                                     </td>
-                                                                    <td className="px-4 py-3 text-[10px] font-black text-emerald-600 italic text-right">
-                                                                        {formatCurrency(currentBunga)}
+                                                                    <td className="px-2 py-1 text-[10px] font-black text-emerald-600 italic text-right border-r border-slate-200 font-mono">
+                                                                        {formatCurrency(currentBunga).replace(/Rp\s?/, '')}
                                                                     </td>
-                                                                    <td className="px-4 py-3 text-[11px] font-black text-gray-900 italic text-right">
-                                                                        {formatCurrency(currentTotal)}
+                                                                    <td className="px-2 py-1 text-[11px] font-black text-slate-900 italic text-right border-r border-slate-200 font-mono">
+                                                                        {formatCurrency(currentTotal).replace(/Rp\s?/, '')}
                                                                     </td>
-                                                                    <td className="px-4 py-3 text-[10px] font-black text-gray-400 italic text-right">
-                                                                        {formatCurrency(Math.max(0, runningSaldo))}
+                                                                    <td className="px-2 py-1 text-[10px] font-black text-slate-400 italic text-right border-r border-slate-200 font-mono">
+                                                                        {formatCurrency(Math.max(0, runningSaldo)).replace(/Rp\s?/, '')}
                                                                     </td>
-                                                                    <td className="px-4 py-3 text-center">
-                                                                        <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase italic ${(inst.status === 'PROCESSED' || inst.status === 'PAID')
-                                                                            ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                                                                    <td className="px-2 py-1 text-center">
+                                                                        <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase italic shadow-sm border ${(inst.status === 'PROCESSED' || inst.status === 'PAID')
+                                                                            ? 'bg-emerald-600 text-white border-emerald-700'
                                                                             : new Date(inst.tanggal_bayar) < new Date()
-                                                                                ? 'bg-red-50 text-red-600 border border-red-100'
-                                                                                : 'bg-gray-50 text-gray-400 border border-gray-100 uppercase'
+                                                                                ? 'bg-red-600 text-white border-red-700'
+                                                                                : 'bg-slate-100 text-slate-400 border-slate-200 uppercase'
                                                                             }`}>
-                                                                            {(inst.status === 'PROCESSED' || inst.status === 'PAID') ? 'LUNAS' : ''}
+                                                                            {(inst.status === 'PROCESSED' || inst.status === 'PAID') ? 'LUNAS' : 'PENDING'}
                                                                         </span>
                                                                     </td>
                                                                 </tr>
                                                             );
                                                         })}
-                                                        <tr className="bg-gray-100/50 font-black border-t-2 border-gray-200">
-                                                            <td className="px-4 py-4 text-[11px] uppercase italic text-gray-900">JUMLAH</td>
-                                                            <td className="px-4 py-4 text-[11px] italic text-right text-gray-900">{formatCurrency(sumPokok)}</td>
-                                                            <td className="px-4 py-4 text-[11px] italic text-right text-emerald-700">{formatCurrency(sumBunga)}</td>
-                                                            <td className="px-4 py-4 text-[12px] italic text-right text-emerald-600 font-black">{formatCurrency(sumTotal)}</td>
-                                                            <td className="px-4 py-4" colSpan="2"></td>
+                                                        <tr className="bg-slate-50 font-black border-t-2 border-slate-200">
+                                                            <td className="px-2 py-2 text-[10px] uppercase italic text-slate-900 border-r border-slate-200">TOTAL</td>
+                                                            <td className="px-2 py-2 text-[10px] italic text-right text-slate-900 border-r border-slate-200 font-mono">{formatCurrency(sumPokok).replace(/Rp\s?/, '')}</td>
+                                                            <td className="px-2 py-2 text-[10px] italic text-right text-emerald-700 border-r border-slate-200 font-mono">{formatCurrency(sumBunga).replace(/Rp\s?/, '')}</td>
+                                                            <td className="px-2 py-2 text-[12px] italic text-right text-emerald-600 font-black border-r border-slate-200 font-mono">{formatCurrency(sumTotal).replace(/Rp\s?/, '')}</td>
+                                                            <td className="px-2 py-2" colSpan="2"></td>
                                                         </tr>
                                                     </>
                                                 );
@@ -201,7 +198,7 @@ const InstallmentSummary = ({ loan, installments, userLoans, formatCurrency, sel
                                         </tbody>
                                     </table>
                                 </div>
-                            </div>
+                        </div>
                         </div>
                     </div>
                 )}

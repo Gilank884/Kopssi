@@ -119,22 +119,22 @@ const PencairanDetail = () => {
     const cicilan = installments.length > 0 ? parseFloat(installments[0].amount) : (totalBayar / tenor);
 
     return (
-        <div className="space-y-6">
-            {/* Header / Breadcrumb */}
-            <div className="flex items-center justify-between gap-4">
+        <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-500 max-w-[1600px] mx-auto pb-12">
+            {/* Header Section */}
+            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => navigate('/admin/pencairan-pinjaman')}
-                        className="p-2 bg-white rounded-xl border border-gray-100 text-gray-400 hover:text-emerald-600 transition-colors shadow-sm"
+                        className="p-3 bg-white hover:bg-gray-50 rounded-2xl transition-all text-gray-400 border border-gray-100 shadow-sm"
                     >
-                        <ChevronLeft size={24} />
+                        <ChevronLeft size={20} />
                     </button>
-                    <div>
-                        <h2 className="text-2xl font-black text-gray-900 italic uppercase tracking-tight">Proses Pencairan</h2>
-                        <p className="text-xs text-gray-500 font-medium uppercase tracking-widest mt-1">ID Pinjaman: {loan.no_pinjaman}</p>
+                    <div className="text-left">
+                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 italic tracking-tight">Proses Pencairan</h2>
+                        <p className="text-xs md:text-sm text-gray-500 mt-1 font-medium italic tracking-tight">{loan.no_pinjaman} • {loan.personal_data?.full_name}</p>
                     </div>
                 </div>
-                <div className={`px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest border ${loan.status === 'DISETUJUI' ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-emerald-100 text-emerald-700 border-emerald-200'}`}>
+                <div className={`px-4 py-2 rounded-xl font-black text-[10px] tracking-widest italic border ${loan.status === 'DISETUJUI' ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-emerald-100 text-emerald-700 border-emerald-200'}`}>
                     Status: {loan.status}
                 </div>
             </div>
@@ -146,26 +146,26 @@ const PencairanDetail = () => {
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden text-left">
                         <div className="px-6 py-4 border-b border-gray-50 flex items-center gap-2">
                             <User size={18} className="text-emerald-600" />
-                            <h3 className="font-black text-gray-900 italic uppercase text-sm tracking-tight">Identitas Anggota</h3>
+                            <h3 className="font-black text-gray-900 italic text-sm tracking-tight">Identitas Anggota</h3>
                         </div>
                         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-4">
                                 <div>
-                                    <label className="text-[10px] font-black text-gray-400 block uppercase mb-1 tracking-widest">Nama Lengkap</label>
+                                    <label className="text-[10px] font-black text-gray-400 block mb-1 tracking-widest">Nama Lengkap</label>
                                     <p className="font-bold text-gray-900">{loan.personal_data?.full_name || '-'}</p>
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-black text-gray-400 block uppercase mb-1 tracking-widest">NPP / NIK</label>
+                                    <label className="text-[10px] font-black text-gray-400 block mb-1 tracking-widest">NPP / NIK</label>
                                     <p className="font-bold text-gray-900 font-mono tracking-tighter">{loan.personal_data?.nik || '-'}</p>
                                 </div>
                             </div>
                             <div className="space-y-4">
                                 <div>
-                                    <label className="text-[10px] font-black text-gray-400 block uppercase mb-1 tracking-widest">Instansi / Unit Kerja</label>
-                                    <p className="font-bold text-gray-900 uppercase">{loan.personal_data?.company || '-'} / {loan.personal_data?.work_unit || '-'}</p>
+                                    <label className="text-[10px] font-black text-gray-400 block mb-1 tracking-widest">Instansi / Unit Kerja</label>
+                                    <p className="font-bold text-gray-900">{loan.personal_data?.company || '-'} / {loan.personal_data?.work_unit || '-'}</p>
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-black text-gray-400 block uppercase mb-1 tracking-widest">No. Telepon</label>
+                                    <label className="text-[10px] font-black text-gray-400 block mb-1 tracking-widest">No. Telepon</label>
                                     <p className="font-bold text-gray-900">{loan.personal_data?.phone || '-'}</p>
                                 </div>
                             </div>
@@ -178,30 +178,30 @@ const PencairanDetail = () => {
                         <div className="bg-white rounded-2xl border border-emerald-100 shadow-sm overflow-hidden text-left">
                             <div className="px-6 py-4 border-b border-emerald-50 bg-emerald-50/30 flex items-center gap-2">
                                 <Wallet size={18} className="text-emerald-600" />
-                                <h3 className="font-black text-emerald-900 italic uppercase text-sm tracking-tight">Detail Keuangan</h3>
+                                <h3 className="font-black text-emerald-900 italic text-sm tracking-tight">Detail Keuangan</h3>
                             </div>
                             <div className="p-6 space-y-6">
                                 <div>
-                                    <label className="text-[10px] font-black text-emerald-400 block uppercase mb-1 tracking-widest">Plafon Pinjaman</label>
+                                    <label className="text-[10px] font-black text-emerald-400 block mb-1 tracking-widest">Plafon Pinjaman</label>
                                     <p className="text-3xl font-black text-emerald-700 tracking-tighter italic">
                                         Rp {principal.toLocaleString('id-ID')}
                                     </p>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4 border-t border-emerald-50 pt-4">
                                     <div>
-                                        <label className="text-[10px] font-black text-gray-400 block uppercase mb-1 tracking-widest">Tenor</label>
+                                        <label className="text-[10px] font-black text-gray-400 block mb-1 tracking-widest">Tenor</label>
                                         <p className="font-bold text-gray-900">{tenor} Bulan</p>
                                     </div>
                                     <div>
-                                        <label className="text-[10px] font-black text-gray-400 block uppercase mb-1 tracking-widest">Bunga</label>
+                                        <label className="text-[10px] font-black text-gray-400 block mb-1 tracking-widest">Bunga</label>
                                         <p className="font-bold text-gray-900 italic">Rp {Math.round(totalBunga).toLocaleString('id-ID')}</p>
                                     </div>
                                     <div>
-                                        <label className="text-[10px] font-black text-gray-400 block uppercase mb-1 tracking-widest">Total Bayar</label>
+                                        <label className="text-[10px] font-black text-gray-400 block mb-1 tracking-widest">Total Bayar</label>
                                         <p className="font-black text-emerald-700">Rp {Math.round(totalBayar).toLocaleString('id-ID')}</p>
                                     </div>
                                     <div>
-                                        <label className="text-[10px] font-black text-gray-400 block uppercase mb-1 tracking-widest">Cicilan/Bln</label>
+                                        <label className="text-[10px] font-black text-gray-400 block mb-1 tracking-widest">Cicilan/Bln</label>
                                         <p className="font-black text-red-600">Rp {Math.round(cicilan).toLocaleString('id-ID')}</p>
                                     </div>
                                 </div>
@@ -212,33 +212,33 @@ const PencairanDetail = () => {
                         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden text-left">
                             <div className="px-6 py-4 border-b border-gray-50 flex items-center gap-2">
                                 <FileText size={18} className="text-emerald-600" />
-                                <h3 className="font-black text-gray-900 italic uppercase text-sm tracking-tight">Referensi & Dokumen</h3>
+                                <h3 className="font-black text-gray-900 italic text-sm tracking-tight">Referensi & Dokumen</h3>
                             </div>
                             <div className="p-6 space-y-6">
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="text-[10px] font-black text-gray-400 block uppercase mb-1 tracking-widest">No. Pinjaman</label>
-                                        <p className="font-mono font-bold text-gray-800 text-sm tracking-widest uppercase">{loan.no_pinjaman}</p>
+                                        <label className="text-[10px] font-black text-gray-400 block mb-1 tracking-widest">No. Pinjaman</label>
+                                        <p className="font-mono font-bold text-gray-800 text-sm tracking-widest">{loan.no_pinjaman}</p>
                                     </div>
                                     <div>
-                                        <label className="text-[10px] font-black text-gray-400 block uppercase mb-1 tracking-widest">Tanggal Pengajuan</label>
+                                        <label className="text-[10px] font-black text-gray-400 block mb-1 tracking-widest">Tanggal Pengajuan</label>
                                         <p className="font-bold text-gray-800">{formatDate(loan.created_at)}</p>
                                     </div>
                                 </div>
                                 <div className="pt-4 border-t border-gray-50">
-                                    <label className="text-[10px] font-black text-gray-400 block uppercase mb-1 tracking-widest">Dokumen SPK Signed</label>
+                                    <label className="text-[10px] font-black text-gray-400 block mb-1 tracking-widest">Dokumen SPK Signed</label>
                                     {loan.link_spk_signed ? (
                                         <a
                                             href={loan.link_spk_signed}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="w-full py-3 bg-emerald-50 text-emerald-700 rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 border border-emerald-100 hover:bg-emerald-100 transition-all border-dashed"
+                                            className="w-full py-3 bg-emerald-50 text-emerald-700 rounded-xl font-black text-[10px] tracking-widest flex items-center justify-center gap-2 border border-emerald-100 hover:bg-emerald-100 transition-all border-dashed"
                                         >
                                             <Download size={16} /> Lihat Dokumen
                                         </a>
                                     ) : (
                                         <div className="p-3 bg-amber-50 border border-amber-100 rounded-xl text-center">
-                                            <p className="text-[10px] font-black text-amber-700 uppercase italic">Dokumen Belum Diupload</p>
+                                            <p className="text-[10px] font-black text-amber-700 italic">Dokumen Belum Diupload</p>
                                         </div>
                                     )}
                                 </div>
@@ -251,12 +251,12 @@ const PencairanDetail = () => {
                 <div className="space-y-6">
                     {/* Action Card */}
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-lg p-6 text-left space-y-4">
-                        <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest border-b pb-3 italic">Panel Aksi</h3>
+                        <h3 className="text-sm font-black text-gray-900 tracking-widest border-b pb-3 italic">Panel Aksi</h3>
 
                         <div className="space-y-3">
                             <button
                                 onClick={() => navigate(`/admin/loan-detail/${loan.id}`)}
-                                className="w-full py-4 bg-emerald-600 text-white rounded-xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100 active:translate-y-0.5"
+                                className="w-full py-4 bg-emerald-600 text-white rounded-xl font-black text-sm tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100 active:translate-y-0.5"
                             >
                                 <Eye size={18} />
                                 Kelola Pencairan
@@ -274,7 +274,7 @@ const PencairanDetail = () => {
                         {loan.status === 'DISETUJUI' && (
                             <div className="mt-4 p-4 bg-blue-50 border border-blue-100 rounded-xl flex gap-3">
                                 <AlertCircle size={20} className="text-blue-500 shrink-0" />
-                                <p className="text-[10px] font-black text-blue-700 leading-relaxed uppercase italic">
+                                <p className="text-[10px] font-black text-blue-700 leading-relaxed italic">
                                     Pastikan dokumen SPK telah diverifikasi sebelum melakukan pencairan dana.
                                 </p>
                             </div>
@@ -283,17 +283,17 @@ const PencairanDetail = () => {
 
                     {/* Quick Info */}
                     <div className="bg-emerald-900/5 rounded-2xl p-6 text-left">
-                        <h4 className="text-[10px] font-black text-emerald-800 uppercase tracking-widest mb-3 italic">Catatan Sistem</h4>
+                        <h4 className="text-[10px] font-black text-emerald-800 tracking-widest mb-3 italic">Catatan Sistem</h4>
                         <ul className="space-y-3">
-                            <li className="flex gap-2 text-[10px] font-bold text-emerald-700 uppercase leading-tight italic">
+                            <li className="flex gap-2 text-[10px] font-bold text-emerald-700 leading-tight italic">
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-0.5 shrink-0" />
                                 Dana akan dilepaskan sesuai dengan plafon yang disetujui.
                             </li>
-                            <li className="flex gap-2 text-[10px] font-bold text-emerald-700 uppercase leading-tight italic">
+                            <li className="flex gap-2 text-[10px] font-bold text-emerald-700 leading-tight italic">
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-0.5 shrink-0" />
                                 Status akan berubah menjadi DICAIRKAN di dashboard anggota.
                             </li>
-                            <li className="flex gap-2 text-[10px] font-bold text-emerald-700 uppercase leading-tight italic">
+                            <li className="flex gap-2 text-[10px] font-bold text-emerald-700 leading-tight italic">
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-0.5 shrink-0" />
                                 Anggota akan mulai tertagih angsuran pada periode berikutnya.
                             </li>

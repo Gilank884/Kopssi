@@ -3,8 +3,14 @@ import { Settings, Bell, Lock, Globe } from 'lucide-react';
 
 const AdminSettings = () => {
     return (
-        <div className="max-w-3xl space-y-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Pengaturan Sistem</h2>
+        <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-500 max-w-[1600px] mx-auto">
+            {/* Header Section */}
+            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+                <div className="text-left">
+                    <h2 className="text-2xl md:text-3xl font-black text-gray-900 italic tracking-tight">Pengaturan Sistem</h2>
+                    <p className="text-xs md:text-sm text-gray-500 mt-1 font-medium italic tracking-tight">Konfigurasi parameter dan identitas koperasi</p>
+                </div>
+            </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-6 border-b border-gray-100 flex items-center gap-4">

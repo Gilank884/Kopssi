@@ -270,51 +270,49 @@ const UploadSimpanan = () => {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 text-left">
-                <div>
-                    <h2 className="text-2xl font-bold text-gray-800">Upload Simpanan Massal</h2>
-                    <p className="text-sm text-gray-500 mt-1">Input iuran anggota secara massal via Excel</p>
+        <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-500 max-w-[1600px] mx-auto">
+            {/* Header Section */}
+            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+                <div className="text-left">
+                    <h2 className="text-2xl md:text-3xl font-black text-gray-900 italic uppercase tracking-tight">Upload Simpanan Massal</h2>
+                    <p className="text-xs md:text-sm text-gray-500 mt-1 font-medium italic uppercase tracking-wider">Input iuran anggota secara massal via Excel</p>
                 </div>
-                <div className="flex flex-col md:flex-row items-end gap-3">
-                    <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Pilih PT / Perusahaan</label>
-                        <div className="relative">
-                            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                            <select
-                                value={selectedPT}
-                                onChange={(e) => setSelectedPT(e.target.value)}
-                                className="pl-9 pr-8 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white font-bold appearance-none uppercase shadow-sm min-w-[200px]"
-                            >
-                                <option value="ALL">Pilih PT</option>
-                                {companies.map(c => <option key={c} value={c}>{c}</option>)}
-                            </select>
-                        </div>
+                {/* Filters Wrapper */}
+                <div className="flex flex-col md:flex-row flex-wrap gap-3 items-stretch md:items-end">
+                    <div className="relative flex-grow md:flex-grow-0">
+                        <select
+                            value={selectedPT}
+                            onChange={(e) => setSelectedPT(e.target.value)}
+                            className="w-full pl-4 pr-8 py-2.5 md:py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white font-bold appearance-none uppercase shadow-sm min-w-[200px]"
+                        >
+                            <option value="ALL">PILIH PT</option>
+                            {companies.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
                     </div>
+
                     {selectedPT !== 'ALL' && (
-                        <div className="flex flex-col items-end gap-1 animate-in zoom-in duration-300">
+                        <div className="flex flex-col items-center md:items-end gap-1 animate-in zoom-in duration-300">
                             <label className="text-[10px] font-black text-gray-400 uppercase italic">Jumlah Karyawan</label>
-                            <div className="px-4 py-2 bg-blue-50 border border-blue-100 rounded-xl text-sm font-black text-blue-600 italic">
-                                {memberCount} Orang
+                            <div className="w-full md:w-auto px-4 py-2 bg-blue-50 border border-blue-100 rounded-xl text-sm font-black text-blue-600 italic text-center">
+                                {memberCount} ORANG
                             </div>
                         </div>
                     )}
-                    <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Periode</label>
-                        <input
-                            type="month"
-                            value={selectedMonth}
-                            onChange={(e) => setSelectedMonth(e.target.value)}
-                            className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white font-bold shadow-sm"
-                        />
-                    </div>
+
+                    <input
+                        type="month"
+                        value={selectedMonth}
+                        onChange={(e) => setSelectedMonth(e.target.value)}
+                        className="px-4 py-2.5 md:py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white font-bold shadow-sm"
+                    />
+
                     <button
                         onClick={handleExportTemplate}
                         disabled={loading}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition-all flex items-center gap-2 shadow-sm disabled:opacity-50 h-[38px]"
+                        className="px-6 py-2.5 md:py-2 bg-blue-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 h-[42px] md:h-[40px]"
                     >
                         {loading ? <Loader2 className="animate-spin" size={16} /> : <Download size={16} />}
-                        Export Template
+                        EXPORT TEMPLATE
                     </button>
                 </div>
             </div>
@@ -384,45 +382,57 @@ const UploadSimpanan = () => {
                         Simpan Data Ke Database
                     </button>
                 </div>
-            )}
-
-            {/* Preview Table */}
+            )}            {/* Preview Table */}
             {previewData.length > 0 && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div className="overflow-x-auto text-left">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-emerald-50 border-b border-emerald-100">
-                                    <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic">Validasi</th>
-                                    <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic">NIK</th>
-                                    <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic">Peminjam</th>
-                                    <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic text-right">Pokok</th>
-                                    <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic text-right">Wajib</th>
-                                    <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic text-right">Wajib Khusus</th>
-                                    <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic text-right">Sukarela</th>
-                                    <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic text-right">Parkir</th>
-                                    <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic text-right">Total</th>
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div className="overflow-auto max-h-[60vh] text-left">
+                        <table className="w-full text-left border-collapse table-auto">
+                            <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
+                                <tr className="text-gray-400">
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] uppercase tracking-widest italic border-r border-slate-200">Validasi</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] uppercase tracking-widest italic border-r border-slate-200 text-center">NIK</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] uppercase tracking-widest italic border-r border-slate-200">Anggota</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] uppercase tracking-widest italic border-r border-slate-200 text-right">Pokok</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] uppercase tracking-widest italic border-r border-slate-200 text-right">Wajib</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] uppercase tracking-widest italic border-r border-slate-200 text-right">W.Khusus</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] uppercase tracking-widest italic border-r border-slate-200 text-right">Skr</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] uppercase tracking-widest italic border-r border-slate-200 text-right">Pkr</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] uppercase tracking-widest italic text-right">Total</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100">
+                            <tbody className="divide-y divide-slate-200">
                                 {previewData.map((row, idx) => (
-                                    <tr key={idx} className="hover:bg-emerald-50/30 transition-colors">
-                                        <td className="px-6 py-4">
+                                    <tr key={idx} className="hover:bg-emerald-50 transition-colors group">
+                                        <td className="px-2 py-1 border-r border-slate-200">
                                             {row.status === 'VALID' ? (
-                                                <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-bold">MATCH</span>
+                                                <span className="px-1.5 py-0.5 bg-emerald-600 text-white rounded text-[8px] font-black uppercase tracking-tighter shadow-sm">MATCH</span>
                                             ) : (
-                                                <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-[10px] font-bold">MISSING</span>
+                                                <span className="px-1.5 py-0.5 bg-red-100 text-red-700 rounded text-[8px] font-black uppercase tracking-tighter">MISSING</span>
                                             )}
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-gray-600">{row.excelData.NIK || row.excelData['NIK'] || '-'}</td>
-                                        <td className="px-6 py-4 font-bold text-gray-900 text-sm">{row.dbMatch?.full_name || row.excelData['Nama Lengkap'] || '-'}</td>
-                                        <td className="px-6 py-4 text-right text-sm text-gray-500">Rp {(row.amountPokok || 0).toLocaleString('id-ID')}</td>
-                                        <td className="px-6 py-4 text-right text-sm text-gray-500">Rp {(row.amountWajib || 0).toLocaleString('id-ID')}</td>
-                                        <td className="px-6 py-4 text-right text-sm text-gray-500">Rp {(row.amountWajibKhusus || 0).toLocaleString('id-ID')}</td>
-                                        <td className="px-6 py-4 text-right text-sm text-gray-500">Rp {(row.amountSukarela || 0).toLocaleString('id-ID')}</td>
-                                        <td className="px-6 py-4 text-right text-sm text-gray-500">Rp {(row.amountParkir || 0).toLocaleString('id-ID')}</td>
-                                        <td className="px-6 py-4 text-right font-bold text-emerald-700 text-sm">
-                                            Rp {(row.amountPokok + row.amountWajib + row.amountWajibKhusus + row.amountSukarela + row.amountParkir).toLocaleString('id-ID')}
+                                        <td className="px-2 py-1 text-[10px] font-bold text-slate-500 font-mono italic text-center border-r border-slate-200 leading-none">
+                                            {row.excelData.NIK || row.excelData['NIK'] || '-'}
+                                        </td>
+                                        <td className="px-2 py-1 text-[11px] font-black text-slate-900 uppercase italic tracking-tight border-r border-slate-200 leading-none whitespace-nowrap">
+                                            {row.dbMatch?.full_name || row.excelData['Nama Lengkap'] || '-'}
+                                        </td>
+                                        <td className="px-2 py-1 text-right text-[10px] font-bold text-slate-400 font-mono italic border-r border-slate-200 leading-none">
+                                            {(row.amountPokok || 0).toLocaleString('id-ID')}
+                                        </td>
+                                        <td className="px-2 py-1 text-right text-[10px] font-bold text-slate-400 font-mono italic border-r border-slate-200 leading-none">
+                                            {(row.amountWajib || 0).toLocaleString('id-ID')}
+                                        </td>
+                                        <td className="px-2 py-1 text-right text-[10px] font-bold text-slate-400 font-mono italic border-r border-slate-200 leading-none">
+                                            {(row.amountWajibKhusus || 0).toLocaleString('id-ID')}
+                                        </td>
+                                        <td className="px-2 py-1 text-right text-[10px] font-bold text-slate-400 font-mono italic border-r border-slate-200 leading-none">
+                                            {(row.amountSukarela || 0).toLocaleString('id-ID')}
+                                        </td>
+                                        <td className="px-2 py-1 text-right text-[10px] font-bold text-slate-400 font-mono italic border-r border-slate-200 leading-none">
+                                            {(row.amountParkir || 0).toLocaleString('id-ID')}
+                                        </td>
+                                        <td className="px-2 py-1 text-right font-black text-emerald-700 text-[11px] font-mono italic leading-none whitespace-nowrap">
+                                            {(row.amountPokok + row.amountWajib + row.amountWajibKhusus + row.amountSukarela + row.amountParkir).toLocaleString('id-ID')}
                                         </td>
                                     </tr>
                                 ))}

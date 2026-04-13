@@ -85,7 +85,15 @@ const MasterData = () => {
     );
 
     return (
-        <div className="space-y-6">
+        <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-500 max-w-[1600px] mx-auto">
+            {/* Header Section */}
+            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+                <div className="text-left">
+                    <h2 className="text-2xl md:text-3xl font-black text-gray-900 italic tracking-tight">Master Data</h2>
+                    <p className="text-xs md:text-sm text-gray-500 mt-1 font-medium italic tracking-tight">Kelola data referensi seperti PT dan kategori pinjaman</p>
+                </div>
+            </div>
+
             <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-wrap gap-2">
                 {tabs.map(tab => (
                     <button
@@ -112,7 +120,7 @@ const MasterData = () => {
                         </h3>
                         <form onSubmit={handleAdd} className="space-y-4">
                             <div>
-                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 italic">
+                                <label className="block text-xs font-bold text-gray-400 tracking-widest mb-2 italic">
                                     Nama/Nilai Baru
                                 </label>
                                 <input
@@ -150,45 +158,46 @@ const MasterData = () => {
                                     className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm transition-all"
                                 />
                             </div>
-                            <div className="text-xs font-bold text-gray-400 uppercase tracking-widest italic">
+                            <div className="text-xs font-bold text-gray-400 italic">
                                 Total: {filteredData.length}
                             </div>
                         </div>
 
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead className="bg-gray-50">
+                        <div className="overflow-auto max-h-[60vh] text-left">
+                            <table className="w-full text-left border-collapse table-auto">
+                                <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest italic">No</th>
-                                        <th className="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest italic">Nilai / Nama</th>
-                                        <th className="px-6 py-3 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest italic">Aksi</th>
+                                        <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 w-12 text-center">No</th>
+                                        <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Nilai / Nama</th>
+                                        <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic text-center w-20">Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-100">
+                                <tbody className="divide-y divide-slate-200">
                                     {loading && masterData.length === 0 ? (
                                         <tr>
-                                            <td colSpan="3" className="px-6 py-8 text-center">
-                                                <Loader2 className="animate-spin inline-block text-emerald-500" size={24} />
+                                            <td colSpan="3" className="px-6 py-12 text-center text-slate-500">
+                                                <Loader2 className="animate-spin h-8 w-8 text-emerald-600 mx-auto mb-4" />
+                                                <p className="text-[10px] font-black tracking-widest italic opacity-50">Memuat data...</p>
                                             </td>
                                         </tr>
                                     ) : filteredData.length === 0 ? (
                                         <tr>
-                                            <td colSpan="3" className="px-6 py-8 text-center text-gray-500 text-sm font-medium">
+                                            <td colSpan="3" className="px-6 py-20 text-center text-slate-400 italic font-black text-[10px] tracking-widest">
                                                 Tidak ada data ditemukan
                                             </td>
                                         </tr>
                                     ) : (
                                         filteredData.map((item, index) => (
-                                            <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                                                <td className="px-6 py-4 text-sm font-bold text-gray-400">{index + 1}</td>
-                                                <td className="px-6 py-4 text-sm font-bold text-gray-700">{item.value}</td>
-                                                <td className="px-6 py-4 text-right">
+                                            <tr key={item.id} className="hover:bg-emerald-50 transition-colors group">
+                                                <td className="px-2 py-1 text-[10px] font-bold text-slate-400 border-r border-slate-200 text-center">{index + 1}</td>
+                                                <td className="px-2 py-1 text-[11px] font-black text-slate-800 italic border-r border-slate-200 tracking-tight">{item.value}</td>
+                                                <td className="px-2 py-1 text-center">
                                                     <button
                                                         onClick={() => handleDelete(item.id)}
-                                                        className="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                                                        className="p-1.5 text-slate-300 hover:text-rose-600 hover:bg-white border border-transparent hover:border-rose-100 rounded shadow-sm transition-all"
                                                         title="Hapus"
                                                     >
-                                                        <Trash2 size={16} />
+                                                        <Trash2 size={14} />
                                                     </button>
                                                 </td>
                                             </tr>

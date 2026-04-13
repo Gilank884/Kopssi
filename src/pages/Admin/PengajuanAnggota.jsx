@@ -124,30 +124,34 @@ const PengajuanAnggota = () => {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h2 className="text-2xl font-bold text-gray-800">Persetujuan Keanggotaan</h2>
-                    <p className="text-sm text-gray-500 mt-1">Lakukan verifikasi akhir untuk anggota yang telah menandatangani formulir</p>
+        <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-500 max-w-[1600px] mx-auto">
+            {/* Header Section */}
+            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+                <div className="text-left">
+                    <h2 className="text-2xl md:text-3xl font-black text-gray-900 italic tracking-tight">Persetujuan Keanggotaan</h2>
+                    <p className="text-xs md:text-sm text-gray-500 mt-1 font-medium italic">Lakukan verifikasi akhir untuk anggota yang telah menandatangani formulir</p>
                 </div>
-                <div className="flex gap-2">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                {/* Filters Wrapper */}
+                <div className="flex flex-col md:flex-row flex-wrap gap-3 items-stretch md:items-end">
+                    {/* Search Field */}
+                    <div className="relative flex-grow md:flex-grow-0">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={17} />
                         <input
                             type="text"
                             placeholder="Cari nama, NIK, atau telepon..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-64"
+                            className="pl-10 pr-4 py-2.5 md:py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-64 text-sm shadow-sm font-medium"
                         />
                     </div>
+                    {/* Company Select */}
                     <div className="relative">
                         <select
                             value={filterCompany}
                             onChange={(e) => setFilterCompany(e.target.value)}
-                            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white font-bold uppercase tracking-tight italic"
+                            className="w-full pl-4 pr-8 py-2.5 md:py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white shadow-sm font-bold italic appearance-none"
                         >
-                            <option value="ALL">SEMUA PT</option>
+                            <option value="ALL">Semua PT</option>
                             {companies.map(c => (
                                 <option key={c} value={c}>{c}</option>
                             ))}
@@ -164,24 +168,24 @@ const PengajuanAnggota = () => {
             ) : filteredMembers.length === 0 ? (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center text-left">
                     <AlertCircle className="mx-auto text-gray-400 mb-2" size={48} />
-                    <p className="mt-4 text-gray-500 font-black uppercase tracking-widest text-xs italic">Tidak ada anggota yang menunggu verifikasi akhir</p>
+                    <p className="mt-4 text-gray-500 font-black tracking-widest text-xs italic">Tidak ada anggota yang menunggu verifikasi akhir</p>
                     <p className="text-[10px] text-gray-400 mt-1 italic">Anggota harus melakukan "Cek Keanggotaan" dan tanda tangan terlebih dahulu</p>
                 </div>
             ) : (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <table className="w-full text-left">
-                        <thead className="bg-gray-50 border-b border-gray-200">
-                            <tr>
-                                <th className="px-6 py-4 font-semibold text-gray-600">Nama Lengkap</th>
-                                <th className="px-6 py-4 font-semibold text-gray-600">NIK</th>
-                                <th className="px-6 py-4 font-semibold text-gray-600">No. Telepon</th>
-                                <th className="px-6 py-4 font-semibold text-gray-600">Perusahaan</th>
-                                <th className="px-6 py-4 font-semibold text-gray-600">Status</th>
-                                <th className="px-6 py-4 font-semibold text-gray-600">Tanggal Pengajuan</th>
-                                <th className="px-6 py-4 font-semibold text-gray-600">Aksi</th>
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-auto max-h-[70vh]">
+                    <table className="w-full text-left border-collapse table-auto">
+                        <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
+                            <tr className="text-gray-400">
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Nama Lengkap</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">NIK</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">No. Telepon</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Perusahaan</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Status</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Tanggal Pengajuan</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody className="divide-y divide-slate-200">
                             {filteredMembers.map((member) => (
                                 <tr
                                     key={member.id}
@@ -191,50 +195,49 @@ const PengajuanAnggota = () => {
                                         }
                                     }}
                                     className={`transition-colors ${member.status?.toLowerCase() === 'done verifikasi'
-                                        ? 'hover:bg-emerald-50/50 cursor-pointer'
-                                        : 'opacity-60 cursor-not-allowed bg-gray-50/30'
+                                        ? 'hover:bg-emerald-50 cursor-pointer'
+                                        : 'opacity-60 cursor-not-allowed bg-slate-50/50'
                                         }`}
                                 >
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${member.status?.toLowerCase() === 'done verifikasi'
-                                                ? 'bg-emerald-100 text-emerald-600'
-                                                : 'bg-gray-200 text-gray-500'
+                                    <td className="px-2 py-1 border-r border-slate-200 whitespace-nowrap">
+                                        <div className="flex items-center gap-2">
+                                            <div className={`w-6 h-6 rounded-full flex items-center justify-center font-black text-[9px] shrink-0 ${member.status?.toLowerCase() === 'done verifikasi'
+                                                ? 'bg-emerald-600 text-white shadow-sm'
+                                                : 'bg-slate-300 text-white'
                                                 }`}>
                                                 {member.full_name?.charAt(0) || '?'}
                                             </div>
-                                            <span className={`font-medium ${member.status?.toLowerCase() === 'done verifikasi' ? 'text-gray-900' : 'text-gray-500'}`}>{member.full_name || '-'}</span>
+                                            <span className={`text-[11px] font-bold ${member.status?.toLowerCase() === 'done verifikasi' ? 'text-slate-900' : 'text-slate-500'}`}>{member.full_name || '-'}</span>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-gray-700">{member.nik || '-'}</td>
-                                    <td className="px-6 py-4 text-gray-700">{member.phone || '-'}</td>
-                                    <td className="px-6 py-4 text-gray-700">{member.company || '-'}</td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${member.status?.toLowerCase() === 'pending'
+                                    <td className="px-2 py-1 text-[11px] font-bold text-slate-600 border-r border-slate-200 font-mono italic">{member.nik || '-'}</td>
+                                    <td className="px-2 py-1 text-[11px] font-bold text-slate-600 border-r border-slate-200 font-mono tracking-tighter">{member.phone || '-'}</td>
+                                    <td className="px-2 py-1 text-[11px] font-bold text-slate-600 border-r border-slate-200 italic">{member.company || '-'}</td>
+                                    <td className="px-2 py-1 border-r border-slate-200">
+                                        <span className={`px-2 py-0.5 rounded text-[9px] font-black tracking-tighter ${member.status?.toLowerCase() === 'pending'
                                             ? 'bg-amber-100 text-amber-700'
-                                            : 'bg-emerald-500 text-white shadow-sm'
+                                            : 'bg-emerald-600 text-white shadow-sm'
                                             }`}>
-                                            {member.status?.toLowerCase() === 'pending' ? 'Belum Terverifikasi' : 'AKTIFKAN'}
+                                            {member.status?.toLowerCase() === 'pending' ? 'Waiting' : 'Verified'}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-gray-700">{formatDate(member.created_at)}</td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-2">
+                                    <td className="px-2 py-1 text-[11px] font-bold text-slate-500 border-r border-slate-200 italic">{formatDate(member.created_at)}</td>
+                                    <td className="px-2 py-1">
+                                        <div className="flex items-center gap-1">
                                             {member.status?.toLowerCase() === 'done verifikasi' ? (
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         handleRowClick(member);
                                                     }}
-                                                    className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors"
+                                                    className="p-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 transition-colors shadow-sm"
                                                     title="Lihat Detail & Aktifkan"
                                                 >
-                                                    <Eye size={16} />
+                                                    <Eye size={12} />
                                                 </button>
                                             ) : (
-                                                <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed" title="Menunggu Verifikasi User">
-                                                    <AlertCircle size={16} />
-                                                    <span className="text-[10px] font-bold uppercase">Pending</span>
+                                                <div className="p-1 bg-slate-200 text-slate-400 rounded cursor-not-allowed" title="Menunggu Verifikasi User">
+                                                    <AlertCircle size={12} />
                                                 </div>
                                             )}
                                             <button
@@ -242,20 +245,20 @@ const PengajuanAnggota = () => {
                                                     e.stopPropagation();
                                                     generateMemberApplicationPDF(member, true);
                                                 }}
-                                                className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100 transition-colors border border-amber-100"
+                                                className="p-1 bg-amber-500 text-white rounded hover:bg-amber-600 transition-colors shadow-sm"
                                                 title="Pratinjau PDF"
                                             >
-                                                <Search size={16} />
+                                                <Search size={12} />
                                             </button>
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     generateMemberApplicationPDF(member);
                                                 }}
-                                                className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors border border-blue-100"
+                                                className="p-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors shadow-sm"
                                                 title="Cetak Formulir PDF"
                                             >
-                                                <Printer size={16} />
+                                                <Printer size={12} />
                                             </button>
                                         </div>
                                     </td>

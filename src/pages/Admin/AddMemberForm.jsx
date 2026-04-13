@@ -8,7 +8,7 @@ const SectionHeader = ({ icon: Icon, title, subtitle }) => (
             <Icon size={18} />
         </div>
         <div>
-            <h3 className="text-sm font-black text-gray-800 uppercase tracking-wide">{title}</h3>
+            <h3 className="text-sm font-black text-gray-800 tracking-wide">{title}</h3>
             {subtitle && <p className="text-xs text-gray-400 font-medium">{subtitle}</p>}
         </div>
     </div>
@@ -16,7 +16,7 @@ const SectionHeader = ({ icon: Icon, title, subtitle }) => (
 
 const InputGroup = ({ label, required, children, className = "" }) => (
     <div className={`flex flex-col gap-1.5 ${className}`}>
-        <label className="text-xs font-bold text-gray-600 uppercase tracking-tight flex items-center gap-1">
+        <label className="text-xs font-bold text-gray-600 tracking-tight flex items-center gap-1">
             {label} {required && <span className="text-red-500">*</span>}
         </label>
         {children}
@@ -291,7 +291,7 @@ const AddMemberForm = ({ onSave, isSubmitting }) => {
                 <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="bg-emerald-600 text-white font-bold uppercase tracking-widest py-4 px-8 rounded-xl shadow-lg shadow-emerald-200 hover:bg-emerald-700 hover:shadow-emerald-300 disabled:opacity-70 disabled:cursor-not-allowed transition-all flex items-center gap-3 transform hover:-translate-y-1"
+                    className="bg-emerald-600 text-white font-bold tracking-widest py-4 px-8 rounded-xl shadow-lg shadow-emerald-200 hover:bg-emerald-700 hover:shadow-emerald-300 disabled:opacity-70 disabled:cursor-not-allowed transition-all flex items-center gap-3 transform hover:-translate-y-1"
                 >
                     {isSubmitting ? <Loader2 className="animate-spin" /> : 'Simpan Data Anggota'}
                 </button>

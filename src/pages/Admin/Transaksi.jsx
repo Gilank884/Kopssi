@@ -156,11 +156,12 @@ const Transaksi = () => {
     const formatDate = (dateString) => new Date(dateString).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
 
     return (
-        <div className="space-y-6">
+        <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-500 max-w-[1600px] mx-auto">
+            {/* Header Section */}
             <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
-                <div className="text-left space-y-1">
-                    <h2 className="text-2xl md:text-3xl font-black text-slate-800 italic uppercase tracking-tight leading-none">Monitoring Transaksi</h2>
-                    <p className="text-[11px] md:text-sm text-slate-500 font-medium italic uppercase tracking-wider">Lacak seluruh aktivitas keuangan anggota secara real-time</p>
+                <div className="text-left">
+                    <h2 className="text-2xl md:text-3xl font-black text-gray-900 italic">Monitoring Transaksi</h2>
+                    <p className="text-xs md:text-sm text-gray-500 mt-1 font-medium italic">Lacak seluruh aktivitas keuangan anggota secara real-time</p>
                 </div>
 
                 <div className="flex flex-col md:flex-row flex-wrap gap-3 items-stretch md:items-end">
@@ -171,7 +172,7 @@ const Transaksi = () => {
                             placeholder="Cari anggota / referensi..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10 pr-4 py-2.5 md:py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-64 text-sm font-medium shadow-sm transition-all"
+                            className="pl-10 pr-4 py-2.5 md:py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-64 text-sm font-medium shadow-sm transition-all"
                         />
                     </div>
 
@@ -196,9 +197,9 @@ const Transaksi = () => {
                             <select
                                 value={filterCompany}
                                 onChange={(e) => setFilterCompany(e.target.value)}
-                                className="w-full pl-4 pr-8 py-2.5 md:py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-[11px] bg-white font-black uppercase tracking-tight italic appearance-none shadow-sm transition-all"
+                                className="w-full pl-4 pr-8 py-2.5 md:py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-[11px] bg-white font-black tracking-tight italic appearance-none shadow-sm transition-all"
                             >
-                                <option value="ALL">SEMUA PT</option>
+                                <option value="ALL">Semua PT</option>
                                 {companies.map(c => (
                                     <option key={c} value={c}>{c}</option>
                                 ))}
@@ -208,97 +209,101 @@ const Transaksi = () => {
                             <select
                                 value={filterStatus}
                                 onChange={(e) => setFilterStatus(e.target.value)}
-                                className="w-full pl-4 pr-8 py-2.5 md:py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-[11px] bg-white font-black uppercase tracking-tight italic appearance-none shadow-sm transition-all"
+                                className="w-full pl-4 pr-8 py-2.5 md:py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-[11px] bg-white font-black tracking-tight italic appearance-none shadow-sm transition-all"
                             >
-                                <option value="ALL">SEMUA STATUS</option>
-                                <option value="UNPAID">PENDING</option>
-                                <option value="PAID">LUNAS</option>
+                                <option value="ALL">Semua Status</option>
+                                <option value="UNPAID">Pending</option>
+                                <option value="PAID">Lunas</option>
                             </select>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="bg-white rounded-[32px] shadow-xl shadow-emerald-900/5 border border-slate-100 overflow-hidden text-left">
-                <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                    <div className="space-y-1">
-                        <h3 className="font-black text-slate-800 text-lg italic uppercase tracking-tighter leading-none">Daftar Transaksi</h3>
-                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest italic opacity-70">Log Aktivitas Keuangan Anggota</p>
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden text-left">
+                <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                    <div className="space-y-0.5">
+                        <h3 className="font-black text-slate-800 text-sm italic leading-none">Daftar Transaksi</h3>
+                        <p className="text-[10px] text-slate-400 font-bold italic opacity-70">Log Aktivitas Keuangan</p>
                     </div>
-                    <div className="hidden sm:flex gap-4">
-                        <div className="text-right">
-                            <p className="text-[10px] font-black text-slate-400 uppercase italic">Total Records</p>
-                            <p className="font-mono font-black text-sm text-emerald-600 italic">{filteredTransactions.length}</p>
-                        </div>
+                    <div className="text-right">
+                        <p className="text-[10px] font-black text-slate-400 italic leading-none mb-1">Total</p>
+                        <p className="font-mono font-black text-xs text-emerald-600 italic leading-none">{filteredTransactions.length}</p>
                     </div>
                 </div>
 
-                <div className="hidden md:block overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead className="bg-slate-50/50 border-b border-slate-100 text-slate-400 text-[10px] font-black uppercase tracking-widest italic">
+                <div className="hidden md:block overflow-auto max-h-[70vh]">
+                    <table className="w-full text-left border-collapse table-auto">
+                        <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
                             <tr>
-                                <th className="px-6 py-5">Anggota</th>
-                                <th className="px-6 py-5">Jenis / Kategori</th>
-                                <th className="px-6 py-5">Referensi</th>
-                                <th className="px-6 py-5">Tanggal / Tempo</th>
-                                <th className="px-6 py-5 text-right">Nominal</th>
-                                <th className="px-6 py-5 text-center">Status</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Nama</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">NIK</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">PT</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Tipe</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Kategori</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Referensi</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Tanggal</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-right">Nominal</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic text-center">Status</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-50 italic">
+                        <tbody className="divide-y divide-slate-200">
                             {loading ? (
                                 <tr>
-                                    <td colSpan="6" className="px-6 py-12 text-center text-slate-500">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto"></div>
+                                    <td colSpan="9" className="px-6 py-12 text-center text-slate-500">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+                                        <p className="text-[10px] font-black tracking-widest italic opacity-50">Memuat data...</p>
                                     </td>
                                 </tr>
                             ) : filteredTransactions.length === 0 ? (
                                 <tr>
-                                    <td colSpan="6" className="px-6 py-20 text-center text-slate-400 not-italic">
-                                        <AlertCircle className="mx-auto opacity-20 mb-4" size={48} />
-                                        <p className="font-black uppercase text-[10px] tracking-widest italic">Belum ada data transaksi</p>
+                                    <td colSpan="9" className="px-6 py-20 text-center text-slate-400">
+                                        <AlertCircle className="mx-auto opacity-20 mb-4" size={40} />
+                                        <p className="font-black text-[10px] tracking-widest italic">Belum ada data transaksi</p>
                                     </td>
                                 </tr>
                             ) : (
                                 paginatedTransactions.map((trx) => (
-                                    <tr key={trx.id} className="hover:bg-emerald-50/50 transition-colors group">
-                                        <td className="px-6 py-5">
-                                            <div className="flex flex-col">
-                                                <span className="text-[13px] font-black text-slate-800 not-italic uppercase tracking-tight leading-none mb-1">
-                                                    {trx.member}
-                                                </span>
-                                                <span className="text-[10px] text-slate-400 font-mono tracking-tighter">
-                                                    {trx.nik} • {trx.company}
-                                                </span>
-                                            </div>
+                                    <tr key={trx.id} className="hover:bg-emerald-50 transition-colors group">
+                                        <td className="px-2 py-1 border-r border-slate-200">
+                                            <span className="text-[11px] font-black text-slate-800 italic">{trx.member}</span>
                                         </td>
-                                        <td className="px-6 py-5">
-                                            <div className="flex flex-col">
-                                                <span className={`text-[10px] font-black uppercase tracking-widest leading-none mb-1 ${trx.type === 'SIMPANAN' ? 'text-blue-600' : 'text-purple-600'}`}>
-                                                    {trx.type}
-                                                </span>
-                                                <span className="text-[11px] text-slate-500 font-bold uppercase">{trx.category}</span>
-                                            </div>
+                                        <td className="px-2 py-1 border-r border-slate-200">
+                                            <span className="text-[9px] text-slate-400 font-mono tracking-tighter">{trx.nik}</span>
                                         </td>
-                                        <td className="px-6 py-5">
-                                            <span className="text-[10px] font-mono font-black text-slate-500 bg-slate-100 px-2 py-1 rounded-lg uppercase tracking-widest">
+                                        <td className="px-2 py-1 border-r border-slate-200">
+                                            <span className="text-[9px] text-slate-400 font-bold italic">{trx.company}</span>
+                                        </td>
+                                        <td className="px-2 py-1 border-r border-slate-200">
+                                            <span className={`text-[8px] font-black tracking-tighter ${trx.type === 'SIMPANAN' ? 'text-blue-600' : 'text-purple-600'}`}>
+                                                {trx.type}
+                                            </span>
+                                        </td>
+                                        <td className="px-2 py-1 border-r border-slate-200">
+                                            <span className="text-[10px] text-slate-600 font-bold italic">{trx.category}</span>
+                                        </td>
+                                        <td className="px-2 py-1 border-r border-slate-200">
+                                            <span className="text-[9px] font-mono font-black text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 tracking-tighter leading-none">
                                                 {trx.reference}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-5 text-[11px] font-black text-slate-400 flex items-center gap-2 pt-8">
-                                            <Calendar size={13} /> {formatDate(trx.date)}
+                                        <td className="px-2 py-1 border-r border-slate-200 whitespace-nowrap">
+                                            <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400 italic">
+                                                <Calendar size={10} className="shrink-0" />
+                                                {formatDate(trx.date)}
+                                            </div>
                                         </td>
-                                        <td className="px-6 py-5 text-right">
-                                            <span className="text-sm font-black text-slate-800 font-mono italic">
-                                                {formatCurrency(trx.amount)}
+                                        <td className="px-2 py-1 text-right border-r border-slate-200">
+                                            <span className="text-[11px] font-black text-slate-800 font-mono italic">
+                                                {formatCurrency(trx.amount).replace(/Rp\s?/, '')}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-5 text-center">
-                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm border ${trx.status === 'PAID'
-                                                ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
-                                                : 'bg-amber-50 text-amber-600 border-amber-100'
+                                        <td className="px-2 py-1 text-center">
+                                            <span className={`inline-flex px-1.5 py-0.5 rounded text-[8px] font-black tracking-widest italic shadow-sm border ${trx.status === 'PAID'
+                                                ? 'bg-emerald-600 text-white'
+                                                : 'bg-amber-100 text-amber-700 border-amber-200'
                                                 }`}>
-                                                {trx.status === 'PAID' ? 'LUNAS' : 'PENDING'}
+                                                {trx.status === 'PAID' ? 'Lunas' : 'Pending'}
                                             </span>
                                         </td>
                                     </tr>
@@ -317,7 +322,7 @@ const Transaksi = () => {
                     ) : filteredTransactions.length === 0 ? (
                         <div className="p-12 text-center opacity-30 italic">
                             <AlertCircle size={40} className="mx-auto mb-2" />
-                            <p className="font-black uppercase text-[10px] tracking-widest">Tidak ada data</p>
+                                <p className="font-black text-[10px] tracking-widest">Tidak ada data</p>
                         </div>
                     ) : (
                         paginatedTransactions.map((trx) => (
@@ -350,7 +355,7 @@ const Transaksi = () => {
                                 </div>
                                 <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 italic">
                                     <span>{formatDate(trx.date)}</span>
-                                    <span className="uppercase text-[9px]">{trx.company}</span>
+                                    <span className="text-[9px]">{trx.company}</span>
                                 </div>
                             </div>
                         ))
@@ -359,7 +364,7 @@ const Transaksi = () => {
 
                 {/* PAGINATION FOOTER */}
                 <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <div className="flex items-center gap-4 text-xs font-black text-gray-400 uppercase tracking-widest">
+                    <div className="flex items-center gap-4 text-xs font-black text-gray-400 tracking-widest">
                         <span>Tampilkan</span>
                         <select
                             value={itemsPerPage}
@@ -375,7 +380,7 @@ const Transaksi = () => {
                         <button
                             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                             disabled={currentPage === 1}
-                            className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm"
+                            className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-[10px] font-black tracking-widest hover:bg-gray-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm"
                         >
                             Sebelumnya
                         </button>
@@ -393,7 +398,7 @@ const Transaksi = () => {
                         <button
                             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                             disabled={currentPage === totalPages || totalPages === 0}
-                            className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm"
+                            className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-[10px] font-black tracking-widest hover:bg-gray-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm"
                         >
                             Berikutnya
                         </button>

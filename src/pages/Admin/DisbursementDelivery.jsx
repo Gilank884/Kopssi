@@ -216,216 +216,251 @@ const DisbursementDelivery = () => {
     });
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 text-left">
+        <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-500 max-w-[1600px] mx-auto">
+            {/* Header Section */}
+            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
                 <div className="text-left">
-                    <h2 className="text-3xl font-black text-gray-900 italic uppercase tracking-tight">Realisasi Pinjaman</h2>
+                    <h2 className="text-2xl md:text-3xl font-black text-gray-900 italic tracking-tight">Realisasi Pinjaman</h2>
                     <div className="flex gap-4 mt-2">
                         <button
                             onClick={() => setActiveTab('BELUM')}
-                            className={`text-xs font-black uppercase tracking-widest pb-1 border-b-2 transition-all ${activeTab === 'BELUM' ? 'border-emerald-600 text-emerald-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                            className={`text-[10px] font-black tracking-widest pb-1 border-b-2 transition-all ${activeTab === 'BELUM' ? 'border-emerald-600 text-emerald-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
                         >
                             Belum Direalisasi
                         </button>
                         <button
                             onClick={() => setActiveTab('SUDAH')}
-                            className={`text-xs font-black uppercase tracking-widest pb-1 border-b-2 transition-all ${activeTab === 'SUDAH' ? 'border-emerald-600 text-emerald-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                            className={`text-[10px] font-black tracking-widest pb-1 border-b-2 transition-all ${activeTab === 'SUDAH' ? 'border-emerald-600 text-emerald-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
                         >
                             Sudah Direalisasi
                         </button>
                     </div>
                 </div>
 
-                <div className="flex flex-wrap gap-3">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                {/* Filters Wrapper */}
+                <div className="flex flex-col md:flex-row flex-wrap gap-3 items-stretch md:items-end">
+                    <div className="relative flex-grow md:flex-grow-0">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                         <input
                             type="text"
-                            placeholder="Cari nama, NIK, atau No Pin..."
+                            placeholder="Cari nama / NIK..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-64 text-sm shadow-sm"
+                            className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white font-bold shadow-sm"
                         />
                     </div>
-                    {activeTab === 'BELUM' && (
-                        <button
-                            onClick={() => {
-                                setIsSelectionMode(!isSelectionMode);
-                                if (isSelectionMode) setSelectedIds([]);
-                            }}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-sm border-2 ${isSelectionMode ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-white text-blue-600 border-blue-50'}`}
-                        >
-                            <CheckCircle size={16} />
-                            {isSelectionMode ? 'Batal Pilih' : 'Pilih Masal'}
-                        </button>
-                    )}
+
                     <div className="flex items-center gap-2">
                         <input
                             type="date"
                             value={startDate}
                             onChange={(e) => setStartDate(e.target.value)}
-                            className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white shadow-sm font-bold"
+                            className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white font-bold shadow-sm"
                         />
                         <span className="text-gray-400 font-bold">s/d</span>
                         <input
                             type="date"
                             value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
-                            className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white shadow-sm font-bold"
+                            className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white font-bold shadow-sm"
                         />
                     </div>
+
                     <div className="relative">
-                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                         <select
                             value={filterCompany}
                             onChange={(e) => setFilterCompany(e.target.value)}
-                            className="pl-9 pr-8 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white shadow-sm font-bold uppercase tracking-tight italic appearance-none"
+                            className="w-full pl-4 pr-8 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white font-bold appearance-none shadow-sm min-w-[180px]"
                         >
-                            <option value="ALL">SEMUA PT</option>
-                            {companies.map(c => (
-                                <option key={c} value={c}>{c}</option>
-                            ))}
+                            <option value="ALL">Semua PT</option>
+                            {companies.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                     </div>
+
+                    {activeTab === 'BELUM' && (
+                        <button
+                            onClick={() => {
+                                setIsSelectionMode(!isSelectionMode);
+                                if (isSelectionMode) setSelectedIds([]);
+                            }}
+                            className={`flex items-center justify-center gap-2 px-6 py-2 rounded-xl text-xs font-black tracking-widest transition-all shadow-sm border ${isSelectionMode ? 'bg-amber-500 text-white border-amber-600' : 'bg-white text-emerald-600 border-emerald-100 hover:bg-emerald-50'}`}
+                        >
+                            <CheckCircle size={16} />
+                            {isSelectionMode ? 'Batal' : 'Pilih Masal'}
+                        </button>
+                    )}
+
                     <button
                         onClick={handleExportExcel}
-                        className="flex items-center gap-2 px-4 py-2 bg-white text-emerald-600 border-2 border-emerald-100 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-emerald-50 transition-all shadow-sm"
+                        className="flex items-center justify-center gap-2 px-6 py-2 bg-emerald-600 text-white rounded-xl text-xs font-black tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100 h-[40px]"
                     >
                         <Download size={16} /> Export
                     </button>
                 </div>
             </div>
 
-            <div className="bg-white rounded-3xl shadow-xl shadow-emerald-900/5 border border-gray-100 overflow-auto">
-                <table className="w-full text-left border-collapse min-w-[1200px]">
-                    <thead>
-                        <tr className="bg-gray-50/50 border-b border-gray-100 italic font-black text-[10px] uppercase tracking-tighter text-gray-400">
-                            <th className="px-2 py-3 text-center w-10">
-                                {isSelectionMode && (
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedIds.length === filteredLoans.length && filteredLoans.length > 0}
-                                        onChange={toggleSelectAll}
-                                        className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
-                                    />
-                                )}
-                            </th>
-                            <th className="px-2 py-3 text-center">No</th>
-                            <th className="px-2 py-3">No Pinjaman</th>
-                            <th className="px-2 py-3">Nama</th>
-                            <th className="px-2 py-3">NPP</th>
-                            <th className="px-2 py-3">No Anggota</th>
-                            <th className="px-2 py-3">Lokasi</th>
-                            <th className="px-2 py-3 text-center">Tgl Pin</th>
-                            <th className="px-2 py-3 text-center">Tgl Setuju</th>
-                            <th className="px-2 py-3 text-center">Tenor</th>
-                            <th className="px-2 py-3 text-right">Pengajuan</th>
-                            <th className="px-2 py-3 text-right">Disetujui</th>
-                            <th className="px-2 py-3 text-right">Bunga</th>
-                            <th className="px-2 py-3 text-right">Outs P</th>
-                            <th className="px-2 py-3 text-right">Outs B</th>
-                            <th className="px-2 py-3 text-right">Admin</th>
-                            <th className="px-2 py-3 text-right text-emerald-700">Terima Bersih</th>
-                            <th className="px-2 py-3">No Rek</th>
-                            <th className="px-2 py-3 text-center">Tgl Real</th>
-                            <th className="px-2 py-3 text-center">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                        {loading ? (
-                            <tr>
-                                <td colSpan="20" className="px-6 py-12 text-center text-gray-500 text-[10px]">
-                                    <Loader2 className="animate-spin h-8 w-8 text-emerald-600 mx-auto mb-4" />
-                                    Memuat data pencairan...
-                                </td>
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div className="overflow-auto max-h-[60vh] text-left">
+                    <table className="w-full text-left border-collapse table-auto">
+                        <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
+                            <tr className="italic font-black text-[10px] tracking-widest text-slate-700">
+                                <th className="px-2 py-2 text-center w-8 border-r border-slate-200">
+                                    {isSelectionMode && (
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedIds.length === filteredLoans.length && filteredLoans.length > 0}
+                                            onChange={toggleSelectAll}
+                                            className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                                        />
+                                    )}
+                                </th>
+                                <th className="px-2 py-2 text-center w-8 border-r border-slate-200">No</th>
+                                <th className="px-2 py-2 border-r border-slate-200">No Pinjaman</th>
+                                <th className="px-2 py-2 border-r border-slate-200">Nama</th>
+                                <th className="px-2 py-2 border-r border-slate-200">NPP</th>
+                                <th className="px-2 py-2 border-r border-slate-200">No Anggota</th>
+                                <th className="px-2 py-2 border-r border-slate-200">Lokasi</th>
+                                <th className="px-2 py-2 text-center border-r border-slate-200">Tgl Pin</th>
+                                <th className="px-2 py-2 text-center border-r border-slate-200">Tgl Setuju</th>
+                                <th className="px-2 py-2 text-center border-r border-slate-200">Tenor</th>
+                                <th className="px-2 py-2 text-right border-r border-slate-200">Pengajuan</th>
+                                <th className="px-2 py-2 text-right border-r border-slate-200">Disetujui</th>
+                                <th className="px-2 py-2 text-right border-r border-slate-200">Bunga</th>
+                                <th className="px-2 py-2 text-right border-r border-slate-200">Outs P</th>
+                                <th className="px-2 py-2 text-right border-r border-slate-200">Outs B</th>
+                                <th className="px-2 py-2 text-right border-r border-slate-200">Admin</th>
+                                <th className="px-2 py-2 text-right border-r border-slate-200 text-emerald-700 bg-emerald-50/50">Terima Bersih</th>
+                                <th className="px-2 py-2 border-r border-slate-200 whitespace-nowrap">No Rek</th>
+                                <th className="px-2 py-2 text-center border-r border-slate-200">Tgl Real</th>
+                                <th className="px-2 py-2 text-center">Aksi</th>
                             </tr>
-                        ) : filteredLoans.length === 0 ? (
-                            <tr>
-                                <td colSpan="20" className="px-6 py-20 text-center text-gray-400 italic text-[10px]">
-                                    <Banknote size={48} className="mx-auto mb-4 opacity-20" />
-                                    <p className="font-bold">Tidak ada data {activeTab === 'BELUM' ? 'menunggu realisasi' : 'yang sudah direalisasi'} untuk ditampilkan</p>
-                                </td>
-                            </tr>
-                        ) : (
-                            filteredLoans.map((loan, idx) => {
-                                const principal = parseFloat(loan.jumlah_pinjaman || 0);
-                                const tenor = loan.tenor_bulan || 1;
-                                let totalBunga = 0;
-                                if (loan.tipe_bunga === 'PERSENAN') {
-                                    totalBunga = principal * (parseFloat(loan.nilai_bunga || 0) / 100) * (tenor / 12);
-                                } else if (loan.tipe_bunga === 'NOMINAL') {
-                                    totalBunga = parseFloat(loan.nilai_bunga || 0);
-                                }
-                                const netDisbursement = principal - (parseFloat(loan.outstanding) || 0) - 5000;
+                        </thead>
+                        <tbody className="divide-y divide-slate-200">
+                            {loading ? (
+                                <tr>
+                                    <td colSpan="20" className="px-6 py-12 text-center text-slate-500">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+                                        <p className="text-[10px] font-black tracking-widest italic opacity-50">Memuat data pencairan...</p>
+                                    </td>
+                                </tr>
+                            ) : filteredLoans.length === 0 ? (
+                                <tr>
+                                    <td colSpan="20" className="px-6 py-20 text-center text-slate-400 font-medium italic">
+                                        <Banknote size={48} className="mx-auto mb-4 opacity-10" />
+                                        <p className="font-black text-[10px] tracking-widest italic">Tidak ada data untuk ditampilkan</p>
+                                    </td>
+                                </tr>
+                            ) : (
+                                filteredLoans.map((loan, idx) => {
+                                    const principal = parseFloat(loan.jumlah_pinjaman || 0);
+                                    const tenor = loan.tenor_bulan || 1;
+                                    let totalBunga = 0;
+                                    if (loan.tipe_bunga === 'PERSENAN') {
+                                        totalBunga = principal * (parseFloat(loan.nilai_bunga || 0) / 100) * (tenor / 12);
+                                    } else if (loan.tipe_bunga === 'NOMINAL') {
+                                        totalBunga = parseFloat(loan.nilai_bunga || 0);
+                                    }
+                                    const netDisbursement = principal - (parseFloat(loan.outstanding) || 0) - 5000;
 
-                                return (
-                                    <tr
-                                        key={loan.id}
-                                        className={`hover:bg-emerald-50 transition-colors group border-b border-gray-50 ${(isSelectionMode && selectedIds.includes(loan.id)) ? 'bg-emerald-50/70' : ''}`}
-                                        onClick={() => isSelectionMode && toggleSelect(loan.id)}
-                                    >
-                                        <td className="px-2 py-2 text-center" onClick={(e) => isSelectionMode && e.stopPropagation()}>
-                                            {isSelectionMode && (
-                                                <input
-                                                    type="checkbox"
-                                                    checked={selectedIds.includes(loan.id)}
-                                                    onChange={() => toggleSelect(loan.id)}
-                                                    className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
-                                                />
-                                            )}
-                                        </td>
-                                        <td className="px-2 py-2 text-center text-[10px] font-bold text-gray-400">{idx + 1}</td>
-                                        <td className="px-2 py-2 text-[10px] font-black font-mono text-gray-600 uppercase italic whitespace-nowrap">{loan.no_pinjaman}</td>
-                                        <td className="px-2 py-2 text-[10px] font-black text-gray-900 uppercase italic whitespace-nowrap">{loan.personal_data?.full_name || '-'}</td>
-                                        <td className="px-2 py-2 text-[10px] font-bold text-gray-500 font-mono italic">{loan.personal_data?.no_npp || '-'}</td>
-                                        <td className="px-2 py-2 text-[10px] font-bold text-gray-500 font-mono italic">{loan.personal_data?.no_anggota || '-'}</td>
-                                        <td className="px-2 py-2 text-[10px] font-bold text-gray-400 uppercase italic truncate max-w-[80px]">{loan.personal_data?.lokasi || '-'}</td>
-                                        <td className="px-2 py-2 text-[10px] text-center font-bold text-gray-500 italic">
-                                            {loan.created_at ? new Date(loan.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-'}
-                                        </td>
-                                        <td className="px-2 py-2 text-center text-[10px] font-bold text-gray-500 italic">
-                                            {(loan.approved_at || loan.created_at) ? new Date(loan.approved_at || loan.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-'}
-                                        </td>
-                                        <td className="px-2 py-2 text-center text-[10px] font-black text-emerald-600 italic">{tenor}</td>
-                                        <td className="px-2 py-2 text-right text-[10px] font-bold text-gray-400 font-mono">{formatCurrency(loan.jumlah_pengajuan || loan.jumlah_pinjaman)}</td>
-                                        <td className="px-2 py-2 text-right text-[10px] font-black text-gray-700 font-mono">{formatCurrency(principal)}</td>
-                                        <td className="px-2 py-2 text-right text-[10px] font-bold text-amber-600 font-mono italic">{formatCurrency(totalBunga)}</td>
-                                        <td className="px-2 py-2 text-right text-[10px] font-black text-red-500 font-mono italic">{loan.calculated_outs_pokok > 0 ? formatCurrency(loan.calculated_outs_pokok) : '-'}</td>
-                                        <td className="px-2 py-2 text-right text-[10px] font-bold text-red-400 font-mono italic">{loan.calculated_outs_bunga > 0 ? formatCurrency(loan.calculated_outs_bunga) : '-'}</td>
-                                        <td className="px-2 py-2 text-right text-[10px] font-bold text-gray-500 font-mono italic">{formatCurrency(5000)}</td>
-                                        <td className="px-2 py-2 text-right text-[10px] font-black text-emerald-700 font-mono bg-emerald-50/50">{formatCurrency(netDisbursement)}</td>
-                                        <td className="px-2 py-2 text-[10px] font-mono font-bold text-gray-500 italic whitespace-nowrap">{loan.personal_data?.rek_gaji || '-'}</td>
-                                        <td className="px-2 py-2 text-center text-[10px] font-black text-emerald-600 italic">
-                                            {loan.delivery_date ? new Date(loan.delivery_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-'}
-                                        </td>
-                                        <td className="px-2 py-2 text-center text-[10px]">
-                                            {loan.delivery_status !== 'SENT' ? (
-                                                <button
-                                                    onClick={() => handleConfirmDelivery(loan)}
-                                                    disabled={updatingId === loan.id}
-                                                    className="flex items-center gap-1 px-2 py-1 bg-emerald-600 text-white rounded text-[10px] font-black uppercase tracking-tight hover:bg-emerald-700 transition-all disabled:opacity-50 mx-auto"
-                                                >
-                                                    {updatingId === loan.id ? <Loader2 className="animate-spin" size={12} /> : <CheckCircle size={12} />}
-                                                    OK
-                                                </button>
-                                            ) : (
-                                                <span className="text-[10px] font-black text-gray-300 uppercase italic">SENT</span>
-                                            )}
-                                        </td>
-                                    </tr>
-                                );
-                            })
-                        )}
-                    </tbody>
-                </table>
+                                    return (
+                                        <tr
+                                            key={loan.id}
+                                            className={`hover:bg-emerald-50 transition-colors group ${(isSelectionMode && selectedIds.includes(loan.id)) ? 'bg-emerald-50/70' : ''}`}
+                                            onClick={() => isSelectionMode && toggleSelect(loan.id)}
+                                        >
+                                            <td className="px-2 py-1 text-center border-r border-slate-200" onClick={(e) => isSelectionMode && e.stopPropagation()}>
+                                                {isSelectionMode && (
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedIds.includes(loan.id)}
+                                                        onChange={() => toggleSelect(loan.id)}
+                                                        className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                                                    />
+                                                )}
+                                            </td>
+                                            <td className="px-2 py-1 text-center text-[10px] font-bold text-slate-400 border-r border-slate-200">
+                                                {idx + 1}
+                                            </td>
+                                            <td className="px-2 py-1 text-[10px] font-black font-mono text-slate-600 italic border-r border-slate-200 whitespace-nowrap">
+                                                {loan.no_pinjaman}
+                                            </td>
+                                            <td className="px-2 py-1 text-[11px] font-black text-slate-800 italic border-r border-slate-200 whitespace-nowrap">
+                                                {loan.personal_data?.full_name || '-'}
+                                            </td>
+                                            <td className="px-2 py-1 text-[10px] font-bold text-slate-500 font-mono italic border-r border-slate-200 whitespace-nowrap text-center">
+                                                {loan.personal_data?.no_npp || '-'}
+                                            </td>
+                                            <td className="px-2 py-1 text-[10px] font-bold text-slate-500 font-mono italic border-r border-slate-200 whitespace-nowrap text-center">
+                                                {loan.personal_data?.no_anggota || '-'}
+                                            </td>
+                                            <td className="px-2 py-1 text-[10px] font-bold text-slate-400 italic border-r border-slate-200 truncate max-w-[80px]">
+                                                {loan.personal_data?.lokasi || '-'}
+                                            </td>
+                                            <td className="px-2 py-1 text-center text-[10px] font-bold text-slate-500 italic border-r border-slate-200 whitespace-nowrap">
+                                                {loan.created_at ? new Date(loan.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' }) : '-'}
+                                            </td>
+                                            <td className="px-2 py-1 text-center text-[10px] font-bold text-slate-500 italic border-r border-slate-200 whitespace-nowrap">
+                                                {(loan.approved_at || loan.created_at) ? new Date(loan.approved_at || loan.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' }) : '-'}
+                                            </td>
+                                            <td className="px-2 py-1 text-center text-[10px] font-black text-emerald-600 italic border-r border-slate-200">
+                                                {tenor}
+                                            </td>
+                                            <td className="px-2 py-1 text-right text-[10px] font-bold text-slate-400 font-mono border-r border-slate-200 leading-none">
+                                                {formatCurrency(loan.jumlah_pengajuan || loan.jumlah_pinjaman).replace(/Rp\s?/, '')}
+                                            </td>
+                                            <td className="px-2 py-1 text-right text-[10px] font-black text-slate-700 font-mono border-r border-slate-200 leading-none">
+                                                {formatCurrency(principal).replace(/Rp\s?/, '')}
+                                            </td>
+                                            <td className="px-2 py-1 text-right text-[10px] font-bold text-amber-600 font-mono italic border-r border-slate-200 leading-none">
+                                                {formatCurrency(totalBunga).replace(/Rp\s?/, '')}
+                                            </td>
+                                            <td className="px-2 py-1 text-right text-[10px] font-black text-red-500 font-mono italic border-r border-slate-200 leading-none">
+                                                {loan.calculated_outs_pokok > 0 ? formatCurrency(loan.calculated_outs_pokok).replace(/Rp\s?/, '') : '-'}
+                                            </td>
+                                            <td className="px-2 py-1 text-right text-[10px] font-bold text-red-400 font-mono italic border-r border-slate-200 leading-none">
+                                                {loan.calculated_outs_bunga > 0 ? formatCurrency(loan.calculated_outs_bunga).replace(/Rp\s?/, '') : '-'}
+                                            </td>
+                                            <td className="px-2 py-1 text-right text-[10px] font-bold text-slate-500 font-mono italic border-r border-slate-200 leading-none">
+                                                {formatCurrency(5000).replace(/Rp\s?/, '')}
+                                            </td>
+                                            <td className="px-2 py-1 text-right text-[11px] font-black text-emerald-700 font-mono bg-emerald-50/50 border-r border-slate-200 leading-none">
+                                                {formatCurrency(netDisbursement).replace(/Rp\s?/, '')}
+                                            </td>
+                                            <td className="px-2 py-1 text-[10px] font-mono font-bold text-slate-500 italic border-r border-slate-200 whitespace-nowrap">
+                                                {loan.personal_data?.bank_gaji} {loan.personal_data?.rek_gaji || '-'}
+                                            </td>
+                                            <td className="px-2 py-1 text-center text-[10px] font-black text-emerald-600 italic border-r border-slate-200 whitespace-nowrap">
+                                                {loan.delivery_date ? new Date(loan.delivery_date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-'}
+                                            </td>
+                                            <td className="px-2 py-1 text-center">
+                                                {loan.delivery_status !== 'SENT' ? (
+                                                    <button
+                                                        onClick={() => handleConfirmDelivery(loan)}
+                                                        disabled={updatingId === loan.id}
+                                                        className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-emerald-600 text-white rounded text-[9px] font-black tracking-tight hover:bg-emerald-700 transition-all disabled:opacity-50 shadow-sm"
+                                                    >
+                                                        {updatingId === loan.id ? <Loader2 className="animate-spin" size={10} /> : <CheckCircle size={10} />}
+                                                        OK
+                                                    </button>
+                                                ) : (
+                                                    <span className="text-[9px] font-black text-slate-300 italic tracking-tighter">SENT</span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {/* DATA COUNT FOOTER */}
             <div className="bg-white px-6 py-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
-                <p className="text-xs font-black text-gray-400 uppercase tracking-widest italic">
+                <p className="text-xs font-black text-gray-400 tracking-widest italic">
                     Menampilkan <span className="text-emerald-600">{filteredLoans.length}</span> Data Terpilih
                 </p>
-                <p className="text-[10px] font-bold text-gray-300 italic uppercase">
+                <p className="text-[10px] font-bold text-gray-300 italic">
                     Kopssi Management System • {new Date().getFullYear()}
                 </p>
             </div>
@@ -435,14 +470,14 @@ const DisbursementDelivery = () => {
                 <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-10 duration-500">
                     <div className="bg-gray-900 border border-white/10 text-white rounded-2xl shadow-2xl shadow-black/40 px-8 py-5 flex items-center gap-10 backdrop-blur-md">
                         <div className="flex flex-col">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 italic">Terpilih</span>
-                            <span className="text-2xl font-black italic">{selectedIds.length} <span className="text-sm not-italic opacity-50 uppercase tracking-tighter">Record</span></span>
+                            <span className="text-[10px] font-black tracking-widest text-emerald-400 italic">Terpilih</span>
+                            <span className="text-2xl font-black italic">{selectedIds.length} <span className="text-sm not-italic opacity-50 tracking-tighter">Record</span></span>
                         </div>
 
                         <div className="h-10 w-[1px] bg-white/10"></div>
 
                         <div className="flex flex-col">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 italic">Total Realisasi</span>
+                            <span className="text-[10px] font-black tracking-widest text-emerald-400 italic">Total Realisasi</span>
                             <span className="text-2xl font-black italic font-mono text-emerald-400">{formatCurrency(calculateSelectedTotal())}</span>
                         </div>
 
@@ -455,7 +490,7 @@ const DisbursementDelivery = () => {
                             </button>
                             <button
                                 onClick={handleBulkConfirm}
-                                className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-lg shadow-emerald-500/20"
+                                className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black tracking-widest transition-all shadow-lg shadow-emerald-500/20"
                             >
                                 <CheckCircle size={14} /> Konfirmasi Terpilih
                             </button>

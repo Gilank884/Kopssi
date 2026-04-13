@@ -233,15 +233,34 @@ const AdminOverview = () => {
     const formatCurrency = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div className="space-y-1">
-                    <h2 className="text-2xl md:text-3xl font-black text-slate-800 uppercase tracking-tight italic leading-none">Dashboard Koperasi</h2>
-                    <p className="text-[11px] md:text-sm text-slate-500 font-medium italic">Ringkasan aktivitas dan performa sistem hari ini</p>
+        <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-500 max-w-[1600px] mx-auto">
+            {/* Header Section */}
+            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+                <div className="text-left">
+                    <h2 className="text-2xl md:text-3xl font-black text-gray-900 italic tracking-tight leading-none">Dashboard Koperasi</h2>
+                    <p className="text-xs md:text-sm text-gray-500 mt-1 font-medium italic">Ringkasan aktivitas dan performa sistem hari ini</p>
                 </div>
-                <div className="px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-2xl w-full sm:w-auto">
-                    <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest italic">Status Sistem</p>
-                    <p className="text-xs font-bold text-emerald-800">Operational • Optimal</p>
+                <div className="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto">
+                    <button
+                        onClick={async () => {
+                            if (!window.confirm("Initialize sample data? This will add synchronized records for testing.")) return;
+                            const { seedSynchronizedData } = await import('../../utils/dataSeeder');
+                            const result = await seedSynchronizedData();
+                            if (result.success) {
+                                alert("Data initialized successfully! Refreshing dashboard...");
+                                fetchStats();
+                            } else {
+                                alert("Error: " + result.error);
+                            }
+                        }}
+                        className="px-4 py-2 bg-white border-2 border-emerald-100 text-emerald-600 rounded-2xl text-[10px] font-black hover:bg-emerald-50 transition-all shadow-sm h-full"
+                    >
+                        Seed Sample Data
+                    </button>
+                    <div className="px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-2xl w-full sm:w-auto">
+                        <p className="text-[9px] font-black text-emerald-600 tracking-widest italic">Status Sistem</p>
+                        <p className="text-xs font-bold text-emerald-800">Operational • Optimal</p>
+                    </div>
                 </div>
             </div>
 
@@ -297,7 +316,7 @@ const AdminOverview = () => {
                 {/* Member Distribution */}
                 <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 lg:col-span-1">
                     <div className="flex justify-between items-center mb-6">
-                        <h3 className="font-black text-gray-800 uppercase text-xs tracking-widest italic text-left">Distribusi Anggota</h3>
+                        <h3 className="font-black text-gray-800 text-xs tracking-widest italic text-left">Distribusi Anggota</h3>
                         <Users size={16} className="text-gray-400" />
                     </div>
                     <div className="h-64">
@@ -324,7 +343,7 @@ const AdminOverview = () => {
                         {memberData.map(item => (
                             <div key={item.name} className="flex items-center gap-2">
                                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
-                                <span className="text-[10px] font-black text-gray-500 uppercase italic">{item.name}: {item.value}</span>
+                                <span className="text-[10px] font-black text-gray-500 italic">{item.name}: {item.value}</span>
                             </div>
                         ))}
                     </div>
@@ -334,8 +353,8 @@ const AdminOverview = () => {
                 <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 lg:col-span-2">
                     <div className="flex justify-between items-center mb-6">
                         <div className="space-y-1 text-left">
-                            <h3 className="font-black text-gray-800 uppercase text-xs tracking-widest italic">Tren Realisasi Pinjaman</h3>
-                            <p className="text-[10px] text-gray-400 font-bold uppercase italic tracking-tight">Harian (14 Hari Terakhir)</p>
+                            <h3 className="font-black text-gray-800 text-xs tracking-widest italic">Tren Realisasi Pinjaman</h3>
+                            <p className="text-[10px] text-gray-400 font-bold italic tracking-tight">Harian (14 Hari Terakhir)</p>
                         </div>
                         <TrendingUp size={16} className="text-gray-400" />
                     </div>
@@ -396,13 +415,13 @@ const StatCard = ({ title, value, icon: Icon, trend, color }) => {
                     <Icon size={24} />
                 </div>
                 {trend && (
-                    <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full uppercase italic tracking-tighter">
+                    <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full italic tracking-tighter">
                         {trend}
                     </span>
                 )}
             </div>
             <div>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest italic mb-1">{title}</p>
+                <p className="text-[10px] font-black text-gray-400 tracking-widest italic mb-1">{title}</p>
                 <h3 className="text-3xl font-black text-gray-900 tracking-tighter italic">{value}</h3>
             </div>
             {/* Subtle background decoration */}
@@ -427,9 +446,9 @@ const HighlightCard = ({ title, value, subtitle, icon: Icon, color }) => {
                     </div>
                 </div>
                 <div className="mt-8">
-                    <p className="text-[10px] font-black text-white/70 uppercase tracking-widest italic mb-1">{title}</p>
+                    <p className="text-[10px] font-black text-white/70 tracking-widest italic mb-1">{title}</p>
                     <h3 className="text-2xl font-black text-white tracking-tight italic">{value}</h3>
-                    <p className="text-[10px] text-white/60 font-medium uppercase tracking-tighter mt-1 italic">{subtitle}</p>
+                    <p className="text-[10px] text-white/60 font-medium tracking-tighter mt-1 italic">{subtitle}</p>
                 </div>
             </div>
             <Icon className="absolute -right-8 -bottom-8 text-white opacity-10 rotate-12 transition-transform group-hover:scale-110" size={160} />

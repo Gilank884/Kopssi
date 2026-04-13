@@ -16,11 +16,12 @@ const Reports = () => {
     ];
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-500 max-w-[1600px] mx-auto">
+            {/* Header Section */}
+            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
                 <div className="text-left">
-                    <h2 className="text-3xl font-black text-gray-900 italic uppercase tracking-tight">Pusat Laporan</h2>
-                    <p className="text-sm text-gray-500 mt-1 font-medium italic uppercase tracking-wider">Laporan Keuangan & Data Anggota Terpadu</p>
+                    <h2 className="text-2xl md:text-3xl font-black text-gray-900 italic tracking-tight">Pusat Laporan</h2>
+                    <p className="text-xs md:text-sm text-gray-500 mt-1 font-medium italic tracking-tight">Laporan Keuangan & Data Anggota Terpadu</p>
                 </div>
             </div>
 
@@ -30,7 +31,7 @@ const Reports = () => {
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`flex items-center gap-2 px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all border-b-2 ${activeTab === tab.id
+                        className={`flex items-center gap-2 px-6 py-3 text-[10px] font-black tracking-widest transition-all border-b-2 ${activeTab === tab.id
                             ? 'border-emerald-600 text-emerald-600 bg-emerald-50/50'
                             : 'border-transparent text-gray-400 hover:text-gray-600 hover:bg-gray-50'
                             }`}

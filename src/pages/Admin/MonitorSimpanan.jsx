@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabaseClient';
-import { Search, Filter, Download, ArrowRight, User, Building, Wallet } from 'lucide-react';
+import { Search, Filter, Download, ArrowRight, User, Building, Wallet, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const MonitorSimpanan = () => {
@@ -117,107 +117,111 @@ const MonitorSimpanan = () => {
     const formatCurrency = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-left">
-                <div className="space-y-1">
-                    <h2 className="text-2xl md:text-3xl font-black text-slate-800 italic uppercase tracking-tight leading-none">Monitoring Simpanan</h2>
-                    <p className="text-[11px] md:text-sm text-slate-500 font-medium italic mt-1 uppercase tracking-wider">Pantau total simpanan anggota dan riwayat transaksi</p>
+        <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-500 max-w-[1600px] mx-auto">
+            {/* Header Section */}
+            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+                <div className="text-left">
+                    <h2 className="text-2xl md:text-3xl font-black text-gray-900 italic tracking-tight">Monitoring Simpanan</h2>
+                    <p className="text-xs md:text-sm text-gray-500 mt-1 font-medium italic">Pantau total simpanan anggota dan riwayat transaksi</p>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                    <div className="relative flex-grow sm:flex-grow-0">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={17} />
+                {/* Filters Wrapper */}
+                <div className="flex flex-col md:flex-row flex-wrap gap-3 items-stretch md:items-end">
+                    {/* Search Field */}
+                    <div className="relative flex-grow md:flex-grow-0">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                         <input
                             type="text"
                             placeholder="Cari Nama / NPP..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10 pr-4 py-2.5 sm:py-2 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-64 text-sm shadow-sm font-medium transition-all"
+                            className="pl-10 pr-4 py-2.5 md:py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-64 text-sm shadow-sm font-medium"
                         />
                     </div>
 
+                    {/* Company Select */}
                     <div className="relative">
-                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={15} />
+                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                         <select
                             value={filterCompany}
                             onChange={(e) => setFilterCompany(e.target.value)}
-                            className="w-full pl-9 pr-8 py-2.5 sm:py-2 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-[11px] font-black uppercase tracking-tight italic appearance-none shadow-sm transition-all"
+                            className="w-full pl-9 pr-8 py-2.5 md:py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white shadow-sm font-bold tracking-tight italic appearance-none"
                         >
-                            <option value="ALL">SEMUA PT</option>
+                            <option value="ALL">Semua PT</option>
                             {companies.map(c => (
                                 <option key={c} value={c}>{c}</option>
                             ))}
                         </select>
                     </div>
+
+                    {/* Export Button (Optional, but included for consistency if needed later) */}
+                    <button
+                        onClick={handleExportExcel}
+                        className="flex items-center justify-center gap-2 px-6 py-2.5 md:py-2 bg-emerald-600 md:bg-white text-white md:text-emerald-600 border-2 border-emerald-600 md:border-emerald-100 rounded-xl text-xs font-black hover:bg-emerald-700 md:hover:bg-emerald-50 transition-all shadow-lg md:shadow-sm"
+                    >
+                        <Download size={16} /> <span className="md:inline">Export Summary</span>
+                    </button>
                 </div>
             </div>
 
-            <div className="bg-white rounded-[32px] shadow-xl shadow-emerald-900/5 border border-slate-100 overflow-hidden">
-                <div className="hidden md:block overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead className="bg-slate-50/50 border-b border-slate-100 italic">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div className="hidden md:block overflow-auto max-h-[70vh]">
+                    <table className="w-full text-left border-collapse table-auto">
+                        <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
                             <tr>
-                                <th className="px-6 py-5 font-black uppercase text-[10px] text-slate-400 tracking-widest">Anggota</th>
-                                <th className="px-6 py-5 font-black uppercase text-[10px] text-slate-400 tracking-widest">Perusahaan</th>
-                                <th className="px-6 py-5 font-black uppercase text-[10px] text-slate-400 tracking-widest text-right">Total Simpanan</th>
-                                <th className="px-6 py-5 font-black uppercase text-[10px] text-slate-400 tracking-widest text-center">Detail</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Nama</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">NIK</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center">No. Anggota / NPP</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Perusahaan</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-right">Total Simpanan</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic text-center">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-50">
+                        <tbody className="divide-y divide-slate-200">
                             {loading ? (
                                 <tr>
-                                    <td colSpan="4" className="px-6 py-20 text-center text-slate-500">
+                                    <td colSpan="6" className="px-6 py-20 text-center text-slate-500">
                                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-                                        <p className="text-[10px] font-black uppercase tracking-widest italic opacity-50">Memuat data...</p>
+                                        <p className="text-[10px] font-black tracking-widest italic opacity-50">Memuat data...</p>
                                     </td>
                                 </tr>
                             ) : filteredMembers.length === 0 ? (
                                 <tr>
-                                    <td colSpan="4" className="px-6 py-20 text-center text-slate-400 italic">
-                                        <User className="mx-auto opacity-20 mb-4" size={48} />
-                                        <p className="font-bold text-sm">Tidak ada anggota ditemukan</p>
+                                    <td colSpan="6" className="px-6 py-20 text-center text-slate-400 italic font-black tracking-widest">
+                                        <User className="mx-auto opacity-20 mb-4" size={40} />
+                                        <p>Tidak ada anggota ditemukan</p>
                                     </td>
                                 </tr>
                             ) : (
                                 paginatedMembers.map((m) => (
                                     <tr
                                         key={m.id}
-                                        className="hover:bg-emerald-50/50 transition-colors group cursor-pointer"
                                         onClick={() => navigate(`/admin/monitor-simpanan/${m.id}`)}
+                                        className="hover:bg-emerald-50 transition-colors group cursor-pointer"
                                     >
-                                        <td className="px-6 py-5">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-emerald-50/50 rounded-full flex items-center justify-center text-emerald-600 font-black text-xs uppercase border border-emerald-100 italic">
-                                                    {m.full_name?.substring(0, 2)}
-                                                </div>
-                                                <div className="flex flex-col">
-                                                    <p className="text-[13px] font-black text-slate-800 uppercase italic tracking-tight leading-none">{m.full_name}</p>
-                                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1 mt-1">
-                                                        {m.no_npp || '-'}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-5">
-                                            <span className="text-[11px] font-bold text-slate-500 uppercase italic tracking-tight">
-                                                {m.company || '-'}
+                                        <td className="px-2 py-1 border-r border-slate-200">
+                                            <span className="text-[11px] font-black text-slate-800 italic tracking-tight leading-none">
+                                                {m.full_name || '-'}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-5 text-right">
-                                            <span className="text-sm font-black text-emerald-700 font-mono italic">
+                                        <td className="px-2 py-1 border-r border-slate-200">
+                                            <span className="text-[9px] text-slate-400 font-mono">
+                                                {m.nik || '-'}
+                                            </span>
+                                        </td>
+                                        <td className="px-2 py-1 text-center font-mono font-bold text-[10px] text-slate-500 italic border-r border-slate-200 whitespace-nowrap">
+                                            {m.no_npp || '-'}
+                                        </td>
+                                        <td className="px-2 py-1 text-[11px] font-bold text-slate-500 border-r border-slate-200 italic">
+                                            {m.company || '-'}
+                                        </td>
+                                        <td className="px-2 py-1 text-right border-r border-slate-200">
+                                            <span className="text-[11px] font-black text-emerald-700 font-mono italic">
                                                 {formatCurrency(m.total_simpanan)}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-5 text-center">
-                                            <div className="flex justify-center">
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        navigate(`/admin/monitor-simpanan/${m.id}`);
-                                                    }}
-                                                    className="p-2 text-slate-300 hover:text-emerald-600 transition-colors rounded-xl hover:bg-white border border-transparent shadow-sm hover:border-emerald-100"
-                                                >
-                                                    <ArrowRight size={18} />
-                                                </button>
+                                        <td className="px-2 py-1 text-center">
+                                            <div className="inline-flex p-1 bg-emerald-600 text-white rounded shadow-sm group-hover:scale-110 transition-transform">
+                                                <ChevronRight size={12} />
                                             </div>
                                         </td>
                                     </tr>
@@ -230,44 +234,52 @@ const MonitorSimpanan = () => {
                 {/* Mobile View Card Container */}
                 <div className="md:hidden divide-y divide-slate-100 italic">
                     {loading ? (
-                        <div className="p-20 text-center">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto"></div>
+                        <div className="px-6 py-20 text-center text-gray-500">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+                            Memuat data...
                         </div>
                     ) : filteredMembers.length === 0 ? (
-                        <div className="p-12 text-center opacity-30">
-                            <User size={40} className="mx-auto mb-2" />
-                            <p className="font-black uppercase text-[10px] italic">Data tidak ditemukan</p>
+                        <div className="px-6 py-20 text-center text-gray-400 italic font-black text-[10px] tracking-widest">
+                            <User size={40} className="mx-auto mb-4 opacity-20" />
+                            <p>Tidak ada data ditemukan</p>
                         </div>
                     ) : (
                         paginatedMembers.map((m) => (
                             <div
                                 key={m.id}
                                 onClick={() => navigate(`/admin/monitor-simpanan/${m.id}`)}
-                                className="p-4 active:bg-slate-50 transition-colors space-y-3"
+                                className="p-4 active:bg-gray-50 transition-colors space-y-3"
                             >
                                 <div className="flex justify-between items-start">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600 font-black text-xs uppercase border border-emerald-100">
-                                            {m.full_name?.substring(0, 2)}
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <span className="font-black text-slate-800 text-[13px] uppercase tracking-tight leading-none">{m.full_name}</span>
-                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">NPP: {m.no_npp || '-'}</span>
-                                        </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-black text-gray-900 italic">
+                                            {m.full_name || '-'}
+                                        </span>
+                                        <span className="text-[10px] text-gray-400 font-mono tracking-tight">
+                                            {m.no_npp || '-'} • {m.company || '-'}
+                                        </span>
                                     </div>
-                                    <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100">
-                                        Detail →
+                                    <span className="px-2 py-0.5 rounded-full text-[8px] font-black text-emerald-700 bg-emerald-100 border border-emerald-200 tracking-tighter">
+                                        Detail
                                     </span>
                                 </div>
-                                <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-2xl border border-slate-100">
+                                <div className="flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-100">
                                     <div className="flex flex-col">
-                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Total Simpanan</span>
-                                        <span className="text-[13px] font-black text-emerald-700 font-mono">{formatCurrency(m.total_simpanan)}</span>
+                                        <span className="text-[9px] font-black text-gray-400 tracking-widest italic leading-none mb-1">Total Simpanan</span>
+                                        <span className="text-sm font-black text-emerald-700 font-mono italic">
+                                            {formatCurrency(m.total_simpanan)}
+                                        </span>
                                     </div>
-                                    <div className="text-right">
-                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Perusahaan</span>
-                                        <div className="text-[10px] font-bold text-slate-600 uppercase tracking-tight">{m.company || '-'}</div>
+                                    <div className="text-right flex flex-col items-end">
+                                        <span className="text-[9px] font-black text-gray-400 tracking-widest italic leading-none mb-1">Unit Kerja</span>
+                                        <span className="text-[10px] font-black text-gray-700 italic">
+                                            {m.work_unit || '-'}
+                                        </span>
                                     </div>
+                                </div>
+                                <div className="flex justify-between items-center text-[10px] text-gray-400 font-bold italic">
+                                    <span>{m.company || '-'}</span>
+                                    <span className="text-emerald-600 font-black tracking-widest">Lihat Detail →</span>
                                 </div>
                             </div>
                         ))
@@ -275,36 +287,49 @@ const MonitorSimpanan = () => {
                 </div>
 
                 {/* PAGINATION FOOTER */}
-                <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <div className="flex items-center gap-4 text-xs font-black text-gray-400 uppercase tracking-widest">
-                        <span>Show</span>
-                        <select
-                            value={itemsPerPage}
-                            onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                            className="bg-white border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-emerald-600 shadow-sm"
-                        >
-                            {pageOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                        </select>
-                        <span className="hidden md:block">| {filteredMembers.length} Total Data</span>
+                <div className="px-4 md:px-6 py-6 bg-gray-50 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div className="flex items-center justify-between md:justify-start w-full md:w-auto gap-4 text-[10px] font-black text-gray-400 tracking-widest">
+                        <div className="flex items-center gap-2">
+                            <span>Tampil</span>
+                            <select
+                                value={itemsPerPage}
+                                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                                className="bg-white border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-emerald-600 shadow-sm font-bold"
+                            >
+                                {pageOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                            </select>
+                        </div>
+                        <span className="hidden sm:block">| Showing {paginatedMembers.length} of {filteredMembers.length} records</span>
+                        <span className="sm:hidden">{paginatedMembers.length} / {filteredMembers.length} record</span>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 md:gap-2">
                         <button
                             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                             disabled={currentPage === 1}
-                            className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm"
+                            className="h-9 px-3 bg-white border border-gray-200 rounded-xl text-[9px] font-black tracking-widest hover:bg-gray-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm mr-1"
                         >
-                            Prev
+                            ←
                         </button>
-                        <span className="text-xs font-black text-emerald-600 mx-2">
-                            Page {currentPage} of {Math.max(1, totalPages)}
-                        </span>
+
+                        <div className="flex items-center gap-1.5 px-2">
+                            {[...Array(totalPages)].map((_, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => setCurrentPage(i + 1)}
+                                    className={`w-8 h-8 rounded-lg text-[10px] font-black transition-all ${currentPage === i + 1 ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200 scale-110' : 'bg-white text-gray-400 hover:bg-gray-50 border border-gray-100'}`}
+                                >
+                                    {i + 1}
+                                </button>
+                            )).slice(Math.max(0, currentPage - 2), Math.min(totalPages, currentPage + 1))}
+                        </div>
+
                         <button
                             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                             disabled={currentPage === totalPages || totalPages === 0}
-                            className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm"
+                            className="h-9 px-3 bg-white border border-gray-200 rounded-xl text-[9px] font-black tracking-widest hover:bg-gray-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm ml-1"
                         >
-                            Next
+                            →
                         </button>
                     </div>
                 </div>

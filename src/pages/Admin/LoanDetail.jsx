@@ -276,26 +276,26 @@ const LoanDetail = () => {
         );
     }
 
-    if (!loan) return <div className="p-8 text-center text-gray-500 font-bold uppercase italic">Data pinjaman tidak ditemukan</div>;
+    if (!loan) return <div className="p-8 text-center text-gray-500 font-bold italic">Data pinjaman tidak ditemukan</div>;
 
 
     return (
-        <div className="space-y-6 pb-20 animate-in fade-in duration-500">
-            {/* Header */}
-            <div className="flex items-center justify-between">
+        <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-500 max-w-[1600px] mx-auto pb-20">
+            {/* Header Section */}
+            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => navigate(-1)}
-                        className="p-2 bg-white rounded-xl border border-gray-100 shadow-sm hover:bg-gray-50 transition-all text-gray-400 hover:text-emerald-600"
+                        className="p-3 bg-white hover:bg-gray-50 rounded-2xl transition-all text-gray-400 border border-gray-100 shadow-sm"
                     >
                         <ArrowLeft size={20} />
                     </button>
-                    <div>
-                        <h2 className="text-2xl font-black text-gray-900 italic uppercase tracking-tight">Detail Pinjaman</h2>
-                        <p className="text-xs font-bold text-gray-500 uppercase tracking-widest italic">{loan.no_pinjaman} / {loan.personal_data?.full_name}</p>
+                    <div className="text-left">
+                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 italic">Detail Pinjaman</h2>
+                        <p className="text-xs md:text-sm text-gray-500 mt-1 font-medium italic">{loan.no_pinjaman} • {loan.personal_data?.full_name}</p>
                     </div>
                 </div>
-                <div className={`px-4 py-2 rounded-xl font-black text-xs uppercase tracking-widest italic border ${loan.status === 'DICAIRKAN' ? 'bg-emerald-50 text-emerald-700 border-emerald-100 shadow-sm shadow-emerald-50' :
+                <div className={`px-4 py-2 rounded-xl font-black text-[10px] italic border ${loan.status === 'DICAIRKAN' ? 'bg-emerald-50 text-emerald-700 border-emerald-100 shadow-sm shadow-emerald-50' :
                     loan.status === 'DISETUJUI' ? 'bg-blue-50 text-blue-700 border-blue-100 shadow-sm shadow-blue-50' :
                         loan.status === 'DITOLAK' ? 'bg-red-50 text-red-700 border-red-100 shadow-sm shadow-red-50' :
                             'bg-amber-50 text-amber-700 border-amber-100 shadow-sm shadow-amber-50'
@@ -310,7 +310,7 @@ const LoanDetail = () => {
                     {/* Financial Summary Cards */}
                     <div className="grid grid-cols-1">
                         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-                            <p className="text-[10px] font-black text-gray-400 uppercase italic tracking-widest">Pinjaman Ini</p>
+                            <p className="text-[10px] font-black text-gray-400 italic">Pinjaman Ini</p>
                             <h3 className="text-xl font-black text-gray-900 italic">{formatCurrency(loan.jumlah_pinjaman)}</h3>
                         </div>
                     </div>
@@ -319,44 +319,44 @@ const LoanDetail = () => {
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden text-left">
                         <div className="bg-gray-50 px-6 py-4 border-b border-gray-100 flex items-center gap-3">
                             <CreditCard size={18} className="text-emerald-600" />
-                            <h3 className="font-black italic uppercase tracking-widest text-xs text-gray-800">Informasi Lengkap</h3>
+                            <h3 className="font-black italic text-xs text-gray-800">Informasi Lengkap</h3>
                         </div>
                         <div className="p-8">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="text-[10px] font-black text-gray-400 uppercase italic block mb-1">Nama Peminjam</label>
-                                        <p className="text-sm font-black text-gray-800 uppercase italic">{loan.personal_data?.full_name}</p>
+                                        <label className="text-[10px] font-black text-gray-400 block mb-1 italic">Nama Peminjam</label>
+                                        <p className="text-sm font-black text-gray-800 italic">{loan.personal_data?.full_name}</p>
                                     </div>
                                     <div>
-                                        <label className="text-[10px] font-black text-gray-400 uppercase italic block mb-1">Instansi / Unit Kerja</label>
-                                        <p className="text-sm font-bold text-gray-600 uppercase">{loan.personal_data?.company} / {loan.personal_data?.work_unit}</p>
+                                        <label className="text-[10px] font-black text-gray-400 block mb-1 italic">Instansi / Unit Kerja</label>
+                                        <p className="text-sm font-bold text-gray-600">{loan.personal_data?.company} / {loan.personal_data?.work_unit}</p>
                                     </div>
                                     <div>
-                                        <label className="text-[10px] font-black text-gray-400 uppercase italic block mb-1">NPP / NIK</label>
+                                        <label className="text-[10px] font-black text-gray-400 block mb-1 italic">NPP / NIK</label>
                                         <p className="text-sm font-mono font-bold text-gray-800">{loan.personal_data?.no_npp || '-'} / {loan.personal_data?.nik}</p>
                                     </div>
                                 </div>
                                 <div className="space-y-4 text-left">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="text-[10px] font-black text-gray-400 uppercase italic block mb-1">Kategori</label>
-                                            <p className="text-sm font-bold text-gray-800 uppercase italic tracking-tight">{loan.kategori || 'BIASA'}</p>
+                                            <label className="text-[10px] font-black text-gray-400 block mb-1 italic">Kategori</label>
+                                            <p className="text-sm font-bold text-gray-800 italic">{loan.kategori || 'BIASA'}</p>
                                         </div>
                                         <div>
-                                            <label className="text-[10px] font-black text-gray-400 uppercase italic block mb-1">Tenor</label>
-                                            <p className="text-sm font-bold text-gray-800 italic uppercase tracking-tight">{loan.tenor_bulan} Bulan</p>
+                                            <label className="text-[10px] font-black text-gray-400 block mb-1 italic">Tenor</label>
+                                            <p className="text-sm font-bold text-gray-800 italic">{loan.tenor_bulan} bulan</p>
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="text-[10px] font-black text-gray-400 uppercase italic block mb-1">Bunga / Margin</label>
-                                        <p className="text-sm font-bold text-emerald-600 uppercase italic tracking-tight">
+                                        <label className="text-[10px] font-black text-gray-400 block mb-1 italic">Bunga / Margin</label>
+                                        <p className="text-sm font-bold text-emerald-600 italic tracking-tight">
                                             {loan.tipe_bunga === 'PERSENAN' ? `${loan.nilai_bunga}% (Flat/Thn)` :
                                                 loan.tipe_bunga === 'NOMINAL' ? `Rp ${parseFloat(loan.nilai_bunga).toLocaleString('id-ID')} (Nominal)` : 'Tanpa Bunga'}
                                         </p>
                                     </div>
                                     <div>
-                                        <label className="text-[10px] font-black text-gray-400 uppercase italic block mb-1">Tujuan Pinjaman</label>
+                                        <label className="text-[10px] font-black text-gray-400 block mb-1 italic">Tujuan Pinjaman</label>
                                         <p className="text-sm font-bold text-gray-600 tracking-tight italic">{loan.keperluan || '-'}</p>
                                     </div>
                                 </div>
@@ -381,21 +381,21 @@ const LoanDetail = () => {
                     {/* Action Card - NEW: Cairkan Sekarang */}
                     {loan.status === 'DISETUJUI' && (
                         <div className="bg-white rounded-2xl border border-gray-100 shadow-lg p-6 text-left space-y-4">
-                            <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest border-b pb-3 italic">Panel Aksi</h3>
+                            <h3 className="text-sm font-black text-gray-900 tracking-widest border-b pb-3 italic">Panel Aksi</h3>
                             <button
                                 onClick={handleCairkan}
                                 disabled={submitting}
-                                className={`w-full py-4 rounded-xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg ${submitting
+                                className={`w-full py-4 rounded-xl font-black text-sm tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg ${submitting
                                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
                                     : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-100 active:translate-y-0.5'
                                     }`}
                             >
                                 {submitting ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle size={20} />}
-                                {submitting ? 'MEMPROSES...' : 'Cairkan Sekarang'}
+                                {submitting ? 'Memproses...' : 'Cairkan Sekarang'}
                             </button>
                             <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl flex gap-3">
                                 <AlertCircle size={20} className="text-blue-500 shrink-0" />
-                                <p className="text-[10px] font-black text-blue-700 leading-relaxed uppercase italic">
+                                <p className="text-[10px] font-black text-blue-700 leading-relaxed italic">
                                     Pastikan dokumen SPK telah diverifikasi sebelum melakukan pencairan dana.
                                 </p>
                             </div>
@@ -406,7 +406,7 @@ const LoanDetail = () => {
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden text-left">
                         <div className="bg-gray-800 px-6 py-4 flex items-center gap-3">
                             <FileText size={18} className="text-white" />
-                            <h3 className="font-black italic uppercase tracking-widest text-xs text-white">Dokumen Konfirmasi (SPK)</h3>
+                            <h3 className="font-black italic tracking-widest text-xs text-white">Dokumen Konfirmasi (SPK)</h3>
                         </div>
                         <div className="p-6 space-y-4">
                             <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
@@ -420,25 +420,25 @@ const LoanDetail = () => {
                             </div>
 
                             <div className="pt-4 border-t border-gray-100 text-left">
-                                <p className="text-[10px] font-black text-gray-400 uppercase italic mb-3">Status Konfirmasi Member</p>
+                                <p className="text-[10px] font-black text-gray-400 italic mb-3">Status Konfirmasi Member</p>
                                 {loan.link_spk_signed ? (
                                     <a
                                         href={loan.link_spk_signed}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="w-full py-3 bg-emerald-50 text-emerald-700 rounded-xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2 border border-emerald-200"
+                                        className="w-full py-3 bg-emerald-50 text-emerald-700 rounded-xl font-black text-xs tracking-widest flex items-center justify-center gap-2 border border-emerald-200"
                                     >
                                         <CheckCircle size={16} /> Lihat Dokumen Signed
                                     </a>
                                 ) : (
-                                    <div className="py-3 px-4 bg-amber-50 text-amber-700 rounded-xl font-black uppercase text-[10px] tracking-widest border border-amber-200 text-center italic">
+                                    <div className="py-3 px-4 bg-amber-50 text-amber-700 rounded-xl font-black text-[10px] tracking-widest border border-amber-200 text-center italic">
                                         Member belum upload dokumen
                                     </div>
                                 )}
                             </div>
 
                             <div className="pt-4 border-t border-gray-100 text-left">
-                                <p className="text-[10px] font-black text-gray-400 uppercase italic mb-3">Upload dari Admin (Opsi)</p>
+                                <p className="text-[10px] font-black text-gray-400 italic mb-3">Upload dari Admin (Opsi)</p>
                                 <input
                                     type="file"
                                     id="admin-spk-upload"
@@ -448,10 +448,10 @@ const LoanDetail = () => {
                                 />
                                 <label
                                     htmlFor="admin-spk-upload"
-                                    className={`w-full py-3 border-2 border-dashed ${uploading ? 'bg-gray-50 border-gray-200 text-gray-300' : 'bg-gray-50 border-emerald-200 text-emerald-600 hover:bg-emerald-50'} rounded-xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2 cursor-pointer transition-all`}
+                                    className={`w-full py-3 border-2 border-dashed ${uploading ? 'bg-gray-50 border-gray-200 text-gray-300' : 'bg-gray-50 border-emerald-200 text-emerald-600 hover:bg-emerald-50'} rounded-xl font-black text-xs tracking-widest flex items-center justify-center gap-2 cursor-pointer transition-all`}
                                 >
                                     {uploading ? <Loader2 className="animate-spin" size={16} /> : <Upload size={16} />}
-                                    {uploading ? 'MEMPROSES...' : 'UPLOAD DOKUMEN TTD'}
+                                    {uploading ? 'Memproses...' : 'Upload Dokumen TTD'}
                                 </label>
                             </div>
                         </div>
@@ -459,19 +459,19 @@ const LoanDetail = () => {
 
                     {/* Quick Stats Sidebar */}
                     <div className="bg-emerald-600 rounded-2xl p-6 text-white shadow-lg shadow-emerald-100 text-left">
-                        <h4 className="font-black italic uppercase tracking-widest text-[10px] mb-4 opacity-70">Ringkasan Statis</h4>
+                        <h4 className="font-black italic tracking-widest text-[10px] mb-4 opacity-70">Ringkasan Statis</h4>
                         <div className="space-y-4">
                             <div className="flex justify-between items-center text-left">
-                                <span className="text-xs font-bold opacity-80 uppercase italic text-left">Pengajuan Awal</span>
+                                <span className="text-xs font-bold opacity-80 italic text-left">Pengajuan Awal</span>
                                 <span className="text-sm font-black italic">{formatCurrency(loan.jumlah_pengajuan || loan.jumlah_pinjaman)}</span>
                             </div>
                             <div className="flex justify-between items-center text-left">
-                                <span className="text-xs font-bold opacity-80 uppercase italic text-left">Nominal Disetujui</span>
+                                <span className="text-xs font-bold opacity-80 italic text-left">Nominal Disetujui</span>
                                 <span className="text-sm font-black italic">{formatCurrency(loan.jumlah_pinjaman)}</span>
                             </div>
                             <div className="h-px bg-white/20 my-2 text-left" />
                             <div className="flex justify-between items-center text-left">
-                                <span className="text-xs font-bold opacity-80 uppercase italic text-left">Tanggal Approve</span>
+                                <span className="text-xs font-bold opacity-80 italic text-left">Tanggal Approve</span>
                                 <span className="text-xs font-black italic">{formatDate(loan.approved_at || loan.created_at)}</span>
                             </div>
                         </div>

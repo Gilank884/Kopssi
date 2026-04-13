@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, MoreHorizontal, X, User, Phone, Briefcase, MapPin, CreditCard, Calendar, Plus, Upload, Loader2, CheckCircle2, AlertCircle, Trash2, UserMinus } from 'lucide-react';
+import { Search, Filter, MoreHorizontal, X, User, Phone, Briefcase, MapPin, CreditCard, Calendar, Plus, Upload, Loader2, CheckCircle2, AlertCircle, Trash2, UserMinus, ChevronRight } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 
 
@@ -40,7 +40,7 @@ const MemberDetailModal = ({ member, onClose, onActivate, onDeactivate, onSetPas
             title: 'Status & Administrasi',
             icon: <CreditCard size={18} />,
             items: [
-                { label: 'Status Keanggotaan', value: member.status?.toUpperCase() || 'PENDING' },
+                { label: 'Status Keanggotaan', value: member.status || 'Pending' },
                 { label: 'Tanggal Daftar', value: new Date(member.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) },
             ]
         }
@@ -70,12 +70,12 @@ const MemberDetailModal = ({ member, onClose, onActivate, onDeactivate, onSetPas
                             <div key={idx} className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
                                 <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-50 text-blue-600">
                                     {section.icon}
-                                    <h4 className="font-bold uppercase text-xs tracking-wider">{section.title}</h4>
+                                    <h4 className="font-bold text-xs tracking-wider">{section.title}</h4>
                                 </div>
                                 <div className="space-y-3">
                                     {section.items.map((item, i) => (
                                         <div key={i}>
-                                            <p className="text-[10px] uppercase font-bold text-gray-400 tracking-tight">{item.label}</p>
+                                            <p className="text-[10px] font-bold text-gray-400 tracking-tight">{item.label}</p>
                                             <p className="text-sm text-gray-800 font-medium capitalize">{item.value?.toLowerCase() || '-'}</p>
                                         </div>
                                     ))}
@@ -87,12 +87,12 @@ const MemberDetailModal = ({ member, onClose, onActivate, onDeactivate, onSetPas
                     <div className="mt-6 bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
                         <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-50 text-blue-600">
                             <Calendar size={18} />
-                            <h4 className="font-bold uppercase text-xs tracking-wider">Dokumen</h4>
+                            <h4 className="font-bold text-xs tracking-wider">Dokumen</h4>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             {['ktp_file_path', 'id_card_file_path', 'photo_34_file_path'].map((field, i) => (
                                 <div key={i} className="p-4 border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center gap-2 bg-gray-50">
-                                    <p className="text-[10px] font-bold text-gray-500 uppercase">{field.replace(/_/g, ' ')}</p>
+                                    <p className="text-[10px] font-bold text-gray-500">{field.replace(/_/g, ' ')}</p>
                                     {member[field] ? (
                                         <img src={member[field]} alt={field} className="w-full h-24 object-cover rounded-md" />
                                     ) : (
@@ -113,7 +113,7 @@ const MemberDetailModal = ({ member, onClose, onActivate, onDeactivate, onSetPas
                                         onSetPassive(member.id);
                                     }
                                 }}
-                                className="px-6 py-2 rounded-lg bg-amber-50 text-amber-600 border border-amber-100 text-sm font-bold hover:bg-amber-100 transition-colors uppercase tracking-tight"
+                                className="px-6 py-2 rounded-lg bg-amber-50 text-amber-600 border border-amber-100 text-sm font-bold hover:bg-amber-100 transition-colors tracking-tight"
                             >
                                 Pasifkan Anggota
                             </button>
@@ -123,7 +123,7 @@ const MemberDetailModal = ({ member, onClose, onActivate, onDeactivate, onSetPas
                                         onDeactivate(member.id);
                                     }
                                 }}
-                                className="px-6 py-2 rounded-lg bg-red-50 text-red-600 border border-red-100 text-sm font-bold hover:bg-red-100 transition-colors uppercase tracking-tight"
+                                className="px-6 py-2 rounded-lg bg-red-50 text-red-600 border border-red-100 text-sm font-bold hover:bg-red-100 transition-colors tracking-tight"
                             >
                                 Non-Aktifkan Anggota
                             </button>
@@ -138,7 +138,7 @@ const MemberDetailModal = ({ member, onClose, onActivate, onDeactivate, onSetPas
                                         onActivate(member.id);
                                     }
                                 }}
-                                className="px-6 py-2 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 text-sm font-bold hover:bg-emerald-100 transition-colors uppercase tracking-tight"
+                                className="px-6 py-2 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 text-sm font-bold hover:bg-emerald-100 transition-colors tracking-tight"
                             >
                                 Aktifkan Anggota
                             </button>
@@ -148,7 +148,7 @@ const MemberDetailModal = ({ member, onClose, onActivate, onDeactivate, onSetPas
                                         onDeactivate(member.id);
                                     }
                                 }}
-                                className="px-6 py-2 rounded-lg bg-red-50 text-red-600 border border-red-100 text-sm font-bold hover:bg-red-100 transition-colors uppercase tracking-tight"
+                                className="px-6 py-2 rounded-lg bg-red-50 text-red-600 border border-red-100 text-sm font-bold hover:bg-red-100 transition-colors tracking-tight"
                             >
                                 Non-Aktifkan Anggota
                             </button>
@@ -162,7 +162,7 @@ const MemberDetailModal = ({ member, onClose, onActivate, onDeactivate, onSetPas
                                     onActivate(member.id);
                                 }
                             }}
-                            className="px-6 py-2 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 text-sm font-bold hover:bg-emerald-100 transition-colors uppercase tracking-tight"
+                            className="px-6 py-2 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 text-sm font-bold hover:bg-emerald-100 transition-colors tracking-tight"
                         >
                             Aktifkan Anggota
                         </button>
@@ -333,32 +333,36 @@ const MemberList = () => {
     );
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-left">
-                <div className="space-y-1">
-                    <h2 className="text-2xl md:text-3xl font-black text-slate-800 uppercase tracking-tight italic leading-none">Database Anggota</h2>
-                    <p className="text-[11px] md:text-sm text-slate-500 font-medium italic">Manajemen data seluruh anggota koperasi</p>
+        <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-500 max-w-[1600px] mx-auto">
+            {/* Header Section */}
+            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+                <div className="text-left">
+                    <h2 className="text-2xl md:text-3xl font-black text-gray-900 italic tracking-tight">Database Anggota</h2>
+                    <p className="text-xs md:text-sm text-gray-500 mt-1 font-medium italic">Manajemen data seluruh anggota koperasi</p>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                    <div className="relative flex-grow sm:flex-grow-0">
+                {/* Filters Wrapper */}
+                <div className="flex flex-col md:flex-row flex-wrap gap-3 items-stretch md:items-end">
+                    {/* Search Field */}
+                    <div className="relative flex-grow md:flex-grow-0">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={17} />
                         <input
                             type="text"
                             placeholder="Cari anggota..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10 pr-4 py-2.5 sm:py-2 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 w-full md:w-64 text-sm font-medium shadow-sm transition-all"
+                            className="pl-10 pr-4 py-2.5 md:py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-64 text-sm shadow-sm font-medium"
                         />
                     </div>
 
+                    {/* Company Select */}
                     <div className="relative">
                         <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={15} />
                         <select
                             value={filterCompany}
                             onChange={(e) => setFilterCompany(e.target.value)}
-                            className="w-full pl-9 pr-8 py-2.5 sm:py-2 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-[11px] font-black uppercase tracking-tight italic appearance-none shadow-sm transition-all"
+                            className="w-full pl-9 pr-8 py-2.5 md:py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white shadow-sm font-bold tracking-tight italic appearance-none"
                         >
-                            <option value="ALL">SEMUA PERUSAHAAN</option>
+                            <option value="ALL">Semua Perusahaan</option>
                             {companies.map(c => (
                                 <option key={c} value={c}>{c}</option>
                             ))}
@@ -367,41 +371,42 @@ const MemberList = () => {
                 </div>
             </div>
 
-            <div className="bg-white rounded-[32px] shadow-xl shadow-blue-900/5 border border-slate-100 overflow-hidden">
-                <div className="hidden md:block overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead className="bg-slate-50/50 border-b border-slate-100 italic">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div className="hidden md:block overflow-auto max-h-[70vh] text-left">
+                    <table className="w-full text-left border-collapse table-auto">
+                        <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
                             <tr>
-                                <th className="px-6 py-4 font-black uppercase text-[10px] text-slate-400 tracking-widest">NPP</th>
-                                <th className="px-6 py-4 font-black uppercase text-[10px] text-slate-400 tracking-widest">Nama Lengkap</th>
-                                <th className="px-6 py-4 font-black uppercase text-[10px] text-slate-400 tracking-widest">NIK</th>
-                                <th className="px-6 py-4 font-black uppercase text-[10px] text-slate-400 tracking-widest">Perusahaan</th>
-                                <th className="px-6 py-4 font-black uppercase text-[10px] text-slate-400 tracking-widest">Status</th>
-                                <th className="px-6 py-4 font-black uppercase text-[10px] text-slate-400 tracking-widest text-center">Aksi</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Nama</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">NIK</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center">NPP</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Perusahaan</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Status</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic text-center">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-50">
+                        <tbody className="divide-y divide-slate-200">
                             {filteredMembers.length > 0 ? (
                                 filteredMembers.map((member) => (
                                     <tr
                                         key={member.id}
                                         onClick={() => handleRowClick(member)}
-                                        className="hover:bg-blue-50/50 transition-colors cursor-pointer group"
+                                        className="hover:bg-emerald-50 transition-colors cursor-pointer group"
                                     >
-                                        <td className="px-6 py-4 text-xs font-bold text-blue-600 font-mono tracking-tighter uppercase">{member.no_npp || '-'}</td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-black text-[10px] uppercase border border-blue-100 italic">
-                                                    {member.full_name?.charAt(0)}
-                                                </div>
-                                                <span className="font-black text-slate-800 text-sm uppercase italic tracking-tight">{member.full_name}</span>
-                                            </div>
+                                        <td className="px-2 py-1 border-r border-slate-200">
+                                            <span className="font-black text-slate-800 text-[11px] italic tracking-tight">{member.full_name}</span>
                                         </td>
-                                        <td className="px-6 py-4 text-[10px] font-bold font-mono text-slate-400">{member.nik}</td>
-                                        <td className="px-6 py-4 text-xs font-bold text-slate-500 uppercase italic tracking-tight truncate max-w-[150px]">{member.company || '-'}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest italic transition-all ${member.status?.toLowerCase() === 'active' || member.status?.toLowerCase() === 'verified'
-                                                ? 'bg-emerald-50 text-emerald-600'
+                                        <td className="px-2 py-1 border-r border-slate-200">
+                                            <span className="text-[9px] text-slate-400 font-mono tracking-tighter">{member.nik}</span>
+                                        </td>
+                                        <td className="px-2 py-1 text-[10px] font-bold text-slate-500 font-mono italic text-center border-r border-slate-200 whitespace-nowrap">
+                                            {member.no_npp || '-'}
+                                        </td>
+                                        <td className="px-2 py-1 text-[11px] font-bold text-slate-500 border-r border-slate-200 italic truncate max-w-[150px]">
+                                            {member.company || '-'}
+                                        </td>
+                                        <td className="px-2 py-1 border-r border-slate-200">
+                                            <span className={`inline-flex px-1.5 py-0.5 rounded text-[8px] font-black tracking-widest italic transition-all ${member.status?.toLowerCase() === 'active' || member.status?.toLowerCase() === 'verified'
+                                                ? 'bg-emerald-600 text-white'
                                                 : member.status?.toLowerCase() === 'pasif'
                                                     ? 'bg-amber-100 text-amber-700 border border-amber-200'
                                                     : member.status?.toLowerCase() === 'nonaktif' || member.status?.toLowerCase() === 'non_active'
@@ -412,25 +417,12 @@ const MemberList = () => {
                                                                 ? 'bg-blue-50 text-blue-600'
                                                                 : 'bg-amber-50 text-amber-600'
                                                 }`}>
-                                                {member.status?.toLowerCase() === 'pending' || !member.status
-                                                    ? 'BELUM TERVERIFIKASI'
-                                                    : member.status?.toLowerCase() === 'non_active'
-                                                        ? 'NON AKTIF'
-                                                        : member.status.toUpperCase()}
+                                                {member.status?.toLowerCase() === 'non_active' ? 'Non Aktif' : (member.status || 'Unknown')}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <div className="flex items-center justify-center gap-2">
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleRowClick(member);
-                                                    }}
-                                                    className="p-2 text-slate-300 hover:text-blue-600 transition-colors rounded-full hover:bg-white border border-transparent shadow-sm hover:border-blue-100"
-                                                    title="Detail"
-                                                >
-                                                    <MoreHorizontal size={18} />
-                                                </button>
+                                        <td className="px-2 py-1 text-center">
+                                            <div className="inline-flex p-1 bg-emerald-600 text-white rounded shadow-sm group-hover:scale-110 transition-transform">
+                                                <ChevronRight size={12} />
                                             </div>
                                         </td>
                                     </tr>
@@ -439,8 +431,8 @@ const MemberList = () => {
                                 <tr>
                                     <td colSpan="6" className="px-6 py-20 text-center">
                                         <div className="flex flex-col items-center gap-2 opacity-30">
-                                            <Search size={48} />
-                                            <p className="font-black uppercase tracking-widest text-[10px] italic">Data anggota tidak ditemukan</p>
+                                            <Search size={40} />
+                                            <p className="font-black tracking-widest text-[10px] italic">Data anggota tidak ditemukan</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -460,38 +452,38 @@ const MemberList = () => {
                             >
                                 <div className="flex justify-between items-start mb-2">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-black text-xs uppercase border border-blue-100 italic">
+                                        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-black text-xs border border-blue-100 italic">
                                             {member.full_name?.charAt(0)}
                                         </div>
                                         <div className="flex flex-col">
-                                            <span className="font-black text-slate-800 text-[13px] uppercase italic leading-none">{member.full_name}</span>
-                                            <span className="text-[10px] font-bold text-blue-600 font-mono tracking-tighter uppercase mt-1">NPP: {member.no_npp || '-'}</span>
+                                            <span className="font-black text-slate-800 text-[13px] italic leading-none">{member.full_name}</span>
+                                            <span className="text-[10px] font-bold text-blue-600 font-mono tracking-tighter mt-1">NPP: {member.no_npp || '-'}</span>
                                         </div>
                                     </div>
-                                    <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest italic border ${member.status?.toLowerCase() === 'active' || member.status?.toLowerCase() === 'verified'
+                                    <span className={`px-2 py-0.5 rounded-full text-[8px] font-black tracking-widest italic border ${member.status?.toLowerCase() === 'active' || member.status?.toLowerCase() === 'verified'
                                         ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
                                         : member.status?.toLowerCase() === 'pasif'
                                             ? 'bg-amber-100 text-amber-700 border-amber-200'
                                             : 'bg-red-50 text-red-600 border-red-100'
                                         }`}>
-                                        {member.status?.toUpperCase() === 'NON_ACTIVE' ? 'NON AKTIF' : member.status?.toUpperCase()}
+                                        {member.status?.toLowerCase() === 'non_active' ? 'Non Aktif' : (member.status || 'Unknown')}
                                     </span>
                                 </div>
                                 <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 italic">
                                     <span>NIK: {member.nik}</span>
-                                    <span className="text-slate-500 uppercase">{member.company || '-'}</span>
+                                    <span className="text-slate-500">{member.company || '-'}</span>
                                 </div>
                             </div>
                         ))
                     ) : (
                         <div className="p-12 text-center opacity-30">
                             <Search size={40} className="mx-auto mb-2" />
-                            <p className="font-black uppercase text-[10px] italic tracking-widest">Tidak ada data</p>
+                            <p className="font-black text-[10px] italic tracking-widest">Tidak ada data</p>
                         </div>
                     )}
                 </div>
 
-                <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-400 italic">
+                <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between text-[10px] font-black tracking-widest text-slate-400 italic">
                     <p>Total {filteredMembers.length} Anggota</p>
                     <span className="md:hidden">Klik kartu untuk detail</span>
                 </div>

@@ -128,56 +128,51 @@ const AssesmentPinjaman = () => {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 text-left">
-                <div>
-                    <h2 className="text-2xl font-bold text-gray-800 text-left">Penyetujuan Pinjaman</h2>
-                    <p className="text-sm text-gray-500 mt-1 text-left">Tahap 1: Verifikasi dan setujui pengajuan anggota</p>
+        <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-500 max-w-[1600px] mx-auto">
+            {/* Header Section */}
+            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+                <div className="text-left">
+                    <h2 className="text-2xl md:text-3xl font-black text-gray-900 italic tracking-tight text-left">Penyetujuan Pinjaman</h2>
+                    <p className="text-xs md:text-sm text-gray-500 mt-1 font-medium italic text-left">Tahap 1: Verifikasi dan setujui pengajuan anggota</p>
                 </div>
 
-                <div className="flex flex-wrap gap-3 items-end">
-                    <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Cari</label>
-                        <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                            <input
-                                type="text"
-                                placeholder="Nama / No. Pinjaman..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-48 shadow-sm"
-                            />
-                        </div>
+                {/* Filters Wrapper */}
+                <div className="flex flex-col md:flex-row flex-wrap gap-3 items-stretch md:items-end">
+                    {/* Search Field */}
+                    <div className="relative flex-grow md:flex-grow-0">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={17} />
+                        <input
+                            type="text"
+                            placeholder="Nama / No. Pinjaman..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-10 pr-4 py-2.5 md:py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-48 text-sm shadow-sm font-medium transition-all"
+                        />
                     </div>
 
-                    <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Dari</label>
+                    <div className="flex items-center gap-2 flex-grow md:flex-grow-0">
                         <input
                             type="date"
                             value={startDate}
                             onChange={(e) => setStartDate(e.target.value)}
-                            className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm"
+                            className="w-full px-4 py-2.5 md:py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs md:text-sm bg-white font-bold transition-all shadow-sm"
                         />
-                    </div>
-
-                    <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Sampai</label>
+                        <span className="text-slate-400 font-bold px-1 hidden sm:block">s/d</span>
                         <input
                             type="date"
                             value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
-                            className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm"
+                            className="w-full px-4 py-2.5 md:py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs md:text-sm bg-white font-bold transition-all shadow-sm"
                         />
                     </div>
 
-                    <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">PT / Perusahaan</label>
+                    <div className="relative flex-grow md:flex-grow-0">
                         <select
                             value={filterCompany}
                             onChange={(e) => setFilterCompany(e.target.value)}
-                            className="px-3 py-2 border border-gray-200 rounded-lg text-xs font-black uppercase italic focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm bg-white"
+                            className="w-full pl-4 pr-8 py-2.5 md:py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-[11px] bg-white font-black tracking-tight italic appearance-none shadow-sm transition-all"
                         >
-                            <option value="ALL">SEMUA PT</option>
+                            <option value="ALL">Semua PT</option>
                             {companies.map(c => (
                                 <option key={c} value={c}>{c}</option>
                             ))}
@@ -187,10 +182,10 @@ const AssesmentPinjaman = () => {
                     <button
                         onClick={handleBatchDownload}
                         disabled={filteredLoans.length === 0}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition-all flex items-center gap-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed h-[38px]"
+                        className="px-6 py-2.5 md:py-2 bg-blue-600 text-white rounded-xl text-xs font-black hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 h-[42px] md:h-[40px]"
                     >
                         <FileDown size={18} />
-                        Download PDF ({filteredLoans.length})
+                        Unduh PDF ({filteredLoans.length})
                     </button>
                 </div>
             </div>
@@ -206,68 +201,64 @@ const AssesmentPinjaman = () => {
                     <p className="mt-4 text-gray-500 font-medium text-center">Tidak ada pengajuan pinjaman baru yang menunggu persetujuan</p>
                 </div>
             ) : (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden text-left">
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden text-left">
                     {/* Desktop Table View */}
-                    <div className="hidden lg:block overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead className="bg-emerald-50 border-b border-emerald-100">
+                    <div className="hidden lg:block overflow-auto max-h-[70vh]">
+                        <table className="w-full text-left border-collapse table-auto">
+                            <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
                                 <tr>
-                                    <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic">Peminjam</th>
-                                    <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic">Nominal Pengajuan</th>
-                                    <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic">Nominal Disetujui</th>
-                                    <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic">Tenor</th>
-                                    <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic">No. Pinjaman</th>
-                                    <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic">Tanggal</th>
-                                    <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic text-center">Analisa</th>
-                                    <th className="px-6 py-4 font-bold text-emerald-800 text-sm italic text-center">Aksi</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Nama</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">NIK</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Nominal Pengajuan</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Nominal Disetujui</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center">Tenor</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center">No. Pinjaman</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center">Tanggal</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center">Analisa</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic text-center">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100">
+                            <tbody className="divide-y divide-slate-200">
                                 {filteredLoans.map((loan) => (
                                     <tr
                                         key={loan.id}
                                         onClick={() => handleRowClick(loan)}
-                                        className="hover:bg-emerald-50/30 transition-colors cursor-pointer"
+                                        className="hover:bg-emerald-50 transition-colors cursor-pointer"
                                     >
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-9 h-9 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold text-xs">
-                                                    {loan.personal_data?.full_name?.charAt(0) || '?'}
-                                                </div>
-                                                <div className="text-left">
-                                                    <p className="font-bold text-gray-900 text-sm">{loan.personal_data?.full_name || '-'}</p>
-                                                    <p className="text-[10px] text-gray-500 font-mono tracking-tighter">{loan.personal_data?.nik || '-'}</p>
-                                                </div>
-                                            </div>
+                                        <td className="px-2 py-1 border-r border-slate-200">
+                                            <span className="font-bold text-slate-900 text-[11px] tracking-tight leading-none">{loan.personal_data?.full_name || '-'}</span>
                                         </td>
-                                        <td className="px-6 py-4 font-bold text-gray-400 text-sm">
+                                        <td className="px-2 py-1 border-r border-slate-200">
+                                            <span className="text-[9px] text-slate-400 font-mono tracking-tighter">{loan.personal_data?.nik || '-'}</span>
+                                        </td>
+                                        <td className="px-2 py-1 text-[11px] font-bold text-slate-400 border-r border-slate-200 font-mono italic">
                                             Rp {parseFloat(loan.jumlah_pengajuan || loan.jumlah_pinjaman).toLocaleString('id-ID')}
                                         </td>
-                                        <td className="px-6 py-4 font-black text-emerald-700 text-sm">
+                                        <td className="px-2 py-1 text-[11px] font-black text-emerald-700 border-r border-slate-200 font-mono italic">
                                             Rp {parseFloat(loan.jumlah_pinjaman).toLocaleString('id-ID')}
                                         </td>
-                                        <td className="px-6 py-4 text-gray-700 text-sm font-semibold">{loan.tenor_bulan} bln</td>
-                                        <td className="px-6 py-4 text-gray-400 text-[10px] font-mono">{loan.no_pinjaman}</td>
-                                        <td className="px-6 py-4 text-gray-500 text-xs">{formatDate(loan.created_at)}</td>
-                                        <td className="px-6 py-4 text-center">
+                                        <td className="px-2 py-1 text-[11px] font-bold text-slate-600 border-r border-slate-200 text-center">{loan.tenor_bulan} bln</td>
+                                        <td className="px-2 py-1 text-slate-400 text-[9px] font-mono border-r border-slate-200 text-center tracking-tighter">{loan.no_pinjaman}</td>
+                                        <td className="px-2 py-1 text-slate-500 text-[10px] font-bold italic border-r border-slate-200 text-center whitespace-nowrap">{formatDate(loan.created_at)}</td>
+                                        <td className="px-2 py-1 text-center border-r border-slate-200">
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     generateLoanAnalysisPDF(loan, false, analystName);
                                                 }}
-                                                className="p-2 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition-all shadow-sm"
+                                                className="p-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-all shadow-sm"
                                                 title="Pratinjau Analisa PDF"
                                             >
-                                                <Eye size={18} />
+                                                <Eye size={12} />
                                             </button>
                                         </td>
-                                        <td className="px-6 py-4 text-center">
+                                        <td className="px-2 py-1 text-center">
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     handleRowClick(loan);
                                                 }}
-                                                className="px-3 py-1 bg-emerald-600 text-white rounded text-[10px] font-black hover:bg-emerald-700 transition-all uppercase tracking-wider shadow-sm"
+                                                className="px-2 py-0.5 bg-emerald-600 text-white rounded text-[9px] font-black hover:bg-emerald-700 transition-all tracking-widest shadow-sm"
                                             >
                                                 Verifikasi
                                             </button>
@@ -292,10 +283,10 @@ const AssesmentPinjaman = () => {
                                             {loan.personal_data?.full_name?.charAt(0) || '?'}
                                         </div>
                                         <div>
-                                            <p className="text-xs font-black text-gray-900 uppercase tracking-tighter italic block">
+                                            <p className="text-xs font-black text-gray-900 tracking-tighter italic block">
                                                 {loan.personal_data?.full_name || '-'}
                                             </p>
-                                            <p className="text-[8px] text-gray-400 font-mono tracking-widest uppercase">
+                                            <p className="text-[8px] text-gray-400 font-mono tracking-widest">
                                                 {loan.no_pinjaman}
                                             </p>
                                         </div>
@@ -306,13 +297,13 @@ const AssesmentPinjaman = () => {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4 bg-gray-50/50 p-3 rounded-xl border border-gray-100/50">
                                     <div>
-                                        <label className="text-[8px] font-black text-gray-400 uppercase tracking-widest block">Pengajuan</label>
+                                        <label className="text-[8px] font-black text-gray-400 tracking-widest block">Pengajuan</label>
                                         <span className="text-[11px] font-bold text-gray-500 italic">
                                             Rp {parseFloat(loan.jumlah_pengajuan || loan.jumlah_pinjaman).toLocaleString('id-ID')}
                                         </span>
                                     </div>
                                     <div>
-                                        <label className="text-[8px] font-black text-emerald-600 uppercase tracking-widest block">Disetujui</label>
+                                        <label className="text-[8px] font-black text-emerald-600 tracking-widest block">Disetujui</label>
                                         <span className="text-sm font-black text-emerald-700 italic">
                                             Rp {parseFloat(loan.jumlah_pinjaman).toLocaleString('id-ID')}
                                         </span>
@@ -320,7 +311,7 @@ const AssesmentPinjaman = () => {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4 px-3">
                                     <div>
-                                        <label className="text-[8px] font-black text-gray-400 uppercase tracking-widest block">Tenor</label>
+                                        <label className="text-[8px] font-black text-gray-400 tracking-widest block">Tenor</label>
                                         <span className="text-xs font-black text-gray-700 italic">{loan.tenor_bulan} Bln</span>
                                     </div>
                                 </div>
@@ -330,7 +321,7 @@ const AssesmentPinjaman = () => {
                                             e.stopPropagation();
                                             generateLoanAnalysisPDF(loan, false, analystName);
                                         }}
-                                        className="flex-1 py-2 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 border border-blue-100"
+                                        className="flex-1 py-2 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-black tracking-widest flex items-center justify-center gap-2 border border-blue-100"
                                     >
                                         <Eye size={14} /> Analisa PDF
                                     </button>
@@ -339,7 +330,7 @@ const AssesmentPinjaman = () => {
                                             e.stopPropagation();
                                             handleRowClick(loan);
                                         }}
-                                        className="flex-1 py-2 bg-emerald-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-sm"
+                                        className="flex-1 py-2 bg-emerald-600 text-white rounded-lg text-[10px] font-black tracking-widest flex items-center justify-center gap-2 shadow-sm"
                                     >
                                         Verifikasi
                                     </button>
@@ -353,10 +344,10 @@ const AssesmentPinjaman = () => {
             {/* DATA COUNT FOOTER */}
             {!loading && filteredLoans.length > 0 && (
                 <div className="bg-white px-6 py-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
-                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest italic text-left">
+                    <p className="text-xs font-black text-gray-400 tracking-widest italic text-left">
                         Menampilkan <span className="text-emerald-600">{filteredLoans.length}</span> Pengajuan Menunggu Assesment
                     </p>
-                    <p className="text-[10px] font-bold text-gray-300 italic uppercase">
+                    <p className="text-[10px] font-bold text-gray-300 italic">
                         Kopssi Management System • {new Date().getFullYear()}
                     </p>
                 </div>

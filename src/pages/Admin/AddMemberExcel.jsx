@@ -240,7 +240,7 @@ const AddMemberExcel = ({ onSave, isProcessing }) => {
                 </div>
                 <button
                     onClick={handleDownloadTemplate}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold uppercase tracking-wide text-xs shadow-lg shadow-blue-200 transition-all flex items-center gap-2"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold tracking-wide text-xs shadow-lg shadow-blue-200 transition-all flex items-center gap-2"
                 >
                     <Download size={18} /> Download Template
                 </button>
@@ -269,31 +269,35 @@ const AddMemberExcel = ({ onSave, isProcessing }) => {
             {previewData.length > 0 && (
                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
                     <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-black uppercase text-gray-400 tracking-widest">Pratinjau Data ({previewData.length} Baris)</h4>
+                        <h4 className="text-sm font-black text-gray-400 tracking-widest">Pratinjau Data ({previewData.length} Baris)</h4>
                         <button onClick={() => { setFile(null); setPreviewData([]); }} className="text-red-500 hover:text-red-700 transition-colors bg-red-50 p-2 rounded-lg">
                             <Trash2 size={18} />
                         </button>
                     </div>
-                    <div className="max-h-80 overflow-y-auto border border-gray-100 rounded-xl shadow-inner bg-gray-50/50">
-                        <table className="w-full text-left text-xs">
-                            <thead className="bg-gray-100 sticky top-0 font-bold uppercase text-[10px] tracking-tight text-gray-500 z-10">
+                    <div className="overflow-auto max-h-[40vh] border border-slate-200 rounded-xl bg-white shadow-inner">
+                        <table className="w-full text-left border-collapse table-auto">
+                            <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
                                 <tr>
-                                    {Object.keys(previewData[0]).slice(0, 5).map((header) => (
-                                        <th key={header} className="px-4 py-3 bg-gray-100">{header}</th>
+                                    {previewData.length > 0 && Object.keys(previewData[0]).slice(0, 8).map((header) => (
+                                        <th key={header} className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">{header}</th>
                                     ))}
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100 bg-white">
+                            <tbody className="divide-y divide-slate-200">
                                 {previewData.slice(0, 50).map((row, idx) => (
-                                    <tr key={idx} className="hover:bg-blue-50 transition-colors">
-                                        {Object.values(row).slice(0, 5).map((val, i) => (
-                                            <td key={i} className="px-4 py-3 text-gray-600 max-w-[200px] truncate">{val}</td>
+                                    <tr key={idx} className="hover:bg-emerald-50 transition-colors group">
+                                        {Object.values(row).slice(0, 8).map((val, i) => (
+                                            <td key={i} className="px-2 py-1 text-[10px] font-bold text-slate-500 border-r border-slate-200 truncate max-w-[150px] leading-tight font-mono italic">
+                                                {String(val || '-')}
+                                            </td>
                                         ))}
                                     </tr>
                                 ))}
                                 {previewData.length > 50 && (
                                     <tr>
-                                        <td colSpan={5} className="px-4 py-3 text-center text-gray-400 italic">Dan {previewData.length - 50} data lainnya...</td>
+                                        <td colSpan={8} className="px-4 py-3 text-center text-slate-400 italic font-black text-[10px] tracking-widest bg-slate-50">
+                                            Dan {previewData.length - 50} data lainnya...
+                                        </td>
                                     </tr>
                                 )}
                             </tbody>
@@ -302,7 +306,7 @@ const AddMemberExcel = ({ onSave, isProcessing }) => {
                     <button
                         onClick={onUploadClick}
                         disabled={localProcessing}
-                        className="w-full bg-gray-900 text-white font-black uppercase tracking-widest py-4 rounded-xl shadow-lg hover:bg-black disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                        className="w-full bg-gray-900 text-white font-black tracking-widest py-4 rounded-xl shadow-lg hover:bg-black disabled:opacity-50 transition-all flex items-center justify-center gap-2"
                     >
                         {localProcessing ? <Loader2 className="animate-spin" /> : 'Proses Upload Massal'}
                     </button>
@@ -313,7 +317,7 @@ const AddMemberExcel = ({ onSave, isProcessing }) => {
                     <Info size={24} />
                 </div>
                 <div className="space-y-1">
-                    <p className="text-xs font-black text-amber-800 uppercase tracking-wide">Penting</p>
+                    <p className="text-xs font-black text-amber-800 tracking-wide">Penting</p>
                     <p className="text-xs text-amber-700/80 leading-relaxed font-medium">Tanggal masuk anggota akan otomatis menggunakan tanggal saat upload. No. Anggota akan dibuat secara otomatis berdasarkan bulan dan tahun upload (format: KS[MM][YY][XXXX]). Kolom yang kosong akan diisi dengan default.</p>
                 </div>
             </div>

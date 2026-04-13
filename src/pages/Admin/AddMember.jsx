@@ -104,18 +104,19 @@ const AddMember = () => {
     };
 
     return (
-        <div className="space-y-6 pb-20">
-            <div className="flex items-center justify-between">
+        <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-500 max-w-[1600px] mx-auto pb-20">
+            {/* Header Section */}
+            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => navigate('/admin/members')}
-                        className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500"
+                        className="p-3 bg-white hover:bg-gray-50 rounded-2xl transition-all text-gray-400 border border-gray-100 shadow-sm"
                     >
-                        <ArrowLeft size={24} />
+                        <ArrowLeft size={20} />
                     </button>
-                    <div>
-                        <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight">Form Data Anggota</h2>
-                        <p className="text-sm text-gray-500 font-medium">Lengkapi data anggota di bawah ini</p>
+                    <div className="text-left">
+                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 italic tracking-tight">Form Data Anggota</h2>
+                        <p className="text-xs md:text-sm text-gray-500 mt-1 font-medium italic">Lengkapi data anggota di bawah ini</p>
                     </div>
                 </div>
             </div>
@@ -124,13 +125,13 @@ const AddMember = () => {
                 <div className="flex border-b border-gray-100">
                     <button
                         onClick={() => setActiveTab('manual')}
-                        className={`flex-1 py-4 text-sm font-bold uppercase tracking-wider transition-all ${activeTab === 'manual' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/30' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
+                        className={`flex-1 py-4 text-sm font-bold transition-all ${activeTab === 'manual' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/30' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
                     >
                         Input Manual
                     </button>
                     <button
                         onClick={() => setActiveTab('excel')}
-                        className={`flex-1 py-4 text-sm font-bold uppercase tracking-wider transition-all ${activeTab === 'excel' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/30' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
+                        className={`flex-1 py-4 text-sm font-bold transition-all ${activeTab === 'excel' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/30' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
                     >
                         Upload Excel
                     </button>
