@@ -326,7 +326,7 @@ const RealisasiKaryawan = () => {
                     <table className="w-full text-left border-collapse table-auto min-w-[1500px]">
                         <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
                             <tr className="italic font-black text-[10px] tracking-tighter text-slate-700">
-                                <th className="px-1 py-2 text-center w-8 border-r border-slate-200">
+                                <th className="px-1 py-2 text-center w-8 border-r border-slate-200 bg-emerald-50/50">
                                     {isSelectionMode && (
                                         <input
                                             type="checkbox"
@@ -336,24 +336,24 @@ const RealisasiKaryawan = () => {
                                         />
                                     )}
                                 </th>
-                                <th className="px-1 py-2 text-center w-8 border-r border-slate-200">No</th>
-                                <th className="px-2 py-2 border-r border-slate-200">Nama</th>
-                                <th className="px-2 py-2 border-r border-slate-200 text-center">NPP</th>
-                                <th className="px-2 py-2 border-r border-slate-200">Uraian</th>
-                                <th className="px-2 py-2 border-r border-slate-200">Unit Kerja</th>
-                                <th className="px-2 py-2 text-right border-r border-slate-200">Masuk</th>
-                                <th className="px-2 py-2 text-right border-r border-slate-200">Keluar</th>
-                                <th className="px-2 py-2 text-right border-r border-slate-200">Pkk</th>
-                                <th className="px-2 py-2 text-right border-r border-slate-200">Wjb</th>
-                                <th className="px-2 py-2 text-right border-r border-slate-200">Skr</th>
-                                <th className="px-2 py-2 text-right border-r border-slate-200 font-black">Sum</th>
-                                <th className="px-2 py-2 text-right border-r border-slate-200">Outs.P</th>
-                                <th className="px-2 py-2 text-right border-r border-slate-200">Outs.B</th>
-                                <th className="px-2 py-2 text-right border-r border-slate-200">Adm</th>
+                                <th className="px-1 py-2 text-center w-8 border-r border-slate-200 bg-emerald-50/50">No</th>
+                                <th className="px-2 py-2 border-r border-slate-200 bg-emerald-50/50">Nama</th>
+                                <th className="px-2 py-2 border-r border-slate-200 text-center bg-emerald-50/50">NPP</th>
+                                <th className="px-2 py-2 border-r border-slate-200 bg-emerald-50/50">Uraian</th>
+                                <th className="px-2 py-2 border-r border-slate-200 bg-emerald-50/50">Unit Kerja</th>
+                                <th className="px-2 py-2 text-right border-r border-slate-200 bg-emerald-50/50">Masuk</th>
+                                <th className="px-2 py-2 text-right border-r border-slate-200 bg-emerald-50/50">Keluar</th>
+                                <th className="px-2 py-2 text-right border-r border-slate-200 bg-emerald-50/50">Pkk</th>
+                                <th className="px-2 py-2 text-right border-r border-slate-200 bg-emerald-50/50">Wjb</th>
+                                <th className="px-2 py-2 text-right border-r border-slate-200 bg-emerald-50/50">Skr</th>
+                                <th className="px-2 py-2 text-right border-r border-slate-200 font-black bg-emerald-50/50">Sum</th>
+                                <th className="px-2 py-2 text-right border-r border-slate-200 bg-emerald-50/50">Outs.P</th>
+                                <th className="px-2 py-2 text-right border-r border-slate-200 bg-emerald-50/50">Outs.B</th>
+                                <th className="px-2 py-2 text-right border-r border-slate-200 bg-emerald-50/50">Adm</th>
                                 <th className="px-2 py-2 text-right border-r border-slate-200 text-emerald-700 bg-emerald-50/50">Return</th>
-                                <th className="px-2 py-2 border-r border-slate-200 text-center">No Rek</th>
-                                <th className="px-2 py-2 text-center border-r border-slate-200">Tgl Real</th>
-                                <th className="px-2 py-2 text-center">Aksi</th>
+                                <th className="px-2 py-2 border-r border-slate-200 text-center bg-emerald-50/50">No Rek</th>
+                                <th className="px-2 py-2 text-center border-r border-slate-200 bg-emerald-50/50">Tgl Real</th>
+                                <th className="px-2 py-2 text-center bg-emerald-50/50">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200">

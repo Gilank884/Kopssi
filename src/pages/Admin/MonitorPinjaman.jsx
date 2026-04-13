@@ -302,9 +302,14 @@ const MonitorPinjaman = () => {
                                         <span className="text-sm font-black text-gray-900 italic">
                                             {loan.personal_data?.full_name || '-'}
                                         </span>
-                                        <span className="text-[10px] text-gray-400 font-mono tracking-tight underline dec-gray-200">
-                                            {loan.no_pinjaman} • {loan.personal_data?.company || '-'}
-                                        </span>
+                                        <div className="flex items-center gap-2 mt-0.5">
+                                            <span className="text-[10px] text-gray-400 font-mono tracking-tight underline border-r border-gray-200 pr-2">
+                                                {loan.no_pinjaman}
+                                            </span>
+                                            <span className="text-[10px] text-gray-400 font-mono tracking-tight">
+                                                 {loan.personal_data?.company || '-'}
+                                            </span>
+                                        </div>
                                     </div>
                                     <span className={`px-2 py-0.5 rounded-full text-[8px] font-black tracking-tighter border ${loan.status === 'DICAIRKAN'
                                         ? 'bg-emerald-100 text-emerald-700 border-emerald-200'

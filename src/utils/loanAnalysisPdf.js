@@ -81,7 +81,6 @@ export const generateLoanAnalysisPDF = async (loan, isDownload = false, analystN
     const outstandingData = [];
     let grandOutstanding = 0;
     let grandBunga = 0;
-    let grandTotal = 0;
     let grandAngBln = 0;
 
     if (activeLoans) {
@@ -155,7 +154,6 @@ export const generateLoanAnalysisPDF = async (loan, isDownload = false, analystN
 
     // Labels column 2 (approx for aligning second items in a row)
     const col2LabelX = 110;
-    const col2ValX = 140;
 
     const safe = (v) => v || '-';
 

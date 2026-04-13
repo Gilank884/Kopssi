@@ -124,8 +124,15 @@ const MonitorSimpanan = () => {
                     <h2 className="text-2xl md:text-3xl font-black text-gray-900 italic tracking-tight">Monitoring Simpanan</h2>
                     <p className="text-xs md:text-sm text-gray-500 mt-1 font-medium italic">Pantau total simpanan anggota dan riwayat transaksi</p>
                 </div>
-                {/* Filters Wrapper */}
-                <div className="flex flex-col md:flex-row flex-wrap gap-3 items-stretch md:items-end">
+            </div>
+
+            {/* Content Control Area */}
+            <div className="bg-white/50 backdrop-blur-sm p-4 rounded-xl border border-gray-100 flex flex-col md:flex-row flex-wrap gap-4 items-center justify-between mb-2">
+                 <div className="flex items-center gap-2 text-sm font-bold text-gray-500 italic">
+                     <Filter size={16} /> Filter & Kontrol
+                 </div>
+                 {/* Filters Wrapper */}
+                 <div className="flex flex-col md:flex-row flex-wrap gap-3 w-full md:w-auto">
                     {/* Search Field */}
                     <div className="relative flex-grow md:flex-grow-0">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -134,17 +141,17 @@ const MonitorSimpanan = () => {
                             placeholder="Cari Nama / NPP..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10 pr-4 py-2.5 md:py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-64 text-sm shadow-sm font-medium"
+                            className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-64 text-xs shadow-sm font-medium bg-white"
                         />
                     </div>
 
                     {/* Company Select */}
                     <div className="relative">
-                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                         <select
                             value={filterCompany}
                             onChange={(e) => setFilterCompany(e.target.value)}
-                            className="w-full pl-9 pr-8 py-2.5 md:py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white shadow-sm font-bold tracking-tight italic appearance-none"
+                            className="w-full pl-8 pr-8 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs bg-white shadow-sm font-bold tracking-tight italic appearance-none"
                         >
                             <option value="ALL">Semua PT</option>
                             {companies.map(c => (
@@ -156,9 +163,9 @@ const MonitorSimpanan = () => {
                     {/* Export Button (Optional, but included for consistency if needed later) */}
                     <button
                         onClick={handleExportExcel}
-                        className="flex items-center justify-center gap-2 px-6 py-2.5 md:py-2 bg-emerald-600 md:bg-white text-white md:text-emerald-600 border-2 border-emerald-600 md:border-emerald-100 rounded-xl text-xs font-black hover:bg-emerald-700 md:hover:bg-emerald-50 transition-all shadow-lg md:shadow-sm"
+                        className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-[10px] font-black hover:bg-emerald-700 transition-all shadow-sm"
                     >
-                        <Download size={16} /> <span className="md:inline">Export Summary</span>
+                        <Download size={14} /> <span className="md:inline">Export Summary</span>
                     </button>
                 </div>
             </div>
@@ -168,12 +175,12 @@ const MonitorSimpanan = () => {
                     <table className="w-full text-left border-collapse table-auto">
                         <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
                             <tr>
-                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Nama</th>
-                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">NIK</th>
-                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center">No. Anggota / NPP</th>
-                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Perusahaan</th>
-                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-right">Total Simpanan</th>
-                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic text-center">Aksi</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 bg-emerald-50/50">Nama</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 bg-emerald-50/50">NIK</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center bg-emerald-50/50">No. Anggota / NPP</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 bg-emerald-50/50">Perusahaan</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-right bg-emerald-50/50">Total Simpanan</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic text-center bg-emerald-50/50">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200">
@@ -255,9 +262,14 @@ const MonitorSimpanan = () => {
                                         <span className="text-sm font-black text-gray-900 italic">
                                             {m.full_name || '-'}
                                         </span>
-                                        <span className="text-[10px] text-gray-400 font-mono tracking-tight">
-                                            {m.no_npp || '-'} • {m.company || '-'}
-                                        </span>
+                                        <div className="flex items-center gap-2 mt-0.5">
+                                            <span className="text-[10px] text-gray-400 font-mono tracking-tight underline border-r border-gray-200 pr-2">
+                                                {m.no_npp || '-'}
+                                            </span>
+                                            <span className="text-[10px] text-gray-400 font-mono tracking-tight">
+                                                 {m.company || '-'}
+                                            </span>
+                                        </div>
                                     </div>
                                     <span className="px-2 py-0.5 rounded-full text-[8px] font-black text-emerald-700 bg-emerald-100 border border-emerald-200 tracking-tighter">
                                         Detail
@@ -276,10 +288,6 @@ const MonitorSimpanan = () => {
                                             {m.work_unit || '-'}
                                         </span>
                                     </div>
-                                </div>
-                                <div className="flex justify-between items-center text-[10px] text-gray-400 font-bold italic">
-                                    <span>{m.company || '-'}</span>
-                                    <span className="text-emerald-600 font-black tracking-widest">Lihat Detail →</span>
                                 </div>
                             </div>
                         ))

@@ -389,15 +389,15 @@ const UploadSimpanan = () => {
                         <table className="w-full text-left border-collapse table-auto">
                             <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
                                 <tr className="text-gray-400">
-                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] uppercase tracking-widest italic border-r border-slate-200">Validasi</th>
-                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] uppercase tracking-widest italic border-r border-slate-200 text-center">NIK</th>
-                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] uppercase tracking-widest italic border-r border-slate-200">Anggota</th>
-                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] uppercase tracking-widest italic border-r border-slate-200 text-right">Pokok</th>
-                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] uppercase tracking-widest italic border-r border-slate-200 text-right">Wajib</th>
-                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] uppercase tracking-widest italic border-r border-slate-200 text-right">W.Khusus</th>
-                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] uppercase tracking-widest italic border-r border-slate-200 text-right">Skr</th>
-                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] uppercase tracking-widest italic border-r border-slate-200 text-right">Pkr</th>
-                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] uppercase tracking-widest italic text-right">Total</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 bg-emerald-50/50">Validasi</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center bg-emerald-50/50">NIK</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 bg-emerald-50/50">Anggota</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-right bg-emerald-50/50">Pokok</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-right bg-emerald-50/50">Wajib</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-right bg-emerald-50/50">W.Khusus</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-right bg-emerald-50/50">Skr</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-right bg-emerald-50/50">Pkr</th>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic text-right bg-emerald-50/50">Total</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200">
