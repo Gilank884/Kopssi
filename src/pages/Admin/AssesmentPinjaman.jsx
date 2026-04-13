@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
-import { Search, Eye, AlertCircle, FileDown, Filter } from 'lucide-react';
+import { Search, Eye, AlertCircle, FileDown, Filter, Download } from 'lucide-react';
 import { generateLoanAnalysisPDF } from '../../utils/loanAnalysisPdf';
+import { exportLoanApprovalExcel } from '../../utils/reportExcel';
 
 const AssesmentPinjaman = () => {
     const [loans, setLoans] = useState([]);
@@ -145,6 +146,12 @@ const AssesmentPinjaman = () => {
                         <FileDown size={14} />
                         Unduh PDF ({filteredLoans.length})
                     </button>
+                    <button
+                        onClick={() => exportLoanApprovalExcel(filteredLoans)}
+                        className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-[11px] font-black hover:bg-emerald-700 transition-all shadow-sm shrink-0"
+                    >
+                        <Download size={14} /> Export Excel
+                    </button>
                 </div>
                 {/* Filters Row */}
                 <div className="px-5 py-3 flex flex-col sm:flex-row flex-wrap gap-3 items-center bg-gray-50/60">
@@ -206,6 +213,7 @@ const AssesmentPinjaman = () => {
                         <table className="w-full text-left border-collapse table-auto">
                             <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
                                 <tr>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center w-8">No</th>
                                     <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Nama</th>
                                     <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">NIK</th>
                                     <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Nominal Pengajuan</th>
@@ -218,12 +226,15 @@ const AssesmentPinjaman = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200">
-                                {filteredLoans.map((loan) => (
+                                {filteredLoans.map((loan, index) => (
                                     <tr
                                         key={loan.id}
                                         onClick={() => handleRowClick(loan)}
-                                        className="hover:bg-emerald-50 transition-colors cursor-pointer"
+                                        className={`transition-colors cursor-pointer hover:bg-emerald-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/70'}`}
                                     >
+                                        <td className="px-2 py-1 border-r border-slate-200 text-center">
+                                            <span className="text-[9px] font-black text-gray-400 italic">{index + 1}</span>
+                                        </td>
                                         <td className="px-2 py-1 border-r border-slate-200">
                                             <span className="font-bold text-slate-900 text-[11px] tracking-tight leading-none">{loan.personal_data?.full_name || '-'}</span>
                                         </td>

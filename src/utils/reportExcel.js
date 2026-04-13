@@ -741,3 +741,104 @@ export const exportOutstandingLoansReportExcel = (data) => {
     XLSX.utils.book_append_sheet(wb, ws, 'Sisa Pinjaman');
     XLSX.writeFile(wb, `Laporan_Sisa_Pinjaman_${new Date().toISOString().slice(0, 10)}.xlsx`);
 };
+
+export const exportMembersDatabaseExcel = (data) => {
+    const headers = [['No', 'Nama Lengkap', 'NIK', 'NPP', 'No Anggota', 'Perusahaan', 'Unit Kerja', 'No HP', 'Email', 'Status', 'Tgl Daftar']];
+    const rows = data.map((m, i) => [
+        i + 1,
+        m.full_name || '-',
+        m.nik || '-',
+        m.no_npp || '-',
+        m.no_anggota || '-',
+        m.company || '-',
+        m.work_unit || '-',
+        m.phone || '-',
+        m.email || '-',
+        m.status || '-',
+        m.created_at ? new Date(m.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-'
+    ]);
+    const ws = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
+    ws['!cols'] = [
+        { wch: 4 }, { wch: 25 }, { wch: 18 }, { wch: 10 }, { wch: 12 },
+        { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 25 }, { wch: 12 }, { wch: 18 }
+    ];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Database Anggota');
+    XLSX.writeFile(wb, `Database_Anggota_${new Date().toISOString().slice(0, 10)}.xlsx`);
+};
+
+export const exportLoanApprovalExcel = (data) => {
+    const headers = [['No', 'No Pinjaman', 'Nama', 'NIK', 'Perusahaan', 'Jenis Pinjaman', 'Plafon', 'Tenor (Bln)', 'Kategori', 'Status', 'Tgl Pengajuan']];
+    const rows = data.map((loan, i) => [
+        i + 1,
+        loan.no_pinjaman || '-',
+        loan.personal_data?.full_name || '-',
+        loan.personal_data?.nik || '-',
+        loan.personal_data?.company || '-',
+        loan.jenis_pinjaman || '-',
+        formatNum(loan.jumlah_pinjaman),
+        loan.tenor_bulan || '-',
+        loan.kategori || '-',
+        loan.status || '-',
+        loan.created_at ? new Date(loan.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-'
+    ]);
+    const ws = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
+    ws['!cols'] = [
+        { wch: 4 }, { wch: 14 }, { wch: 25 }, { wch: 18 }, { wch: 20 },
+        { wch: 20 }, { wch: 15 }, { wch: 10 }, { wch: 15 }, { wch: 12 }, { wch: 18 }
+    ];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Penyetujuan Pinjaman');
+    XLSX.writeFile(wb, `Penyetujuan_Pinjaman_${new Date().toISOString().slice(0, 10)}.xlsx`);
+};
+
+export const exportPencairanPinjamanExcel = (data) => {
+    const headers = [['No', 'No Pinjaman', 'Nama', 'NIK', 'No Anggota', 'Perusahaan', 'Jenis Pinjaman', 'Plafon', 'Tenor (Bln)', 'Kategori', 'Status', 'Tgl Pengajuan']];
+    const rows = data.map((loan, i) => [
+        i + 1,
+        loan.no_pinjaman || '-',
+        loan.personal_data?.full_name || '-',
+        loan.personal_data?.nik || '-',
+        loan.personal_data?.no_anggota || '-',
+        loan.personal_data?.company || '-',
+        loan.jenis_pinjaman || '-',
+        formatNum(loan.jumlah_pinjaman),
+        loan.tenor_bulan || '-',
+        loan.kategori || '-',
+        loan.status || '-',
+        loan.created_at ? new Date(loan.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-'
+    ]);
+    const ws = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
+    ws['!cols'] = [
+        { wch: 4 }, { wch: 14 }, { wch: 25 }, { wch: 18 }, { wch: 12 },
+        { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 10 }, { wch: 15 }, { wch: 12 }, { wch: 18 }
+    ];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Pencairan Pinjaman');
+    XLSX.writeFile(wb, `Pencairan_Pinjaman_${new Date().toISOString().slice(0, 10)}.xlsx`);
+};
+
+export const exportMemberRegistrationExcel = (data) => {
+    const headers = [['No', 'Nama Lengkap', 'NIK', 'No Anggota', 'Perusahaan', 'Unit Kerja', 'No HP', 'Email', 'Status', 'Tgl Daftar']];
+    const rows = data.map((m, i) => [
+        i + 1,
+        m.full_name || '-',
+        m.nik || '-',
+        m.no_anggota || '-',
+        m.company || '-',
+        m.work_unit || '-',
+        m.phone || '-',
+        m.email || '-',
+        m.status || '-',
+        m.created_at ? new Date(m.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : '-'
+    ]);
+    const ws = XLSX.utils.aoa_to_sheet([...headers, ...rows]);
+    ws['!cols'] = [
+        { wch: 4 }, { wch: 25 }, { wch: 18 }, { wch: 12 }, { wch: 20 },
+        { wch: 20 }, { wch: 15 }, { wch: 25 }, { wch: 12 }, { wch: 18 }
+    ];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Persetujuan Anggota');
+    XLSX.writeFile(wb, `Persetujuan_Anggota_${new Date().toISOString().slice(0, 10)}.xlsx`);
+};
+

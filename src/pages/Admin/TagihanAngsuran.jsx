@@ -218,6 +218,7 @@ const TagihanAngsuran = () => {
                     <table className="w-full text-left border-collapse table-auto">
                         <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
                             <tr>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center w-8 bg-emerald-50/50">No</th>
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 bg-emerald-50/50">Anggota</th>
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center bg-emerald-50/50">No Pinjaman</th>
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center bg-emerald-50/50">Bulan</th>
@@ -230,21 +231,24 @@ const TagihanAngsuran = () => {
                         <tbody className="divide-y divide-slate-200">
                             {loading ? (
                                 <tr>
-                                    <td colSpan="7" className="px-6 py-12 text-center text-slate-500">
+                                    <td colSpan="8" className="px-6 py-12 text-center text-slate-500">
                                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-4"></div>
                                         Memuat data angsuran...
                                     </td>
                                 </tr>
                             ) : filteredInstallments.length === 0 ? (
                                 <tr>
-                                    <td colSpan="7" className="px-6 py-20 text-center text-slate-400 italic font-black text-[10px] tracking-widest">
+                                    <td colSpan="8" className="px-6 py-20 text-center text-slate-400 italic font-black text-[10px] tracking-widest">
                                         <CalendarDays size={40} className="mx-auto mb-4 opacity-20" />
                                         <p>Tidak ada data angsuran</p>
                                     </td>
                                 </tr>
                             ) : (
-                                paginatedInstallments.map((inst) => (
-                                    <tr key={inst.id} className="hover:bg-emerald-50 transition-colors group">
+                                paginatedInstallments.map((inst, index) => (
+                                    <tr key={inst.id} className={`transition-colors group hover:bg-emerald-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/70'}`}>
+                                        <td className="px-2 py-1 border-r border-slate-200 text-center">
+                                            <span className="text-[9px] font-black text-gray-400 italic">{index + 1}</span>
+                                        </td>
                                         <td className="px-2 py-1 border-r border-slate-200">
                                             <div className="flex flex-col leading-none">
                                                 <span className="text-[11px] font-black text-slate-900 italic tracking-tight">

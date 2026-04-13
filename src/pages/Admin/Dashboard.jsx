@@ -270,7 +270,6 @@ const AdminOverview = () => {
                     title="Anggota Aktif"
                     value={stats.activeMembers}
                     icon={UserCheck}
-                    trend="+12% bulan ini"
                     color="emerald"
                 />
                 <StatCard

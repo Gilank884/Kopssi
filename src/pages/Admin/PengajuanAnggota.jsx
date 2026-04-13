@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabaseClient';
-import { Search, Eye, X, CheckCircle, AlertCircle, User, MapPin, Building, Briefcase, Mail, Phone, FileText, Printer, Filter } from 'lucide-react';
+import { Search, Eye, X, CheckCircle, AlertCircle, User, MapPin, Building, Briefcase, Mail, Phone, FileText, Printer, Filter, Download } from 'lucide-react';
 import { generateMemberApplicationPDF } from '../../utils/memberApplicationPdf';
+import { exportMemberRegistrationExcel } from '../../utils/reportExcel';
 
 const PengajuanAnggota = () => {
     const [pendingMembers, setPendingMembers] = useState([]);
@@ -128,9 +129,17 @@ const PengajuanAnggota = () => {
             {/* Unified Header Card */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 {/* Title Row */}
-                <div className="px-5 pt-5 pb-4 border-b border-gray-100">
-                    <h2 className="text-xl md:text-2xl font-black text-gray-900 italic tracking-tight leading-none">Persetujuan Keanggotaan</h2>
-                    <p className="text-[11px] text-gray-400 mt-1 font-medium italic tracking-tight">Lakukan verifikasi akhir untuk anggota yang telah menandatangani formulir</p>
+                <div className="px-5 pt-5 pb-4 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                        <h2 className="text-xl md:text-2xl font-black text-gray-900 italic tracking-tight leading-none">Persetujuan Keanggotaan</h2>
+                        <p className="text-[11px] text-gray-400 mt-1 font-medium italic tracking-tight">Lakukan verifikasi akhir untuk anggota yang telah menandatangani formulir</p>
+                    </div>
+                    <button
+                        onClick={() => exportMemberRegistrationExcel(filteredMembers)}
+                        className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-[11px] font-black hover:bg-emerald-700 transition-all shadow-sm shrink-0"
+                    >
+                        <Download size={14} /> Export Excel
+                    </button>
                 </div>
                 {/* Filters Row */}
                 <div className="px-5 py-3 flex flex-col sm:flex-row flex-wrap gap-3 items-center bg-gray-50/60">

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, MoreHorizontal, X, User, Phone, Briefcase, MapPin, CreditCard, Calendar, Plus, Upload, Loader2, CheckCircle2, AlertCircle, Trash2, UserMinus, ChevronRight } from 'lucide-react';
+import { Search, Filter, MoreHorizontal, X, User, Phone, Briefcase, MapPin, CreditCard, Calendar, Plus, Upload, Loader2, CheckCircle2, AlertCircle, Trash2, UserMinus, ChevronRight, Download } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
+import { exportMembersDatabaseExcel } from '../../utils/reportExcel';
 
 
 const MemberDetailModal = ({ member, onClose, onActivate, onDeactivate, onSetPassive }) => {
@@ -337,9 +338,17 @@ const MemberList = () => {
             {/* Unified Header Card */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 {/* Title Row */}
-                <div className="px-5 pt-5 pb-4 border-b border-gray-100">
-                    <h2 className="text-xl md:text-2xl font-black text-gray-900 italic tracking-tight leading-none">Database Anggota</h2>
-                    <p className="text-[11px] text-gray-400 mt-1 font-medium italic tracking-tight">Manajemen data seluruh anggota koperasi</p>
+                <div className="px-5 pt-5 pb-4 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                        <h2 className="text-xl md:text-2xl font-black text-gray-900 italic tracking-tight leading-none">Database Anggota</h2>
+                        <p className="text-[11px] text-gray-400 mt-1 font-medium italic tracking-tight">Manajemen data seluruh anggota koperasi</p>
+                    </div>
+                    <button
+                        onClick={() => exportMembersDatabaseExcel(filteredMembers)}
+                        className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-[11px] font-black hover:bg-emerald-700 transition-all shadow-sm shrink-0"
+                    >
+                        <Download size={14} /> Export Excel
+                    </button>
                 </div>
                 {/* Filters Row */}
                 <div className="px-5 py-3 flex flex-col sm:flex-row flex-wrap gap-3 items-center bg-gray-50/60">
@@ -374,6 +383,7 @@ const MemberList = () => {
                     <table className="w-full text-left border-collapse table-auto">
                         <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
                             <tr>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center w-8">No</th>
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Nama</th>
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">NIK</th>
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center">NPP</th>
@@ -384,12 +394,15 @@ const MemberList = () => {
                         </thead>
                         <tbody className="divide-y divide-slate-200">
                             {filteredMembers.length > 0 ? (
-                                filteredMembers.map((member) => (
+                                filteredMembers.map((member, index) => (
                                     <tr
                                         key={member.id}
                                         onClick={() => handleRowClick(member)}
-                                        className="hover:bg-emerald-50 transition-colors cursor-pointer group"
+                                        className={`transition-colors cursor-pointer group hover:bg-emerald-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/70'}`}
                                     >
+                                        <td className="px-2 py-1 border-r border-slate-200 text-center">
+                                            <span className="text-[9px] font-black text-gray-400 italic">{index + 1}</span>
+                                        </td>
                                         <td className="px-2 py-1 border-r border-slate-200">
                                             <span className="font-black text-slate-800 text-[11px] italic tracking-tight">{member.full_name}</span>
                                         </td>
@@ -414,7 +427,7 @@ const MemberList = () => {
                                                             : member.status?.toLowerCase() === 'done verifikasi'
                                                                 ? 'bg-blue-50 text-blue-600'
                                                                 : 'bg-amber-50 text-amber-600'
-                                                }`}>
+                                            }`}>
                                                 {member.status?.toLowerCase() === 'non_active' ? 'Non Aktif' : (member.status || 'Unknown')}
                                             </span>
                                         </td>
@@ -427,7 +440,7 @@ const MemberList = () => {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="6" className="px-6 py-20 text-center">
+                                    <td colSpan="7" className="px-6 py-20 text-center">
                                         <div className="flex flex-col items-center gap-2 opacity-30">
                                             <Search size={40} />
                                             <p className="font-black tracking-widest text-[10px] italic">Data anggota tidak ditemukan</p>
