@@ -239,85 +239,84 @@ const RealisasiKaryawan = () => {
 
     return (
         <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-500 max-w-[1600px] mx-auto">
-            {/* Header Section */}
-            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
-                <div className="text-left">
-                    <h2 className="text-2xl md:text-3xl font-black text-gray-900 italic tracking-tight">Realisasi Karyawan</h2>
-                    <div className="flex gap-4 mt-2">
-                        <button
-                            onClick={() => setActiveTab('BELUM')}
-                            className={`text-[10px] font-black tracking-widest pb-1 border-b-2 transition-all ${activeTab === 'BELUM' ? 'border-emerald-600 text-emerald-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
-                        >
-                            Belum Direalisasi
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('SUDAH')}
-                            className={`text-[10px] font-black tracking-widest pb-1 border-b-2 transition-all ${activeTab === 'SUDAH' ? 'border-emerald-600 text-emerald-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
-                        >
-                            Sudah Direalisasi
-                        </button>
+            {/* Unified Header Card */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                {/* Title & Tabs Row */}
+                <div className="px-5 pt-5 pb-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div>
+                        <h2 className="text-xl md:text-2xl font-black text-gray-900 italic tracking-tight leading-none">Realisasi Karyawan</h2>
+                        <div className="flex gap-4 mt-2">
+                            <button
+                                onClick={() => setActiveTab('BELUM')}
+                                className={`text-[10px] font-black tracking-widest pb-1 border-b-2 transition-all ${activeTab === 'BELUM' ? 'border-emerald-600 text-emerald-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                            >
+                                Belum Direalisasi
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('SUDAH')}
+                                className={`text-[10px] font-black tracking-widest pb-1 border-b-2 transition-all ${activeTab === 'SUDAH' ? 'border-emerald-600 text-emerald-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                            >
+                                Sudah Direalisasi
+                            </button>
+                        </div>
                     </div>
+                    <button
+                        onClick={handleExportExcel}
+                        className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-[11px] font-black hover:bg-emerald-700 transition-all shadow-sm shrink-0"
+                    >
+                        <Download size={16} /> Export
+                    </button>
                 </div>
-
-                {/* Filters Wrapper */}
-                <div className="flex flex-col md:flex-row flex-wrap gap-3 items-stretch md:items-end">
-                    <div className="relative flex-grow md:flex-grow-0">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                {/* Filters Row */}
+                <div className="px-5 py-3 flex flex-col sm:flex-row flex-wrap gap-3 items-center bg-gray-50/60">
+                    <div className="relative flex-grow sm:max-w-xs w-full">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={15} />
                         <input
                             type="text"
                             placeholder="Cari nama atau NPP..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white font-bold shadow-sm"
+                            className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs bg-white font-medium shadow-sm"
                         />
                     </div>
-
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
                         <input
                             type="date"
                             value={startDate}
                             onChange={(e) => setStartDate(e.target.value)}
-                            className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white font-bold shadow-sm"
+                            className="flex-1 px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs bg-white font-bold shadow-sm"
                         />
-                        <span className="text-gray-400 font-bold">s/d</span>
+                        <span className="text-gray-400 font-bold text-xs shrink-0">s/d</span>
                         <input
                             type="date"
                             value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
-                            className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white font-bold shadow-sm"
+                            className="flex-1 px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs bg-white font-bold shadow-sm"
                         />
                     </div>
-
-                    <div className="relative">
+                    <div className="relative w-full sm:w-auto">
+                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={13} />
                         <select
                             value={filterCompany}
                             onChange={(e) => setFilterCompany(e.target.value)}
-                            className="w-full pl-4 pr-8 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-white font-bold appearance-none shadow-sm min-w-[180px]"
+                            className="w-full pl-8 pr-8 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs bg-white font-bold appearance-none shadow-sm min-w-[180px]"
                         >
                             <option value="ALL">Semua PT</option>
                             {companies.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                     </div>
-
                     {activeTab === 'BELUM' && (
                         <button
                             onClick={() => {
                                 setIsSelectionMode(!isSelectionMode);
                                 if (isSelectionMode) setSelectedIds([]);
                             }}
-                            className={`flex items-center justify-center gap-2 px-6 py-2 rounded-xl text-xs font-black transition-all shadow-sm border ${isSelectionMode ? 'bg-amber-500 text-white border-amber-600' : 'bg-white text-emerald-600 border-emerald-100 hover:bg-emerald-50'}`}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all shadow-sm border w-full sm:w-auto justify-center ${isSelectionMode ? 'bg-amber-500 text-white border-amber-600' : 'bg-white text-emerald-600 border-emerald-100 hover:bg-emerald-50'}`}
                         >
-                            <CheckCircle size={16} />
+                            <CheckCircle size={15} />
                             {isSelectionMode ? 'Batal' : 'Pilih Masal'}
                         </button>
                     )}
-
-                    <button
-                        onClick={handleExportExcel}
-                        className="flex items-center justify-center gap-2 px-6 py-2 bg-emerald-600 text-white rounded-xl text-xs font-black hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100 h-[40px]"
-                    >
-                        <Download size={16} /> Export
-                    </button>
                 </div>
             </div>
 

@@ -63,30 +63,34 @@ const InterestReport = () => {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="text-left">
-                    <h2 className="text-3xl font-black text-gray-900 italic tracking-tight">Pendapatan Bunga</h2>
-                    <p className="text-sm text-gray-500 mt-1 font-medium italic">Laporan Porsi Bunga Pinjaman</p>
+            {/* Unified Header Card */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                {/* Title Row */}
+                <div className="px-5 pt-5 pb-4 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                        <h2 className="text-xl md:text-2xl font-black text-gray-900 italic tracking-tight leading-none">Pendapatan Bunga</h2>
+                        <p className="text-[11px] text-gray-400 mt-1 font-medium italic tracking-tight">Laporan Porsi Bunga Pinjaman</p>
+                    </div>
+                    <button
+                        onClick={() => exportInterestIncomeReportExcel(filteredData)}
+                        className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-[11px] font-black hover:bg-emerald-700 transition-all shadow-sm shrink-0"
+                    >
+                        <Download size={14} /> Export Excel
+                    </button>
                 </div>
-            </div>
-
-            <div className="flex flex-col md:flex-row justify-between gap-4">
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                    <input
-                        type="text"
-                        placeholder="Cari nama, No Pinjaman..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-64 text-sm shadow-sm"
-                    />
+                {/* Filters Row */}
+                <div className="px-5 py-3 flex flex-col sm:flex-row flex-wrap gap-3 items-center bg-gray-50/60">
+                    <div className="relative flex-grow sm:max-w-xs w-full">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={15} />
+                        <input
+                            type="text"
+                            placeholder="Cari nama, No Pinjaman..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-9 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full text-xs font-medium bg-white shadow-sm"
+                        />
+                    </div>
                 </div>
-                <button
-                    onClick={() => exportInterestIncomeReportExcel(filteredData)}
-                    className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-black hover:bg-emerald-700 transition-all shadow-lg"
-                >
-                    <Download size={16} /> Export Excel
-                </button>
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">

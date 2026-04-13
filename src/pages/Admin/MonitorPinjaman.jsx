@@ -109,61 +109,54 @@ const MonitorPinjaman = () => {
 
     return (
         <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-500 max-w-[1600px] mx-auto">
-            {/* Header Section */}
-            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
-                <div className="text-left">
-                    <h2 className="text-2xl md:text-3xl font-black text-gray-900 italic tracking-tight">Monitoring Pinjaman</h2>
-                    <p className="text-xs md:text-sm text-gray-500 mt-1 font-medium italic tracking-tight">Lacak pencairan baru periode ini</p>
+            {/* Unified Header Card */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                {/* Title Row */}
+                <div className="px-5 pt-5 pb-4 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                        <h2 className="text-xl md:text-2xl font-black text-gray-900 italic tracking-tight leading-none">Monitoring Pinjaman</h2>
+                        <p className="text-[11px] text-gray-400 mt-1 font-medium italic tracking-tight">Lacak pencairan baru periode ini</p>
+                    </div>
+                    <button
+                        onClick={handleExportExcel}
+                        className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-[11px] font-black hover:bg-emerald-700 transition-all shadow-sm shrink-0"
+                    >
+                        <Download size={14} /> Export Excel
+                    </button>
                 </div>
-            </div>
-
-            {/* Content Control Area - Now inside a subtle card for better separation */}
-            <div className="bg-white/50 backdrop-blur-sm p-4 rounded-xl border border-gray-100 flex flex-col md:flex-row flex-wrap gap-4 items-center justify-between mb-2">
-                 <div className="flex items-center gap-2 text-sm font-bold text-gray-500 italic">
-                     <Filter size={16} /> Filter & Kontrol
-                 </div>
-                 {/* Filters Wrapper */}
-                 <div className="flex flex-col md:flex-row flex-wrap gap-3 w-full md:w-auto">
-                    {/* Search Field */}
-                    <div className="relative flex-grow md:flex-grow-0">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                {/* Filters Row */}
+                <div className="px-5 py-3 flex flex-col sm:flex-row flex-wrap gap-3 items-center bg-gray-50/60">
+                    <div className="relative flex-grow sm:max-w-xs w-full">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={15} />
                         <input
                             type="text"
                             placeholder="Cari nama, NIK, atau No Pin..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full md:w-64 text-xs shadow-sm font-medium bg-white"
+                            className="pl-9 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full text-xs font-medium bg-white shadow-sm"
                         />
                     </div>
-
-                    {/* Date Filters */}
-                    <div className="flex items-center gap-2 flex-grow md:flex-grow-0">
-                        <div className="relative flex-grow">
-                            <input
-                                type="date"
-                                value={startDate}
-                                onChange={(e) => setStartDate(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs bg-white shadow-sm font-bold"
-                            />
-                        </div>
-                        <span className="text-gray-400 font-bold hidden sm:block text-xs">s/d</span>
-                        <div className="relative flex-grow">
-                            <input
-                                type="date"
-                                value={endDate}
-                                onChange={(e) => setEndDate(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs bg-white shadow-sm font-bold"
-                            />
-                        </div>
+                    <div className="flex items-center gap-2 flex-grow sm:flex-grow-0 w-full sm:w-auto">
+                        <input
+                            type="date"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            className="flex-1 px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs bg-white font-bold shadow-sm"
+                        />
+                        <span className="text-gray-400 font-bold text-xs shrink-0">s/d</span>
+                        <input
+                            type="date"
+                            value={endDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                            className="flex-1 px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs bg-white font-bold shadow-sm"
+                        />
                     </div>
-
-                    {/* Company Select */}
-                    <div className="relative">
-                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                    <div className="relative w-full sm:w-auto">
+                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={13} />
                         <select
                             value={filterCompany}
                             onChange={(e) => setFilterCompany(e.target.value)}
-                            className="w-full pl-8 pr-8 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs bg-white shadow-sm font-bold tracking-tight italic appearance-none"
+                            className="w-full pl-8 pr-8 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs bg-white font-bold tracking-tight italic appearance-none shadow-sm"
                         >
                             <option value="ALL">Semua PT</option>
                             {companies.map(c => (
@@ -171,14 +164,6 @@ const MonitorPinjaman = () => {
                             ))}
                         </select>
                     </div>
-
-                    {/* Export Button */}
-                    <button
-                        onClick={handleExportExcel}
-                        className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-[10px] font-black hover:bg-emerald-700 transition-all shadow-sm"
-                    >
-                        <Download size={14} /> <span className="md:inline">Export Excel</span>
-                    </button>
                 </div>
             </div>
 
