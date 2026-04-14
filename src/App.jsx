@@ -35,6 +35,8 @@ import MemberReport from './pages/Admin/Reports/MemberReport';
 import InstallmentReport from './pages/Admin/Reports/InstallmentReport';
 import InterestReport from './pages/Admin/Reports/InterestReport';
 import OutstandingLoanReport from './pages/Admin/Reports/OutstandingLoanReport';
+import MemberDetail from './pages/Admin/MemberDetail';
+import MemberApplicationDetail from './pages/Admin/MemberApplicationDetail';
 
 function App() {
   return (
@@ -62,6 +64,7 @@ function App() {
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminOverview />} />
             <Route path="pengajuan-anggota" element={<PengajuanAnggota />} />
+            <Route path="member-applications/:id" element={<MemberApplicationDetail />} />
             <Route path="assesment-pinjaman" element={<AssesmentPinjaman />} />
             <Route path="assesment-pinjaman/:id" element={<AssesmentDetail />} />
             <Route path="pencairan-pinjaman" element={<PencairanPinjaman />} />
@@ -69,6 +72,7 @@ function App() {
             <Route path="disbursement-delivery" element={<DisbursementDelivery />} />
             <Route path="realisasi-karyawan" element={<RealisasiKaryawan />} />
             <Route path="members" element={<MemberList />} />
+            <Route path="members/:id" element={<MemberDetail />} />
             <Route path="add-member" element={<AddMember />} />
             <Route path="monitor-simpanan" element={<MonitorSimpanan />} />
             <Route path="monitor-simpanan/:id" element={<SimpananDetail />} />

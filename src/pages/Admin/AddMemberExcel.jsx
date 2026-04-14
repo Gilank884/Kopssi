@@ -278,6 +278,7 @@ const AddMemberExcel = ({ onSave, isProcessing }) => {
                         <table className="w-full text-left border-collapse table-auto">
                             <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
                                 <tr>
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 w-10 text-center">No</th>
                                     {previewData.length > 0 && Object.keys(previewData[0]).slice(0, 8).map((header) => (
                                         <th key={header} className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">{header}</th>
                                     ))}
@@ -286,6 +287,9 @@ const AddMemberExcel = ({ onSave, isProcessing }) => {
                             <tbody className="divide-y divide-slate-200">
                                 {previewData.slice(0, 50).map((row, idx) => (
                                     <tr key={idx} className="hover:bg-emerald-50 transition-colors group">
+                                        <td className="px-2 py-1 text-[10px] font-black text-gray-400 italic text-center border-r border-slate-200">
+                                            {idx + 1}
+                                        </td>
                                         {Object.values(row).slice(0, 8).map((val, i) => (
                                             <td key={i} className="px-2 py-1 text-[10px] font-bold text-slate-500 border-r border-slate-200 truncate max-w-[150px] leading-tight font-mono italic">
                                                 {String(val || '-')}

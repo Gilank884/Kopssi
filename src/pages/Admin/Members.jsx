@@ -5,181 +5,6 @@ import { supabase } from '../../lib/supabaseClient';
 import { exportMembersDatabaseExcel } from '../../utils/reportExcel';
 
 
-const MemberDetailModal = ({ member, onClose, onActivate, onDeactivate, onSetPassive }) => {
-    if (!member) return null;
-
-    const sections = [
-        {
-            title: 'Informasi Pribadi',
-            icon: <User size={18} />,
-            items: [
-                { label: 'Nama Lengkap', value: member.full_name },
-                { label: 'NIK', value: member.nik },
-                { label: 'Nomor HP', value: member.phone },
-                { label: 'NPP', value: member.no_npp || '-' },
-            ]
-        },
-        {
-            title: 'Pekerjaan',
-            icon: <Briefcase size={18} />,
-            items: [
-                { label: 'Perusahaan', value: member.company || '-' },
-                { label: 'Unit Kerja', value: member.work_unit || '-' },
-                { label: 'Status Karyawan', value: member.employment_status || '-' },
-            ]
-        },
-        {
-            title: 'Alamat & Kontak Darurat',
-            icon: <MapPin size={18} />,
-            items: [
-                { label: 'Alamat', value: member.address || '-' },
-                { label: 'Kode Pos', value: member.postal_code || '-' },
-                { label: 'Telepon Darurat', value: member.emergency_phone || '-' },
-            ]
-        },
-        {
-            title: 'Status & Administrasi',
-            icon: <CreditCard size={18} />,
-            items: [
-                { label: 'Status Keanggotaan', value: member.status || 'Pending' },
-                { label: 'Tanggal Daftar', value: new Date(member.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) },
-            ]
-        }
-    ];
-
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-                <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xl">
-                            {member.full_name.charAt(0)}
-                        </div>
-                        <div>
-                            <h3 className="text-xl font-bold text-gray-900">{member.full_name}</h3>
-                            <p className="text-sm text-gray-500">NPP: {member.no_npp || 'Belum diatur'}</p>
-                        </div>
-                    </div>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                        <X size={24} className="text-gray-400" />
-                    </button>
-                </div>
-
-                <div className="flex-1 overflow-y-auto p-6 bg-gray-50/50">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {sections.map((section, idx) => (
-                            <div key={idx} className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                                <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-50 text-blue-600">
-                                    {section.icon}
-                                    <h4 className="font-bold text-xs tracking-wider">{section.title}</h4>
-                                </div>
-                                <div className="space-y-3">
-                                    {section.items.map((item, i) => (
-                                        <div key={i}>
-                                            <p className="text-[10px] font-bold text-gray-400 tracking-tight">{item.label}</p>
-                                            <p className="text-sm text-gray-800 font-medium capitalize">{item.value?.toLowerCase() || '-'}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="mt-6 bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                        <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-50 text-blue-600">
-                            <Calendar size={18} />
-                            <h4 className="font-bold text-xs tracking-wider">Dokumen</h4>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            {['ktp_file_path', 'id_card_file_path', 'photo_34_file_path'].map((field, i) => (
-                                <div key={i} className="p-4 border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center gap-2 bg-gray-50">
-                                    <p className="text-[10px] font-bold text-gray-500">{field.replace(/_/g, ' ')}</p>
-                                    {member[field] ? (
-                                        <img src={member[field]} alt={field} className="w-full h-24 object-cover rounded-md" />
-                                    ) : (
-                                        <span className="text-xs text-gray-400 italic">No Preview Available</span>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-
-                <div className="p-4 border-t border-gray-100 bg-white flex justify-end gap-3">
-                    {(member.status?.toLowerCase() === 'active' || member.status?.toLowerCase() === 'verified' || !member.status) && (
-                        <>
-                            <button
-                                onClick={() => {
-                                    if (window.confirm(`Apakah Anda yakin ingin MEMASIFKAN anggota ${member.full_name}?`)) {
-                                        onSetPassive(member.id);
-                                    }
-                                }}
-                                className="px-6 py-2 rounded-lg bg-amber-50 text-amber-600 border border-amber-100 text-sm font-bold hover:bg-amber-100 transition-colors tracking-tight"
-                            >
-                                Pasifkan Anggota
-                            </button>
-                            <button
-                                onClick={() => {
-                                    if (window.confirm(`Apakah Anda yakin ingin MENONAKTIFKAN anggota ${member.full_name}?\n\nSeluruh simpanan akan dikembalikan dan pinjaman berjalan akan diperhitungkan.`)) {
-                                        onDeactivate(member.id);
-                                    }
-                                }}
-                                className="px-6 py-2 rounded-lg bg-red-50 text-red-600 border border-red-100 text-sm font-bold hover:bg-red-100 transition-colors tracking-tight"
-                            >
-                                Non-Aktifkan Anggota
-                            </button>
-                        </>
-                    )}
-
-                    {(member.status?.toLowerCase() === 'pasif') && (
-                        <>
-                            <button
-                                onClick={() => {
-                                    if (window.confirm(`Apakah Anda yakin ingin MENGAKTIFKAN kembali anggota ${member.full_name}?`)) {
-                                        onActivate(member.id);
-                                    }
-                                }}
-                                className="px-6 py-2 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 text-sm font-bold hover:bg-emerald-100 transition-colors tracking-tight"
-                            >
-                                Aktifkan Anggota
-                            </button>
-                            <button
-                                onClick={() => {
-                                    if (window.confirm(`Apakah Anda yakin ingin MENONAKTIFKAN anggota ${member.full_name}?\n\nSeluruh simpanan akan dikembalikan dan pinjaman berjalan akan diperhitungkan.`)) {
-                                        onDeactivate(member.id);
-                                    }
-                                }}
-                                className="px-6 py-2 rounded-lg bg-red-50 text-red-600 border border-red-100 text-sm font-bold hover:bg-red-100 transition-colors tracking-tight"
-                            >
-                                Non-Aktifkan Anggota
-                            </button>
-                        </>
-                    )}
-
-                    {(member.status?.toLowerCase() === 'non_active' || member.status?.toLowerCase() === 'nonaktif') && (
-                        <button
-                            onClick={() => {
-                                if (window.confirm(`Apakah Anda yakin ingin MENGAKTIFKAN kembali anggota ${member.full_name}?`)) {
-                                    onActivate(member.id);
-                                }
-                            }}
-                            className="px-6 py-2 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 text-sm font-bold hover:bg-emerald-100 transition-colors tracking-tight"
-                        >
-                            Aktifkan Anggota
-                        </button>
-                    )}
-                    <button
-                        onClick={onClose}
-                        className="px-6 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
-                    >
-                        Tutup
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-};
-
 const MemberList = () => {
     const navigate = useNavigate();
     const [members, setMembers] = useState([]);
@@ -187,85 +12,6 @@ const MemberList = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterCompany, setFilterCompany] = useState('ALL');
     const [companies, setCompanies] = useState([]);
-    const [selectedMember, setSelectedMember] = useState(null);
-    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-    const [isProcessing, setIsProcessing] = useState(false);
-
-    const handleActivateMember = async (memberId) => {
-        try {
-            setIsProcessing(true);
-            const { error } = await supabase
-                .from('personal_data')
-                .update({
-                    status: 'ACTIVE',
-                    keluar_anggota: null,
-                    tanggal_keluar: null,
-                    sebab_keluar: null,
-                    exit_realisasi_status: null,
-                    exit_realisasi_date: null
-                })
-                .eq('id', memberId);
-
-            if (error) throw error;
-
-            alert('Anggota berhasil diaktifkan kembali!');
-            setIsDetailModalOpen(false);
-            fetchMembers();
-        } catch (err) {
-            console.error("Error activating member:", err);
-            alert("Gagal mengaktifkan anggota: " + err.message);
-        } finally {
-            setIsProcessing(false);
-        }
-    };
-
-    const handleSetPassiveMember = async (memberId) => {
-        try {
-            setIsProcessing(true);
-            const { error } = await supabase
-                .from('personal_data')
-                .update({ status: 'PASIF' })
-                .eq('id', memberId);
-
-            if (error) throw error;
-
-            alert('Status anggota berhasil diubah menjadi PASIF!');
-            setIsDetailModalOpen(false);
-            fetchMembers();
-        } catch (err) {
-            console.error("Error setting member to passive:", err);
-            alert("Gagal memasifkan anggota: " + err.message);
-        } finally {
-            setIsProcessing(false);
-        }
-    };
-
-    const handleDeactivateMember = async (memberId) => {
-        try {
-            setIsProcessing(true);
-            const { error } = await supabase
-                .from('personal_data')
-                .update({
-                    status: 'NON_ACTIVE',
-                    keluar_anggota: 'Y',
-                    tanggal_keluar: new Date().toISOString(),
-                    sebab_keluar: 'NONAKTIFKAN OLEH ADMIN',
-                    exit_realisasi_status: 'PENDING'
-                })
-                .eq('id', memberId);
-
-            if (error) throw error;
-
-            alert('Anggota berhasil dinonaktifkan! Silakan proses pengembalian dana di halaman Realisasi.');
-            setIsDetailModalOpen(false);
-            fetchMembers();
-        } catch (err) {
-            console.error("Error deactivating member:", err);
-            alert("Gagal menonaktifkan anggota: " + err.message);
-        } finally {
-            setIsProcessing(false);
-        }
-    };
 
     const fetchCompanies = async () => {
         try {
@@ -323,8 +69,7 @@ const MemberList = () => {
     });
 
     const handleRowClick = (member) => {
-        setSelectedMember(member);
-        setIsDetailModalOpen(true);
+        navigate(`/admin/members/${member.id}`);
     };
 
     if (loading && members.length === 0) return (
@@ -383,13 +128,13 @@ const MemberList = () => {
                     <table className="w-full text-left border-collapse table-auto">
                         <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
                             <tr>
-                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center w-8">No</th>
-                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Nama</th>
-                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">NIK</th>
-                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center">NPP</th>
-                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Perusahaan</th>
-                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200">Status</th>
-                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic text-center">Aksi</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center w-12 bg-emerald-50/50">No</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 bg-emerald-50/50">Nama</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 bg-emerald-50/50">NIK</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center bg-emerald-50/50">NPP</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 bg-emerald-50/50">Perusahaan</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 bg-emerald-50/50">Status</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic text-center bg-emerald-50/50">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200">
@@ -499,23 +244,6 @@ const MemberList = () => {
                     <span className="md:hidden">Klik kartu untuk detail</span>
                 </div>
             </div>
-
-
-
-            {isDetailModalOpen && (
-                <MemberDetailModal
-                    member={selectedMember}
-                    onClose={() => setIsDetailModalOpen(false)}
-                    onActivate={handleActivateMember}
-                    onDeactivate={handleDeactivateMember}
-                    onSetPassive={handleSetPassiveMember}
-                />
-            )}
-            {isProcessing && (
-                <div className="fixed inset-0 z-[60] bg-black/20 backdrop-blur-[2px] flex items-center justify-center">
-                    <Loader2 className="animate-spin text-blue-600" size={48} />
-                </div>
-            )}
         </div>
     );
 };

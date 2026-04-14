@@ -171,6 +171,7 @@ const SimpananDetail = () => {
                     <table className="w-full text-left border-collapse table-auto">
                         <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
                             <tr>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 w-12 text-center bg-emerald-50/50">No</th>
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 bg-emerald-50/50">Tanggal</th>
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center bg-emerald-50/50">Jenis</th>
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 bg-emerald-50/50">Tipe Simpanan</th>
@@ -181,13 +182,16 @@ const SimpananDetail = () => {
                         <tbody className="divide-y divide-slate-200">
                             {savings.length === 0 ? (
                                 <tr>
-                                    <td colSpan="5" className="px-6 py-20 text-center text-slate-400">
+                                    <td colSpan="6" className="px-6 py-20 text-center text-slate-400">
                                         <p className="font-black text-[10px] tracking-widest italic">Belum ada riwayat transaksi</p>
                                     </td>
                                 </tr>
                             ) : (
-                                savings.map((item) => (
+                                savings.map((item, index) => (
                                     <tr key={item.id} className="hover:bg-emerald-50 transition-colors group">
+                                        <td className="px-2 py-1 border-r border-slate-200 text-center">
+                                            <span className="text-[10px] font-black text-gray-400 italic">{index + 1}</span>
+                                        </td>
                                         <td className="px-2 py-1 text-[10px] font-bold text-slate-500 border-r border-slate-200 leading-none whitespace-nowrap italic">
                                             {new Date(item.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                         </td>

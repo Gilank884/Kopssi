@@ -139,6 +139,7 @@ const Angsuran = () => {
                     <table className="w-full text-left bg-white">
                         <thead className="bg-gray-50 text-gray-400 text-[10px] font-black uppercase tracking-widest border-b border-gray-100">
                             <tr>
+                                <th className="px-4 py-4 font-black text-center w-12">No</th>
                                 <th className="px-6 py-4 font-black">Pinjaman</th>
                                 <th className="px-6 py-4 font-black text-center">Bulan</th>
                                 <th className="px-6 py-4 font-black">Jatuh Tempo</th>
@@ -149,8 +150,11 @@ const Angsuran = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {schedule.map((item) => (
+                            {schedule.map((item, index) => (
                                 <tr key={item.id} className="hover:bg-emerald-50/20 transition-colors group">
+                                    <td className="px-4 py-4 text-center">
+                                        <span className="text-[10px] font-black text-gray-400 italic">{index + 1}</span>
+                                    </td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-2">
                                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>

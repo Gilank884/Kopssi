@@ -166,6 +166,7 @@ const MonitorSimpanan = () => {
                     <table className="w-full text-left border-collapse table-auto">
                         <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
                             <tr>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 w-12 text-center bg-emerald-50/50">No</th>
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 bg-emerald-50/50">Nama</th>
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 bg-emerald-50/50">NIK</th>
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center bg-emerald-50/50">No. Anggota / NPP</th>
@@ -177,25 +178,28 @@ const MonitorSimpanan = () => {
                         <tbody className="divide-y divide-slate-200">
                             {loading ? (
                                 <tr>
-                                    <td colSpan="6" className="px-6 py-20 text-center text-slate-500">
+                                    <td colSpan="7" className="px-6 py-20 text-center text-slate-500">
                                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-4"></div>
                                         <p className="text-[10px] font-black tracking-widest italic opacity-50">Memuat data...</p>
                                     </td>
                                 </tr>
                             ) : filteredMembers.length === 0 ? (
                                 <tr>
-                                    <td colSpan="6" className="px-6 py-20 text-center text-slate-400 italic font-black tracking-widest">
+                                    <td colSpan="7" className="px-6 py-20 text-center text-slate-400 italic font-black tracking-widest">
                                         <User className="mx-auto opacity-20 mb-4" size={40} />
                                         <p>Tidak ada anggota ditemukan</p>
                                     </td>
                                 </tr>
                             ) : (
-                                paginatedMembers.map((m) => (
+                                paginatedMembers.map((m, idx) => (
                                     <tr
                                         key={m.id}
                                         onClick={() => navigate(`/admin/monitor-simpanan/${m.id}`)}
                                         className="hover:bg-emerald-50 transition-colors group cursor-pointer"
                                     >
+                                        <td className="px-2 py-1 border-r border-slate-200 text-center">
+                                            <span className="text-[10px] font-black text-gray-400 italic">{(currentPage - 1) * itemsPerPage + idx + 1}</span>
+                                        </td>
                                         <td className="px-2 py-1 border-r border-slate-200">
                                             <span className="text-[11px] font-black text-slate-800 italic tracking-tight leading-none">
                                                 {m.full_name || '-'}

@@ -68,7 +68,7 @@ const InterestReport = () => {
                 {/* Title Row */}
                 <div className="px-5 pt-5 pb-4 border-b border-gray-100 flex items-center justify-between">
                     <div>
-                        <h2 className="text-xl md:text-2xl font-black text-gray-900 italic tracking-tight leading-none">Pendapatan Bunga</h2>
+                        <h2 className="text-xl md:text-2xl font-black text-gray-900 italic tracking-tight leading-none">Bagi Hasil</h2>
                         <p className="text-[11px] text-gray-400 mt-1 font-medium italic tracking-tight">Laporan Porsi Bunga Pinjaman</p>
                     </div>
                     <button

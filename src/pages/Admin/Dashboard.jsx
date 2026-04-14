@@ -241,22 +241,7 @@ const AdminOverview = () => {
                     <p className="text-xs md:text-sm text-gray-500 mt-1 font-medium italic">Ringkasan aktivitas dan performa sistem hari ini</p>
                 </div>
                 <div className="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto">
-                    <button
-                        onClick={async () => {
-                            if (!window.confirm("Initialize sample data? This will add synchronized records for testing.")) return;
-                            const { seedSynchronizedData } = await import('../../utils/dataSeeder');
-                            const result = await seedSynchronizedData();
-                            if (result.success) {
-                                alert("Data initialized successfully! Refreshing dashboard...");
-                                fetchStats();
-                            } else {
-                                alert("Error: " + result.error);
-                            }
-                        }}
-                        className="px-4 py-2 bg-white border-2 border-emerald-100 text-emerald-600 rounded-2xl text-[10px] font-black hover:bg-emerald-50 transition-all shadow-sm h-full"
-                    >
-                        Seed Sample Data
-                    </button>
+
                     <div className="px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-2xl w-full sm:w-auto">
                         <p className="text-[9px] font-black text-emerald-600 tracking-widest italic">Status Sistem</p>
                         <p className="text-xs font-bold text-emerald-800">Operational • Optimal</p>

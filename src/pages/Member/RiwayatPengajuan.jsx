@@ -116,6 +116,7 @@ const RiwayatPengajuan = () => {
                     <table className="w-full text-left">
                         <thead className="bg-gray-50/50 text-gray-400 text-[10px] font-black uppercase tracking-widest border-b border-gray-100">
                             <tr>
+                                <th className="px-4 py-4 text-center w-12">No</th>
                                 <th className="px-6 py-4">No. Pinjaman</th>
                                 <th className="px-6 py-4">Tanggal</th>
                                 <th className="px-6 py-4">Jumlah</th>
@@ -125,12 +126,15 @@ const RiwayatPengajuan = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 italic">
-                            {loans.map((ln) => (
+                            {loans.map((ln, index) => (
                                 <tr
                                     key={ln.id}
                                     onClick={() => navigate(`/dashboard/pengajuan-pinjaman/${ln.id}`)}
                                     className="hover:bg-emerald-50/20 transition-all cursor-pointer group"
                                 >
+                                    <td className="px-4 py-4 text-center">
+                                        <span className="text-[10px] font-black text-gray-400 italic">{index + 1}</span>
+                                    </td>
                                     <td className="px-6 py-4">
                                         <span className="text-sm font-black text-gray-800 font-mono italic">{ln.no_pinjaman}</span>
                                     </td>

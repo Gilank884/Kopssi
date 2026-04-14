@@ -257,6 +257,7 @@ const Simpanan = () => {
                         <table className="w-full text-left bg-white">
                             <thead className="bg-gray-50 text-gray-400 text-[10px] font-black uppercase tracking-widest border-b border-gray-100">
                                 <tr>
+                                    <th className="px-4 py-4 font-black text-center w-12">No</th>
                                     <th className="px-6 py-4 font-black">Bulan Ke</th>
                                     <th className="px-6 py-4 font-black">Jatuh Tempo</th>
                                     <th className="px-6 py-4 font-black text-right">Simp. Pokok</th>
@@ -267,10 +268,13 @@ const Simpanan = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100 italic">
-                                {bills.map((bill) => {
+                                {bills.map((bill, index) => {
                                     const totalBill = parseFloat(bill.amount_pokok || 0) + parseFloat(bill.amount_wajib || 0) + parseFloat(bill.amount_wajib_khusus || 0); // Exclude parkir from member total bill
                                     return (
                                         <tr key={bill.id} className="hover:bg-gray-50 transition-colors group">
+                                            <td className="px-4 py-4 text-center">
+                                                <span className="text-[10px] font-black text-gray-400 italic">{index + 1}</span>
+                                            </td>
                                             <td className="px-6 py-4 text-center w-24">
                                                 <span className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-black text-gray-500 shadow-inner group-hover:bg-amber-100 group-hover:text-amber-700 transition-colors">#{bill.bulan_ke}</span>
                                             </td>
@@ -317,6 +321,7 @@ const Simpanan = () => {
                     <table className="w-full text-left">
                         <thead className="bg-gray-50 text-gray-400 text-[10px] font-bold uppercase tracking-widest border-b border-gray-100">
                             <tr>
+                                <th className="px-4 py-4 text-center w-12">No</th>
                                 <th className="px-6 py-4 text-left">Tanggal</th>
                                 <th className="px-6 py-4">Jenis Simpanan</th>
                                 <th className="px-6 py-4">Transaksi</th>
@@ -325,8 +330,11 @@ const Simpanan = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {history.map((item) => (
+                            {history.map((item, index) => (
                                 <tr key={item.id} className="hover:bg-gray-50 transition-colors italic group text-sm">
+                                    <td className="px-4 py-4 text-center">
+                                        <span className="text-[10px] font-black text-gray-400 italic">{index + 1}</span>
+                                    </td>
                                     <td className="px-6 py-4 text-gray-500 font-bold">{item.date}</td>
                                     <td className="px-6 py-4 text-gray-700 font-bold uppercase tracking-tight">{item.type}</td>
                                     <td className="px-6 py-4">

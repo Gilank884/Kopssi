@@ -92,6 +92,7 @@ const InstallmentSummary = ({ loan, installments, userLoans, formatCurrency, sel
                                     <table className="w-full text-left border-collapse table-auto">
                                         <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
                                             <tr>
+                                                <th className="px-2 py-2 text-[10px] font-black text-slate-700 uppercase italic tracking-widest border-r border-slate-200 w-10 text-center">No</th>
                                                 <th className="px-2 py-2 text-[10px] font-black text-slate-700 uppercase italic tracking-widest border-r border-slate-200">Tgl Tagih</th>
                                                 <th className="px-2 py-2 text-[10px] font-black text-slate-700 uppercase italic tracking-widest border-r border-slate-200 text-right">Pokok</th>
                                                 <th className="px-2 py-2 text-[10px] font-black text-slate-700 uppercase italic tracking-widest border-r border-slate-200 text-right">Bunga</th>
@@ -104,26 +105,29 @@ const InstallmentSummary = ({ loan, installments, userLoans, formatCurrency, sel
                                             {(() => {
                                                 const principalAmt = parseFloat(loan.jumlah_pinjaman) || 0;
                                                 const tenorMonths = loan.tenor_bulan || 1;
-
+ 
                                                 let totalBungaAmt = 0;
                                                 if (loan.tipe_bunga === 'PERSENAN') {
                                                     totalBungaAmt = principalAmt * (parseFloat(loan.nilai_bunga || 0) / 100) * (tenorMonths / 12);
                                                 } else if (loan.tipe_bunga === 'NOMINAL') {
                                                     totalBungaAmt = parseFloat(loan.nilai_bunga || 0);
                                                 }
-
+ 
                                                 const stdPokok = Math.floor(principalAmt / tenorMonths);
                                                 const stdBunga = Math.round(totalBungaAmt / tenorMonths);
-
+ 
                                                 let sumPokok = 0;
                                                 let sumBunga = 0;
                                                 let sumTotal = 0;
                                                 let runningSaldo = principalAmt;
-
+ 
                                                 return (
                                                     <>
                                                         {currentInstallments.length > 0 && (
                                                             <tr className="bg-slate-50/50">
+                                                                <td className="px-2 py-1 text-[10px] font-black text-gray-400 italic text-center border-r border-slate-200">
+                                                                    -
+                                                                </td>
                                                                 <td className="px-2 py-1 text-[10px] font-black text-slate-400 uppercase italic border-r border-slate-200">-</td>
                                                                 <td className="px-2 py-1 text-[10px] font-black text-slate-300 italic text-right border-r border-slate-200">-</td>
                                                                 <td className="px-2 py-1 text-[10px] font-black text-slate-300 italic text-right border-r border-slate-200">-</td>
@@ -139,24 +143,27 @@ const InstallmentSummary = ({ loan, installments, userLoans, formatCurrency, sel
 
                                                         {currentInstallments.map((inst, idx) => {
                                                             const isLast = idx === currentInstallments.length - 1;
-
+ 
                                                             let currentPokok = stdPokok;
                                                             let currentBunga = stdBunga;
-
+ 
                                                             if (isLast) {
                                                                 currentPokok = principalAmt - (stdPokok * (tenorMonths - 1));
                                                                 currentBunga = totalBungaAmt - (stdBunga * (tenorMonths - 1));
                                                             }
-
+ 
                                                             const currentTotal = currentPokok + currentBunga;
                                                             runningSaldo -= currentPokok;
-
+ 
                                                             sumPokok += currentPokok;
                                                             sumBunga += currentBunga;
                                                             sumTotal += currentTotal;
-
+ 
                                                             return (
                                                                 <tr key={inst.id} className={`group hover:bg-emerald-50 transition-colors ${inst.status === 'PAID' ? 'bg-blue-50/10' : ''}`}>
+                                                                    <td className="px-2 py-1 text-[10px] font-black text-gray-400 italic text-center border-r border-slate-200">
+                                                                        {idx + 1}
+                                                                    </td>
                                                                     <td className="px-2 py-1 text-[10px] font-bold text-slate-600 uppercase italic border-r border-slate-200 whitespace-nowrap">
                                                                         {new Date(inst.tanggal_bayar).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                                                                     </td>

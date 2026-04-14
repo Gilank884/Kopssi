@@ -387,6 +387,7 @@ const UploadSimpanan = () => {
                         <table className="w-full text-left border-collapse table-auto">
                             <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
                                 <tr className="text-gray-400">
+                                    <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 w-10 text-center bg-emerald-50/50">No</th>
                                     <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 bg-emerald-50/50">Validasi</th>
                                     <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center bg-emerald-50/50">NIK</th>
                                     <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 bg-emerald-50/50">Anggota</th>
@@ -401,6 +402,9 @@ const UploadSimpanan = () => {
                             <tbody className="divide-y divide-slate-200">
                                 {previewData.map((row, idx) => (
                                     <tr key={idx} className="hover:bg-emerald-50 transition-colors group">
+                                        <td className="px-2 py-1 text-[10px] font-black text-gray-400 italic text-center border-r border-slate-200 leading-none">
+                                            {idx + 1}
+                                        </td>
                                         <td className="px-2 py-1 border-r border-slate-200">
                                             {row.status === 'VALID' ? (
                                                 <span className="px-1.5 py-0.5 bg-emerald-600 text-white rounded text-[8px] font-black uppercase tracking-tighter shadow-sm">MATCH</span>

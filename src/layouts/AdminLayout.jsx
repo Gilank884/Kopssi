@@ -22,7 +22,11 @@ import {
     UserCircle,
     CheckCircle,
     Percent,
-    Landmark
+    Landmark,
+    X,
+    ChevronLeft,
+    ChevronRight,
+    ChevronRight as ChevronRightIcon
 } from 'lucide-react';
 import LogoutModal from '../components/LogoutModal';
 
@@ -35,6 +39,7 @@ const AdminLayout = () => {
     const [countDisbursement, setCountDisbursement] = useState(0);
     const [countDelivery, setCountDelivery] = useState(0);
     const [countExit, setCountExit] = useState(0);
+    const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -131,11 +136,33 @@ const AdminLayout = () => {
             children: [
                 { path: '/admin/reports/members', label: 'Laporan Anggota', icon: <Users size={18} /> },
                 { path: '/admin/reports/installments', label: 'Laporan Angsuran', icon: <Banknote size={18} /> },
-                { path: '/admin/reports/interest', label: 'Laporan Pendapatan Bunga', icon: <Percent size={18} /> },
+                { path: '/admin/reports/interest', label: 'Laporan Bagi Hasil', icon: <Percent size={18} /> },
                 { path: '/admin/reports/outstanding', label: 'Laporan Sisa Pinjaman', icon: <Landmark size={18} /> },
             ]
         }
     ];
+
+    // SEARCH LOGIC
+    const filteredNavItems = searchQuery
+        ? navItems.map(item => {
+            const matchesParent = item.label.toLowerCase().includes(searchQuery.toLowerCase());
+            let matchedChildren = null;
+
+            if (item.children) {
+                matchedChildren = item.children.filter(sub =>
+                    sub.label.toLowerCase().includes(searchQuery.toLowerCase())
+                );
+            }
+
+            if (matchesParent || (matchedChildren && matchedChildren.length > 0)) {
+                return {
+                    ...item,
+                    children: item.children ? (matchesParent ? item.children : matchedChildren) : null
+                };
+            }
+            return null;
+        }).filter(Boolean)
+        : navItems;
 
     useEffect(() => {
         fetchPendingCount();
@@ -256,16 +283,26 @@ const AdminLayout = () => {
         }
     };
 
-    // AUTO OPEN SUBMENU SESUAI URL
+    // AUTO OPEN SUBMENU ON SEARCH OR URL CHANGE
     useEffect(() => {
-        const activeMenus = {};
-        navItems.forEach((item, idx) => {
-            if (item.children?.some(sub => location.pathname.startsWith(sub.path))) {
-                activeMenus[idx] = true;
-            }
-        });
-        setOpenMenus(activeMenus);
-    }, [location.pathname]);
+        if (searchQuery.trim() !== '') {
+            const activeMenus = {};
+            filteredNavItems.forEach((item, idx) => {
+                if (item.children && item.children.length > 0) {
+                    activeMenus[idx] = true;
+                }
+            });
+            setOpenMenus(activeMenus);
+        } else {
+            const activeMenus = {};
+            navItems.forEach((item, idx) => {
+                if (item.children?.some(sub => location.pathname.startsWith(sub.path))) {
+                    activeMenus[idx] = true;
+                }
+            });
+            setOpenMenus(activeMenus);
+        }
+    }, [searchQuery, location.pathname]);
 
     const toggleMenu = (idx) => {
         setOpenMenus(prev => ({
@@ -290,144 +327,175 @@ const AdminLayout = () => {
             )}
 
             {/* SIDEBAR */}
-            <aside className={`bg-[#0f172a] border-r border-slate-800/50 shadow-2xl
-                ${isSidebarOpen ? 'translate-x-0 w-72' : '-translate-x-full lg:translate-x-0 lg:w-24'}
+            <aside className={`bg-white border-r border-slate-200 shadow-xl relative
+                ${isSidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full lg:translate-x-0 lg:w-20'}
                 fixed lg:relative h-full z-50 transition-all duration-300 ease-in-out flex flex-col`}
             >
+                {/* FLOATING TOGGLE BUTTON */}
+                <button
+                    onClick={() => setSidebarOpen(!isSidebarOpen)}
+                    className="absolute -right-4 top-8 w-8 h-8 bg-white border border-slate-200 rounded-full flex items-center justify-center shadow-lg text-slate-400 hover:text-blue-600 transition-all z-[60] group active:scale-90"
+                >
+                    {isSidebarOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+                </button>
                 {/* BRANDING */}
-                <div className="h-20 flex items-center justify-center border-b border-slate-800/50 relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="h-20 flex items-center px-5 border-b border-slate-100 relative overflow-hidden group bg-blue-50/20">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     {isSidebarOpen ? (
-                        <div className="flex items-center gap-3 z-10 animate-in fade-in zoom-in duration-300">
-                            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-black shadow-lg shadow-emerald-500/20">
-                                K
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-xl font-black text-white tracking-tight leading-none">KOPSSI</span>
-                                <span className="text-[10px] uppercase text-slate-400 font-black tracking-widest mt-1 opacity-70">Admin Panel</span>
+                        <div className="flex items-center justify-between w-full z-10 animate-in fade-in zoom-in duration-300 transition-all">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-black shadow-lg shadow-blue-200">
+                                    K
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-xl font-black text-slate-800 tracking-tighter leading-none italic">KOPSSI</span>
+                                    <span className="text-[9px] uppercase text-blue-600 font-black tracking-widest mt-1 opacity-80">Admin Panel</span>
+                                </div>
                             </div>
                         </div>
                     ) : (
-                        <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-emerald-500/20 transform hover:scale-110 transition-transform cursor-pointer" onClick={() => setSidebarOpen(true)}>
-                            K
+                        <div className="w-full flex justify-center">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-blue-200 transform hover:scale-110 transition-transform cursor-pointer" onClick={() => setSidebarOpen(true)}>
+                                K
+                            </div>
                         </div>
                     )}
                 </div>
 
                 {/* NAVIGATION */}
-                <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto scrollbar-hide">
-                    {navItems.map((item, idx) => (
-                        <div key={idx}>
-                            {/* PARENT ITEM */}
-                            {item.path ? (
-                                <NavLink
-                                    to={item.path}
-                                    end={item.end}
-                                    className={({ isActive }) =>
-                                        `flex items-center gap-3 px-3 py-3 rounded-xl font-bold text-sm transition-all duration-200 group relative
-                                        ${isActive
-                                            ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-lg shadow-emerald-900/50'
-                                            : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'}`
-                                    }
-                                >
-                                    <div className="relative">
-                                        {item.icon}
-                                        {item.label === 'Manajemen Anggota' && pendingCount > 0 && (
-                                            <span className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-red-500 rounded-full border-2 border-slate-900 animate-pulse"></span>
-                                        )}
-                                    </div>
-                                    {isSidebarOpen && <span className="tracking-wide">{item.label}</span>}
-
-                                    {/* Active Indicator Line */}
-                                    {/* {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white/30 rounded-r-lg"></div>} */}
-                                </NavLink>
-                            ) : (
-                                <button
-                                    onClick={() => toggleMenu(idx)}
-                                    className={`w-full flex items-center justify-between px-3 py-3 rounded-xl font-bold text-sm transition-all duration-200 group
-                                        ${openMenus[idx] ? 'text-white' : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'}`}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className="relative">
-                                            {item.icon}
-                                            {item.label === 'Manajemen Anggota' && pendingCount > 0 && (
-                                                <span className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-red-500 rounded-full border-2 border-slate-900 animate-pulse"></span>
-                                            )}
-                                            {item.label === 'Pinjaman' && (countAssessment > 0 || countDisbursement > 0) && (
-                                                <span className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-red-500 rounded-full border-2 border-slate-900 animate-pulse"></span>
-                                            )}
-                                            {item.label === 'Realisasi' && (countDelivery > 0 || countExit > 0) && (
-                                                <span className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-red-500 rounded-full border-2 border-slate-900 animate-pulse"></span>
-                                            )}
-                                        </div>
-                                        {isSidebarOpen && <span className="tracking-wide">{item.label}</span>}
-                                    </div>
-                                    {isSidebarOpen && (
-                                        <ChevronDown
-                                            size={16}
-                                            className={`transition-transform duration-300 ${openMenus[idx] ? 'rotate-180 text-emerald-400' : 'text-slate-600 group-hover:text-slate-400'}`}
-                                        />
-                                    )}
-                                </button>
-                            )}
-
-                            {/* SUBMENU */}
-                            {item.children && (
-                                <div
-                                    className={`
-                                        overflow-hidden transition-all duration-300 ease-in-out
-                                        ${openMenus[idx] && isSidebarOpen
-                                            ? 'max-h-96 opacity-100 mb-2'
-                                            : 'max-h-0 opacity-0'}
-                                    `}
-                                >
-                                    <div className="ml-5 pl-4 border-l-2 border-slate-800 space-y-1 mt-1">
-                                        {item.children.map(sub => (
+                <nav className="flex-1 px-3 py-6 space-y-6 overflow-y-auto scrollbar-hide">
+                    <div className="space-y-3">
+                        {isSidebarOpen && (
+                            <div className="flex items-center justify-between px-3">
+                                <h4 className="text-[10px] font-black text-slate-400 tracking-[1.5px] uppercase opacity-60">Main Menu</h4>
+                                {searchQuery && (
+                                    <span className="text-[9px] px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded font-bold animate-pulse">
+                                        Filtered
+                                    </span>
+                                )}
+                            </div>
+                        )}
+                        <div className="space-y-1">
+                            {filteredNavItems.length > 0 ? (
+                                filteredNavItems.map((item, idx) => (
+                                    <div key={idx}>
+                                        {/* PARENT ITEM */}
+                                        {item.path ? (
                                             <NavLink
-                                                key={sub.path}
-                                                to={sub.path}
+                                                to={item.path}
+                                                end={item.end}
                                                 className={({ isActive }) =>
-                                                    `flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-200
+                                                    `flex items-center gap-3 px-3 py-3 rounded-xl font-bold text-sm transition-all duration-200 group relative
                                                     ${isActive
-                                                        ? 'text-emerald-400 bg-emerald-500/10'
-                                                        : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/30'}`
+                                                        ? 'bg-blue-50 text-blue-600 shadow-sm border border-blue-100/30'
+                                                        : 'text-slate-500 hover:bg-slate-50 hover:text-blue-600'}`
                                                 }
                                             >
                                                 <div className="relative">
-                                                    {sub.icon}
-                                                    {sub.label === 'Pengajuan Anggota' && pendingCount > 0 && (
-                                                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-                                                    )}
-                                                    {sub.label === 'Pengajuan Pinjaman' && countAssessment > 0 && (
-                                                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-                                                    )}
-                                                    {sub.label === 'Pencairan Pinjaman' && countDisbursement > 0 && (
-                                                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-                                                    )}
-                                                    {sub.label === 'Realisasi Pinjaman' && countDelivery > 0 && (
-                                                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-                                                    )}
-                                                    {sub.label === 'Realisasi Karyawan' && countExit > 0 && (
-                                                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                                                    {item.icon}
+                                                    {item.label === 'Manajemen Anggota' && pendingCount > 0 && (
+                                                        <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
                                                     )}
                                                 </div>
-                                                <span>{sub.label}</span>
+                                                {isSidebarOpen && <span className="tracking-tight">{item.label}</span>}
                                             </NavLink>
-                                        ))}
+                                        ) : (
+                                            <button
+                                                onClick={() => toggleMenu(idx)}
+                                                className={`w-full flex items-center justify-between px-3 py-3 rounded-xl font-bold text-sm transition-all duration-200 group
+                                                    ${openMenus[idx] ? 'text-blue-700 bg-blue-50/20' : 'text-slate-500 hover:bg-slate-50 hover:text-blue-700'}`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="relative">
+                                                        {item.icon}
+                                                        {item.label === 'Manajemen Anggota' && pendingCount > 0 && (
+                                                            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
+                                                        )}
+                                                        {item.label === 'Pinjaman' && (countAssessment > 0 || countDisbursement > 0) && (
+                                                            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
+                                                        )}
+                                                        {item.label === 'Realisasi' && (countDelivery > 0 || countExit > 0) && (
+                                                            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
+                                                        )}
+                                                    </div>
+                                                    {isSidebarOpen && <span className="tracking-tight">{item.label}</span>}
+                                                </div>
+                                                {isSidebarOpen && (
+                                                    <ChevronDown
+                                                        size={14}
+                                                        className={`transition-transform duration-300 ${openMenus[idx] ? 'rotate-180 text-blue-600' : 'text-slate-400 group-hover:text-blue-500'}`}
+                                                    />
+                                                )}
+                                            </button>
+                                        )}
+
+                                        {/* SUBMENU */}
+                                        {item.children && (
+                                            <div
+                                                className={`
+                                                    overflow-hidden transition-all duration-300 ease-in-out
+                                                    ${openMenus[idx] && isSidebarOpen
+                                                        ? 'max-h-96 opacity-100 mb-2'
+                                                        : 'max-h-0 opacity-0'}
+                                                `}
+                                            >
+                                                <div className="ml-7 pl-5 border-l-2 border-slate-100 space-y-1 mt-2">
+                                                    {item.children.map(sub => (
+                                                        <NavLink
+                                                            key={sub.path}
+                                                            to={sub.path}
+                                                            className={({ isActive }) =>
+                                                                `flex items-center gap-3 px-3 py-3 rounded-xl text-[13px] font-bold transition-all duration-200
+                                                                ${isActive
+                                                                    ? 'text-blue-700 bg-blue-100/30'
+                                                                    : 'text-slate-400 hover:text-blue-600 hover:bg-blue-50/30'}`
+                                                            }
+                                                        >
+                                                            <div className="relative">
+                                                                {sub.icon}
+                                                                {sub.label === 'Pengajuan Anggota' && pendingCount > 0 && (
+                                                                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                                                                )}
+                                                                {sub.label === 'Pengajuan Pinjaman' && countAssessment > 0 && (
+                                                                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                                                                )}
+                                                                {sub.label === 'Pencairan Pinjaman' && countDisbursement > 0 && (
+                                                                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                                                                )}
+                                                                {sub.label === 'Realisasi Pinjaman' && countDelivery > 0 && (
+                                                                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                                                                )}
+                                                                {sub.label === 'Realisasi Karyawan' && countExit > 0 && (
+                                                                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                                                                )}
+                                                            </div>
+                                                            <span>{sub.label}</span>
+                                                        </NavLink>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
+                                ))
+                            ) : (
+                                <div className="px-4 py-8 text-center">
+                                    <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-300">
+                                        <Search size={20} />
+                                    </div>
+                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Menu tidak ditemukan</p>
                                 </div>
                             )}
                         </div>
-                    ))}
+                    </div>
                 </nav>
 
                 {/* LOGOUT BUTTON */}
-                <div className="p-4 border-t border-slate-800 bg-slate-900/50">
+                <div className="p-4 border-t border-slate-100 bg-slate-50/50">
                     <button
                         onClick={handleLogoutClick}
-                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-all duration-200 group border border-transparent hover:border-rose-500/20"
+                        className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-all duration-300 group border border-transparent hover:border-rose-100"
                     >
-                        <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
+                        <LogOut size={18} className="group-hover:-translate-x-1 transition-transform" />
                         {isSidebarOpen && <span>Logout</span>}
                     </button>
                 </div>
@@ -450,21 +518,31 @@ const AdminLayout = () => {
                             <h1 className="text-lg md:text-xl font-black text-slate-800 tracking-tight leading-none truncate max-w-[150px] md:max-w-none">
                                 {currentItem.label}
                             </h1>
-                            <span className="text-[10px] md:text-xs font-bold text-slate-400 mt-1 uppercase tracking-wider hidden sm:block">
+                            <span className="text-[10px] md:text-xs font-bold text-slate-400 mt-1 uppercase tracking-wider hidden sm:block font-mono">
                                 {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                             </span>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-2 md:gap-5">
-                        {/* Search Bar - Hidden on small screens */}
-                        <div className="hidden lg:flex items-center bg-gray-100 rounded-2xl px-4 py-2 border border-transparent focus-within:border-emerald-300 focus-within:ring-4 focus-within:ring-emerald-500/5 transition-all w-64">
-                            <Search size={16} className="text-gray-400" />
+                        {/* Search Bar - Functional for Sidebar Menu */}
+                        <div className="hidden lg:flex items-center bg-gray-100 rounded-2xl px-4 py-2 border border-transparent focus-within:border-blue-300 focus-within:ring-4 focus-within:ring-blue-500/5 transition-all w-64 relative">
+                            <Search size={16} className={`transition-colors duration-300 ${searchQuery ? 'text-blue-500' : 'text-gray-400'}`} />
                             <input
                                 type="text"
-                                placeholder="Pencarian cepat..."
+                                placeholder="Cari menu..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                                 className="bg-transparent border-none focus:outline-none text-sm ml-2 w-full font-medium text-gray-600 placeholder:text-gray-400"
                             />
+                            {searchQuery && (
+                                <button
+                                    onClick={() => setSearchQuery('')}
+                                    className="absolute right-3 p-1 rounded-full hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition-all"
+                                >
+                                    <X size={12} />
+                                </button>
+                            )}
                         </div>
 
                         <div className="h-8 w-px bg-gray-200 mx-1 hidden sm:block"></div>
@@ -475,11 +553,11 @@ const AdminLayout = () => {
                         </button>
 
                         <div className="flex items-center gap-3 md:pl-2 border-l border-transparent md:border-gray-200 cursor-pointer hover:bg-gray-50 p-1 md:p-1.5 md:pr-3 rounded-full transition-all group">
-                            <div className="w-9 h-9 md:w-10 md:h-10 bg-gradient-to-br from-emerald-100 to-teal-50 rounded-full flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100 group-hover:scale-105 transition-transform overflow-hidden">
+                            <div className="w-9 h-9 md:w-10 md:h-10 bg-gradient-to-br from-blue-100 to-indigo-50 rounded-full flex items-center justify-center text-blue-600 shadow-sm border border-blue-100 group-hover:scale-105 transition-transform overflow-hidden">
                                 <UserCircle size={24} />
                             </div>
                             <div className="hidden sm:flex flex-col text-left">
-                                <span className="text-[13px] font-black text-slate-800 leading-tight group-hover:text-emerald-700 transition-colors">Admin Super</span>
+                                <span className="text-[13px] font-black text-slate-800 leading-tight group-hover:text-blue-700 transition-colors">Admin Super</span>
                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Administrator</span>
                             </div>
                         </div>
