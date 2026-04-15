@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
+import bcrypt from 'bcryptjs';
 import AddMemberForm from './AddMemberForm';
 import AddMemberExcel from './AddMemberExcel';
 
@@ -31,31 +32,32 @@ const AddMember = () => {
     const saveMember = async (data) => {
         // 1. Create/Find User
         let userId = null;
-        const loginIdentifier = data.no_npp; // Use NPP for login identifier
 
-        if (loginIdentifier) {
-            const { data: existingUser } = await supabase
+        // Check if member already exists in personal_data and has a user_id
+        const { data: existingProfile } = await supabase
+            .from('personal_data')
+            .select('user_id')
+            .eq('no_anggota', data.no_anggota)
+            .single();
+
+        if (existingProfile && existingProfile.user_id) {
+            userId = existingProfile.user_id;
+        } else {
+            // 2. Create new user in users table (Login ID is managed in personal_data)
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(data.no_anggota, salt);
+
+            const { data: newUser, error: userError } = await supabase
                 .from('users')
-                .select('id')
-                .eq('no_npp', loginIdentifier)
+                .insert({
+                    email: data.email || null,
+                    password: hashedPassword,
+                    role: 'MEMBER'
+                })
+                .select()
                 .single();
-
-            if (existingUser) {
-                userId = existingUser.id;
-            } else {
-                const { data: newUser, error: userError } = await supabase
-                    .from('users')
-                    .insert({
-                        no_npp: loginIdentifier,
-                        email: data.email || null,
-                        password: 'placeholder-password',
-                        role: 'MEMBER'
-                    })
-                    .select()
-                    .single();
-                if (userError) throw userError;
-                userId = newUser.id;
-            }
+            if (userError) throw userError;
+            userId = newUser.id;
         }
 
         // 2. Insert personal_data

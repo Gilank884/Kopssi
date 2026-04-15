@@ -262,7 +262,7 @@ const MonitorSimpanan = () => {
                                                 {m.no_npp || '-'}
                                             </span>
                                             <span className="text-[10px] text-gray-400 font-mono tracking-tight">
-                                                 {m.company || '-'}
+                                                {m.company || '-'}
                                             </span>
                                         </div>
                                     </div>

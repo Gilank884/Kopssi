@@ -1,9 +1,11 @@
 import React, { useEffect, useRef } from 'react';
-import { Menu, Bell, User } from 'lucide-react';
+import { Menu, Bell, User, ShieldCheck } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 
 const Header = ({ sidebarOpen, setSidebarOpen, title, user, initials }) => {
     const headerRef = useRef(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (!headerRef.current) return;
@@ -39,12 +41,21 @@ const Header = ({ sidebarOpen, setSidebarOpen, title, user, initials }) => {
             </div>
 
             <div className="flex items-center gap-4 sm:gap-6">
+                {user?.role === 'ADMIN' && (
+                    <button
+                        onClick={() => navigate('/admin')}
+                        className="hidden md:flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl font-black text-[10px] tracking-widest uppercase hover:bg-blue-700 transition-all shadow-md shadow-blue-200 border border-blue-500 active:scale-95 group/admin"
+                    >
+                        <ShieldCheck size={14} className="group-hover/admin:rotate-12 transition-transform" />
+                        Mode Admin
+                    </button>
+                )}
+
                 <div className="relative group">
                     <button className="p-2 rounded-full text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors relative">
                         <Bell size={22} />
                         <span className="absolute top-2 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
                     </button>
-                    {/* Tooltip or Dropdown could go here */}
                 </div>
 
                 <div className="flex items-center gap-3 md:gap-4 pl-6 md:border-l border-gray-100">

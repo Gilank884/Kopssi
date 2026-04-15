@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
-import { Search, Filter, CheckCircle, Banknote, Download, Loader2 } from 'lucide-react';
+import { Search, Filter, CheckCircle, Banknote, Download, Loader2, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 
 const DisbursementDelivery = () => {
     const navigate = useNavigate();
@@ -20,6 +20,8 @@ const DisbursementDelivery = () => {
         return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0];
     });
     const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(20);
 
     const handleExportExcel = async () => {
         try {
@@ -215,6 +217,9 @@ const DisbursementDelivery = () => {
         return matchesSearch && matchesCompany && matchesTab;
     });
 
+    const totalPages = Math.ceil(filteredLoans.length / itemsPerPage);
+    const paginatedLoans = filteredLoans.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
     return (
         <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-500 max-w-[1600px] mx-auto">
             {/* Unified Header Card */}
@@ -238,12 +243,22 @@ const DisbursementDelivery = () => {
                             </button>
                         </div>
                     </div>
-                    <button
-                        onClick={handleExportExcel}
-                        className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-[11px] font-black hover:bg-emerald-700 transition-all shadow-sm shrink-0"
-                    >
-                        <Download size={14} /> Export
-                    </button>
+                    <div className="flex items-center gap-2 shrink-0">
+                        <button
+                            onClick={fetchDisbursedLoans}
+                            disabled={loading}
+                            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-xl text-[11px] font-black hover:bg-gray-50 transition-all shadow-sm disabled:opacity-50"
+                        >
+                            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+                            Refresh
+                        </button>
+                        <button
+                            onClick={handleExportExcel}
+                            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-[11px] font-black hover:bg-emerald-700 transition-all shadow-sm shrink-0"
+                        >
+                            <Download size={14} /> Export
+                        </button>
+                    </div>
                 </div>
                 {/* Filters Row */}
                 <div className="px-5 py-3 flex flex-col sm:flex-row flex-wrap gap-3 items-center bg-gray-50/60">
@@ -281,6 +296,23 @@ const DisbursementDelivery = () => {
                         >
                             <option value="ALL">Semua PT</option>
                             {companies.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                    </div>
+
+                    <div className="flex items-center gap-2 ml-auto">
+                        <span className="text-[10px] font-black italic text-gray-400">Tampilkan:</span>
+                        <select
+                            value={itemsPerPage}
+                            onChange={(e) => {
+                                setItemsPerPage(Number(e.target.value));
+                                setCurrentPage(1);
+                            }}
+                            className="pl-3 pr-8 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs bg-white font-bold tracking-tight italic appearance-none shadow-sm"
+                        >
+                            <option value={20}>20</option>
+                            <option value={50}>50</option>
+                            <option value={100}>100</option>
+                            <option value={200}>200</option>
                         </select>
                     </div>
                     {activeTab === 'BELUM' && (
@@ -342,7 +374,7 @@ const DisbursementDelivery = () => {
                                         <p className="text-[10px] font-black tracking-widest italic opacity-50">Memuat data pencairan...</p>
                                     </td>
                                 </tr>
-                            ) : filteredLoans.length === 0 ? (
+                            ) : paginatedLoans.length === 0 ? (
                                 <tr>
                                     <td colSpan="20" className="px-6 py-20 text-center text-slate-400 font-medium italic">
                                         <Banknote size={48} className="mx-auto mb-4 opacity-10" />
@@ -350,7 +382,7 @@ const DisbursementDelivery = () => {
                                     </td>
                                 </tr>
                             ) : (
-                                filteredLoans.map((loan, idx) => {
+                                paginatedLoans.map((loan, idx) => {
                                     const principal = parseFloat(loan.jumlah_pinjaman || 0);
                                     const tenor = loan.tenor_bulan || 1;
                                     let totalBunga = 0;
@@ -378,7 +410,7 @@ const DisbursementDelivery = () => {
                                                 )}
                                             </td>
                                             <td className="px-2 py-1 text-center text-[10px] font-bold text-slate-400 border-r border-slate-200">
-                                                {idx + 1}
+                                                {(currentPage - 1) * itemsPerPage + idx + 1}
                                             </td>
                                             <td className="px-2 py-1 text-[10px] font-black font-mono text-slate-600 italic border-r border-slate-200 whitespace-nowrap">
                                                 {loan.no_pinjaman}
@@ -454,14 +486,33 @@ const DisbursementDelivery = () => {
                 </div>
             </div>
 
-            {/* DATA COUNT FOOTER */}
-            <div className="bg-white px-6 py-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
-                <p className="text-xs font-black text-gray-400 tracking-widest italic">
-                    Menampilkan <span className="text-emerald-600">{filteredLoans.length}</span> Data Terpilih
+            {/* DATA COUNT FOOTER AND PAGINATION */}
+            <div className="bg-white px-6 py-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <p className="text-xs font-black text-gray-400 tracking-widest italic order-2 sm:order-1">
+                    Menampilkan <span className="text-emerald-600">{paginatedLoans.length}</span> dari {filteredLoans.length} Data
                 </p>
-                <p className="text-[10px] font-bold text-gray-300 italic">
-                    Kopssi Management System • {new Date().getFullYear()}
-                </p>
+                
+                <div className="flex items-center gap-2 order-1 sm:order-2">
+                    <button 
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="p-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-30 transition-all shadow-sm"
+                    >
+                        <ChevronLeft size={16} />
+                    </button>
+                    
+                    <div className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black italic tracking-widest text-slate-600 shadow-sm">
+                        {currentPage} / {totalPages || 1}
+                    </div>
+
+                    <button 
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages || totalPages === 0}
+                        className="p-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-30 transition-all shadow-sm"
+                    >
+                        <ChevronRight size={16} />
+                    </button>
+                </div>
             </div>
 
             {/* Selection Summary Popup/Bar */}

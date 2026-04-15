@@ -3,12 +3,14 @@ import gsap from 'gsap';
 import { supabase } from '../lib/supabaseClient';
 import { Phone, Lock, X, ArrowRight } from 'lucide-react';
 
+import bcrypt from 'bcryptjs';
+
 const LoginModal = ({ isOpen, onClose, onLogin, onRegisterClick }) => {
     const modalRef = useRef(null);
     const contentRef = useRef(null);
     const formRef = useRef(null);
 
-    const [npp, setNpp] = useState('');
+    const [loginID, setLoginID] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -47,31 +49,71 @@ const LoginModal = ({ isOpen, onClose, onLogin, onRegisterClick }) => {
         setLoading(true);
 
         try {
-            // 🔍 CEK USER
+            // 1. Find Member and User ID from personal_data using no_anggota
+            const { data: memberData, error: memberError } = await supabase
+                .from('personal_data')
+                .select('user_id, full_name, status')
+                .eq('no_anggota', loginID)
+                .single();
+
+            if (memberError || !memberData) {
+                throw new Error('Nomor Anggota tidak ditemukan');
+            }
+
+            // Check if member is allowed to login (Standardized: AKTIF or PASIF)
+            if (!['aktif', 'pasif'].includes(memberData.status?.toLowerCase())) {
+                throw new Error(`Akun Anda berstatus ${memberData.status?.toUpperCase()}. Silakan hubungi admin.`);
+            }
+
+            // 2. Validate Password and Get Role from users table
             const { data: userData, error: userError } = await supabase
                 .from('users')
-                .select('id, no_npp, role')
-                .eq('no_npp', npp)
-                .eq('password', password)
+                .select('id, role, password') // Get password for comparison
+                .eq('id', memberData.user_id)
                 .single();
 
             if (userError || !userData) {
-                throw new Error('NPP atau password salah');
+                throw new Error('User record not found');
             }
 
-            // ================= ADMIN =================
-            if (userData.role === 'ADMIN') {
-                const { data: personalData } = await supabase
-                    .from('personal_data')
-                    .select('full_name')
-                    .eq('user_id', userData.id)
-                    .single();
+            let isMatched = false;
+            let needsMigration = false;
 
+            // Try bcrypt comparison first
+            try {
+                isMatched = await bcrypt.compare(password, userData.password);
+            } catch (err) {
+                // Not a hash or other bcrypt error
+                isMatched = false;
+            }
+
+            // Fallback for legacy plain-text passwords
+            if (!isMatched && password === userData.password) {
+                isMatched = true;
+                needsMigration = true;
+            }
+
+            if (!isMatched) {
+                throw new Error('Password salah');
+            }
+
+            // Auto-migrate to hash if it was plain-text
+            if (needsMigration) {
+                const salt = await bcrypt.genSalt(10);
+                const hashedPassword = await bcrypt.hash(password, salt);
+                await supabase
+                    .from('users')
+                    .update({ password: hashedPassword })
+                    .eq('id', userData.id);
+            }
+
+            // ================= ADMIN & SUPERADMIN =================
+            if (userData.role === 'ADMIN' || userData.role === 'SUPERADMIN') {
                 const adminPayload = {
                     id: userData.id,
-                    no_npp: userData.no_npp,
-                    role: 'ADMIN',
-                    name: personalData?.full_name || 'Administrator'
+                    no_anggota: loginID,
+                    role: userData.role, // Use role from DB
+                    name: memberData.full_name || 'Administrator'
                 };
 
                 localStorage.setItem('auth_user', JSON.stringify(adminPayload));
@@ -83,26 +125,20 @@ const LoginModal = ({ isOpen, onClose, onLogin, onRegisterClick }) => {
 
             // ================= MEMBER =================
             if (userData.role === 'MEMBER') {
-                const { data: personalData, error: personalError } = await supabase
-                    .from('personal_data')
-                    .select('full_name, status')
-                    .eq('user_id', userData.id)
-                    .single();
-
-                if (personalError || !personalData) {
-                    throw new Error('Data personal tidak ditemukan');
-                }
-
-                const status = personalData.status?.toLowerCase();
-                if (!['active', 'approved'].includes(status)) {
-                    throw new Error('Akun Anda belum aktif / belum disetujui');
+                const status = memberData.status?.toLowerCase();
+                
+                // Allowed statuses for verified members
+                const allowedStatus = ['active', 'approved', 'verified', 'done verifikasi', 'aktif', 'pasif'];
+                
+                if (!allowedStatus.includes(status)) {
+                    throw new Error(`Akun Anda berstatus ${memberData.status?.toUpperCase()}. Silakan hubungi admin untuk aktivasi.`);
                 }
 
                 const memberPayload = {
                     id: userData.id,
-                    no_npp: userData.no_npp,
+                    no_anggota: loginID,
                     role: 'MEMBER',
-                    name: personalData.full_name
+                    name: memberData.full_name
                 };
 
                 localStorage.setItem('auth_user', JSON.stringify(memberPayload));
@@ -143,7 +179,7 @@ const LoginModal = ({ isOpen, onClose, onLogin, onRegisterClick }) => {
                             <img src="/Logo.png" alt="Logo" className="w-12 h-12 object-contain" />
                         </div>
                         <h2 className="text-2xl font-bold mb-1">Selamat Datang Kembali</h2>
-                        <p className="text-slate-300 text-sm">Silakan masuk menggunakan NPP Anda</p>
+                        <p className="text-slate-300 text-sm">Masuk sebagai Anggota, Admin, atau Superadmin</p>
                     </div>
                 </div>
 
@@ -151,17 +187,17 @@ const LoginModal = ({ isOpen, onClose, onLogin, onRegisterClick }) => {
                 <div className="p-8">
                     <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
                         <div className="space-y-2">
-                            <label className="text-sm font-semibold text-gray-700 ml-1">Nomor NPP</label>
+                            <label className="text-sm font-semibold text-gray-700 ml-1">Nomor Anggota</label>
                             <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <Phone className="h-5 w-5 text-gray-400 group-focus-within:text-emerald-600 transition-colors" />
                                 </div>
                                 <input
                                     type="text"
-                                    value={npp}
-                                    onChange={(e) => setNpp(e.target.value)}
+                                    value={loginID}
+                                    onChange={(e) => setLoginID(e.target.value)}
                                     className="block w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-medium"
-                                    placeholder="Contoh: J1234"
+                                    placeholder="Contoh: KS04240001"
                                     required
                                 />
                             </div>

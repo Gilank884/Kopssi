@@ -37,7 +37,7 @@ const UploadSimpanan = () => {
                 .from('personal_data')
                 .select('*', { count: 'exact', head: true })
                 .eq('company', selectedPT)
-                .eq('status', 'active');
+                .in('status', ['AKTIF', 'ACTIVE', 'DONE VERIFIKASI']);
 
             if (error) throw error;
             setMemberCount(count || 0);
@@ -72,7 +72,7 @@ const UploadSimpanan = () => {
                 .from('personal_data')
                 .select('nik, full_name, tagihan_parkir, created_at')
                 .eq('company', selectedPT)
-                .eq('status', 'active');
+                .in('status', ['AKTIF', 'ACTIVE', 'DONE VERIFIKASI']);
 
             if (error) throw error;
 
@@ -134,7 +134,7 @@ const UploadSimpanan = () => {
             const { data: members, error } = await supabase
                 .from('personal_data')
                 .select('id, full_name, nik')
-                .eq('status', 'active');
+                .in('status', ['AKTIF', 'ACTIVE', 'DONE VERIFIKASI']);
 
             if (error) throw error;
 

@@ -80,8 +80,9 @@ const Angsuran = () => {
                                 id: item.id,
                                 loanNo: loan?.no_pinjaman || '-',
                                 month: item.bulan_ke,
-                                date: new Date(item.tanggal_bayar).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
-                                rawDate: new Date(item.tanggal_bayar),
+                                date: new Date(item.jatuh_tempo || item.tanggal_bayar).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
+                                rawDate: new Date(item.jatuh_tempo || item.tanggal_bayar),
+                                lunasDate: item.tanggal_bayar ? new Date(item.tanggal_bayar).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : null,
                                 pokok: monthlyPrincipal,
                                 bunga: monthlyInterest,
                                 total: totalAmount,
@@ -144,9 +145,9 @@ const Angsuran = () => {
                                 <th className="px-6 py-4 font-black text-center">Bulan</th>
                                 <th className="px-6 py-4 font-black">Jatuh Tempo</th>
                                 <th className="px-6 py-4 font-black text-right">Pokok</th>
-                                <th className="px-6 py-4 font-black text-right">Bagi Hasil</th>
+                                <th className="px-6 py-4 font-black text-right">Margin</th>
                                 <th className="px-6 py-4 font-black text-right">Total Tagihan</th>
-                                <th className="px-6 py-4 font-black text-center">Status</th>
+                                <th className="px-6 py-4 font-black text-center">Status / Tgl Lunas</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
@@ -176,13 +177,17 @@ const Angsuran = () => {
                                             Rp {item.total.toLocaleString('id-ID', { maximumFractionDigits: 0 })}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-center text-left">
-                                        {item.status === 'PROCESSED' ? (
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-700 uppercase tracking-tighter shadow-sm border border-emerald-200">
-                                                <CheckCircle size={10} /> LUNAS
-                                            </span>
+                                    <td className="px-6 py-4 text-center">
+                                        {item.status === 'PROCESSED' || item.status === 'PAID' ? (
+                                            <div className="flex flex-col items-center">
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-700 uppercase tracking-tighter shadow-sm border border-emerald-200">
+                                                    <CheckCircle size={10} /> LUNAS
+                                                </span>
+                                                {item.lunasDate && <span className="text-[8px] font-bold text-emerald-500 mt-1 uppercase italic">Terbayar: {item.lunasDate}</span>}
+                                            </div>
                                         ) : (
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter">
+                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black bg-amber-50 text-amber-600 uppercase tracking-tighter border border-amber-100 italic">
+                                                BELUM BAYAR
                                             </span>
                                         )}
                                     </td>

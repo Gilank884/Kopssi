@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
-import { Search, Filter, CheckCircle, Banknote, User, BadgeCent, Download } from 'lucide-react';
+import { Search, Filter, CheckCircle, Banknote, User, BadgeCent, Download, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 
 const MonitorPinjaman = () => {
     const navigate = useNavigate();
@@ -15,8 +15,8 @@ const MonitorPinjaman = () => {
     const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(10);
-    const pageOptions = [10, 20, 50, 100];
+    const [itemsPerPage, setItemsPerPage] = useState(20);
+    const pageOptions = [20, 50, 100, 200];
     const [updatingId, setUpdatingId] = useState(null);
     const [filterCompany, setFilterCompany] = useState('ALL');
     const [companies, setCompanies] = useState([]);
@@ -54,6 +54,7 @@ const MonitorPinjaman = () => {
                     *,
                     personal_data:personal_data_id (
                         full_name,
+                        no_anggota,
                         nik,
                         work_unit,
                         company
@@ -117,12 +118,22 @@ const MonitorPinjaman = () => {
                         <h2 className="text-xl md:text-2xl font-black text-gray-900 italic tracking-tight leading-none">Monitoring Pinjaman</h2>
                         <p className="text-[11px] text-gray-400 mt-1 font-medium italic tracking-tight">Lacak pencairan baru periode ini</p>
                     </div>
-                    <button
-                        onClick={handleExportExcel}
-                        className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-[11px] font-black hover:bg-emerald-700 transition-all shadow-sm shrink-0"
-                    >
-                        <Download size={14} /> Export Excel
-                    </button>
+                    <div className="flex items-center gap-2 shrink-0">
+                        <button
+                            onClick={fetchData}
+                            disabled={loading}
+                            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-xl text-[11px] font-black hover:bg-gray-50 transition-all shadow-sm disabled:opacity-50"
+                        >
+                            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+                            Refresh
+                        </button>
+                        <button
+                            onClick={handleExportExcel}
+                            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-[11px] font-black hover:bg-emerald-700 transition-all shadow-sm shrink-0"
+                        >
+                            <Download size={14} /> Export Excel
+                        </button>
+                    </div>
                 </div>
                 {/* Filters Row */}
                 <div className="px-5 py-3 flex flex-col sm:flex-row flex-wrap gap-3 items-center bg-gray-50/60">
@@ -164,6 +175,23 @@ const MonitorPinjaman = () => {
                             ))}
                         </select>
                     </div>
+
+                    <div className="flex items-center gap-2 ml-auto">
+                        <span className="text-[10px] font-black italic text-gray-400">Tampilkan:</span>
+                        <select
+                            value={itemsPerPage}
+                            onChange={(e) => {
+                                setItemsPerPage(Number(e.target.value));
+                                setCurrentPage(1);
+                            }}
+                            className="pl-3 pr-8 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs bg-white font-bold tracking-tight italic appearance-none shadow-sm"
+                        >
+                            <option value={20}>20</option>
+                            <option value={50}>50</option>
+                            <option value={100}>100</option>
+                            <option value={200}>200</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -175,7 +203,8 @@ const MonitorPinjaman = () => {
                         <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
                             <tr>
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 w-12 text-center bg-emerald-50/50">No</th>
-                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 bg-emerald-50/50">Nama</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 bg-emerald-50/50">Anggota</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center bg-emerald-50/50">No Anggota</th>
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 bg-emerald-50/50">NIK</th>
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center bg-emerald-50/50">No Pinjaman</th>
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 bg-emerald-50/50">PT</th>
@@ -189,14 +218,14 @@ const MonitorPinjaman = () => {
                         <tbody className="divide-y divide-slate-200">
                             {loading ? (
                                 <tr>
-                                    <td colSpan="10" className="px-6 py-20 text-center text-gray-500">
+                                    <td colSpan="11" className="px-6 py-20 text-center text-gray-500">
                                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-4"></div>
                                         Memuat data pinjaman...
                                     </td>
                                 </tr>
                             ) : filteredLoans.length === 0 ? (
                                 <tr>
-                                    <td colSpan="10" className="px-6 py-24 text-center text-gray-400 italic font-black text-[10px] tracking-widest">
+                                    <td colSpan="11" className="px-6 py-24 text-center text-gray-400 italic font-black text-[10px] tracking-widest">
                                         <BadgeCent size={40} className="mx-auto mb-4 opacity-20" />
                                         <p>Tidak ada pinjaman ditemukan</p>
                                     </td>
@@ -212,12 +241,17 @@ const MonitorPinjaman = () => {
                                             <span className="text-[10px] font-black text-gray-400 italic">{(currentPage - 1) * itemsPerPage + idx + 1}</span>
                                         </td>
                                         <td className="px-2 py-1 border-r border-slate-200">
-                                            <span className="text-[11px] font-black text-slate-900 italic tracking-tight leading-none">
+                                            <span className="text-[11px] font-black text-slate-900 italic tracking-tight leading-none group-hover:text-emerald-700 transition-colors">
                                                 {loan.personal_data?.full_name || '-'}
                                             </span>
                                         </td>
+                                        <td className="px-2 py-1 border-r border-slate-200 text-center">
+                                            <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100/50 font-mono">
+                                                {loan.personal_data?.no_anggota || '-'}
+                                            </span>
+                                        </td>
                                         <td className="px-2 py-1 border-r border-slate-200">
-                                            <span className="text-[9px] text-slate-400 font-mono">
+                                            <span className="text-[9px] text-slate-400 font-mono italic">
                                                 {loan.personal_data?.nik || '-'}
                                             </span>
                                         </td>
@@ -291,11 +325,11 @@ const MonitorPinjaman = () => {
                                             {loan.personal_data?.full_name || '-'}
                                         </span>
                                         <div className="flex items-center gap-2 mt-0.5">
-                                            <span className="text-[10px] text-gray-400 font-mono tracking-tight underline border-r border-gray-200 pr-2">
-                                                {loan.no_pinjaman}
+                                            <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100/50">
+                                                {loan.personal_data?.no_anggota || '-'}
                                             </span>
-                                            <span className="text-[10px] text-gray-400 font-mono tracking-tight">
-                                                 {loan.personal_data?.company || '-'}
+                                            <span className="text-[9px] text-gray-400 font-mono tracking-tight">
+                                                {loan.no_pinjaman}
                                             </span>
                                         </div>
                                     </div>
@@ -332,49 +366,31 @@ const MonitorPinjaman = () => {
                 </div>
 
                 {/* PAGINATION FOOTER */}
-                <div className="px-4 md:px-6 py-6 bg-gray-50 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6">
-                    <div className="flex items-center justify-between md:justify-start w-full md:w-auto gap-4 text-[10px] font-black text-gray-400 tracking-widest">
-                        <div className="flex items-center gap-2">
-                            <span>Tampil</span>
-                            <select
-                                value={itemsPerPage}
-                                onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                                className="bg-white border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-emerald-600 shadow-sm font-bold"
-                            >
-                                {pageOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                            </select>
-                        </div>
-                        <span className="hidden sm:block">| Showing {paginatedData.length} of {activeData.length} records</span>
-                        <span className="sm:hidden">{paginatedData.length} / {activeData.length} record</span>
-                    </div>
+                {/* DATA COUNT FOOTER AND PAGINATION */}
+                <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <p className="text-xs font-black text-gray-400 tracking-widest italic order-2 sm:order-1">
+                        Menampilkan <span className="text-emerald-600">{paginatedData.length}</span> dari {activeData.length} Data
+                    </p>
 
-                    <div className="flex items-center gap-1 md:gap-2">
+                    <div className="flex items-center gap-2 order-1 sm:order-2">
                         <button
-                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                             disabled={currentPage === 1}
-                            className="h-9 px-3 bg-white border border-gray-200 rounded-xl text-[9px] font-black tracking-widest hover:bg-gray-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm mr-1"
+                            className="p-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-30 transition-all shadow-sm"
                         >
-                            ←
+                            <ChevronLeft size={16} />
                         </button>
 
-                        <div className="flex items-center gap-1.5 px-2">
-                            {[...Array(totalPages)].map((_, i) => (
-                                <button
-                                    key={i}
-                                    onClick={() => setCurrentPage(i + 1)}
-                                    className={`w-8 h-8 rounded-lg text-[10px] font-black transition-all ${currentPage === i + 1 ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200 scale-110' : 'bg-white text-gray-400 hover:bg-gray-50 border border-gray-100'}`}
-                                >
-                                    {i + 1}
-                                </button>
-                            )).slice(Math.max(0, currentPage - 2), Math.min(totalPages, currentPage + 1))}
+                        <div className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black italic tracking-widest text-slate-600 shadow-sm">
+                            {currentPage} / {totalPages || 1}
                         </div>
 
                         <button
-                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                             disabled={currentPage === totalPages || totalPages === 0}
-                            className="h-9 px-3 bg-white border border-gray-200 rounded-xl text-[9px] font-black tracking-widest hover:bg-gray-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-sm ml-1"
+                            className="p-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-30 transition-all shadow-sm"
                         >
-                            →
+                            <ChevronRight size={16} />
                         </button>
                     </div>
                 </div>

@@ -72,7 +72,7 @@ const TagihanAngsuran = () => {
                 // Strictly show only Unpaid / Empty status
                 if (inst.status === 'PROCESSED') return false;
 
-                const iDate = inst.tanggal_bayar ? inst.tanggal_bayar.split('T')[0] : null;
+                const iDate = inst.jatuh_tempo ? inst.jatuh_tempo.split('T')[0] : null;
 
                 // Show if unpaid and Due on or before endDate (Current + Overdue)
                 if (iDate && iDate <= endDate) return true;
@@ -80,8 +80,8 @@ const TagihanAngsuran = () => {
                 return false;
             });
 
-            // Sort by tanggal_bayar (due date) DESC
-            installmentsToShow.sort((a, b) => new Date(a.tanggal_bayar) - new Date(b.tanggal_bayar));
+            // Sort by jatuh_tempo (due date) ASC
+            installmentsToShow.sort((a, b) => new Date(a.jatuh_tempo) - new Date(b.jatuh_tempo));
 
             setInstallments(installmentsToShow);
         } catch (error) {
@@ -221,10 +221,10 @@ const TagihanAngsuran = () => {
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center w-8 bg-emerald-50/50">No</th>
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 bg-emerald-50/50">Anggota</th>
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center bg-emerald-50/50">No Pinjaman</th>
-                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center bg-emerald-50/50">Bulan</th>
-                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-right bg-emerald-50/50">Angsuran</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center bg-emerald-50/50">Jatuh Tempo</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center bg-emerald-50/50">Angsuran</th>
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center bg-emerald-50/50">Status</th>
-                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center bg-emerald-50/50">Tgl Bayar</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center bg-emerald-50/50">Tgl Lunas</th>
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic text-center bg-emerald-50/50">Aksi</th>
                             </tr>
                         </thead>
@@ -266,7 +266,7 @@ const TagihanAngsuran = () => {
                                         </td>
                                         <td className="px-2 py-1 text-center border-r border-slate-200">
                                             <span className="px-1.5 py-0.5 bg-slate-100 rounded text-[9px] font-black text-emerald-600">
-                                                Bln {inst.bulan_ke}
+                                                {inst.jatuh_tempo ? new Date(inst.jatuh_tempo).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }) : '-'}
                                             </span>
                                         </td>
                                         <td className="px-2 py-1 text-right border-r border-slate-200">
@@ -284,7 +284,7 @@ const TagihanAngsuran = () => {
                                             </span>
                                         </td>
                                         <td className="px-2 py-1 text-center text-[9px] font-bold text-slate-500 italic border-r border-slate-200 whitespace-nowrap">
-                                            {inst.tanggal_bayar ? new Date(inst.tanggal_bayar).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
+                                            {inst.tanggal_bayar ? new Date(inst.tanggal_bayar).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }) : '-'}
                                         </td>
                                         <td className="px-2 py-1 text-center">
                                             {inst.status !== 'PROCESSED' ? (

@@ -37,6 +37,7 @@ import InterestReport from './pages/Admin/Reports/InterestReport';
 import OutstandingLoanReport from './pages/Admin/Reports/OutstandingLoanReport';
 import MemberDetail from './pages/Admin/MemberDetail';
 import MemberApplicationDetail from './pages/Admin/MemberApplicationDetail';
+import AdminManagement from './pages/Admin/AdminManagement';
 
 function App() {
   return (
@@ -45,7 +46,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
 
         {/* User Dashboard Routes - PROTECTED */}
-        <Route element={<ProtectedRoute allowedRoles={['MEMBER']} />}>
+        <Route element={<ProtectedRoute allowedRoles={['MEMBER', 'ADMIN', 'SUPERADMIN']} />}>
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<Overview />} />
             <Route path="simpanan" element={<Simpanan />} />
@@ -60,7 +61,7 @@ function App() {
         </Route>
 
         {/* Admin Dashboard Routes - PROTECTED */}
-        <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
+        <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'SUPERADMIN']} />}>
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminOverview />} />
             <Route path="pengajuan-anggota" element={<PengajuanAnggota />} />
@@ -87,6 +88,7 @@ function App() {
             <Route path="upload-pinjaman" element={<UploadPinjaman />} />
             <Route path="master-data" element={<MasterData />} />
             <Route path="loan-detail/:id" element={<LoanDetail />} />
+            <Route path="user-management" element={<AdminManagement />} />
           </Route>
         </Route>
       </Routes>

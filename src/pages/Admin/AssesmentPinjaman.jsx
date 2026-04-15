@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
-import { Search, Eye, AlertCircle, FileDown, Filter, Download } from 'lucide-react';
+import { Search, Eye, AlertCircle, FileDown, Filter, Download, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { generateLoanAnalysisPDF } from '../../utils/loanAnalysisPdf';
 import { exportLoanApprovalExcel } from '../../utils/reportExcel';
 
@@ -14,6 +14,8 @@ const AssesmentPinjaman = () => {
     const [filterCompany, setFilterCompany] = useState('ALL');
     const [companies, setCompanies] = useState([]);
     const [analystName, setAnalystName] = useState('Admin');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(20);
     const navigate = useNavigate();
 
     const fetchCompanies = async () => {
@@ -118,6 +120,9 @@ const AssesmentPinjaman = () => {
         return matchesSearch && matchesDate && matchesCompany;
     });
 
+    const totalPages = Math.ceil(filteredLoans.length / itemsPerPage);
+    const paginatedLoans = filteredLoans.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
     const formatDate = (dateString) => {
         if (!dateString) return '-';
         const date = new Date(dateString);
@@ -138,20 +143,30 @@ const AssesmentPinjaman = () => {
                         <h2 className="text-xl md:text-2xl font-black text-gray-900 italic tracking-tight leading-none">Penyetujuan Pinjaman</h2>
                         <p className="text-[11px] text-gray-400 mt-1 font-medium italic tracking-tight">Tahap 1: Verifikasi dan setujui pengajuan anggota</p>
                     </div>
-                    <button
-                        onClick={handleBatchDownload}
-                        disabled={filteredLoans.length === 0}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-[11px] font-black hover:bg-blue-700 transition-all shadow-sm disabled:opacity-50 shrink-0"
-                    >
-                        <FileDown size={14} />
-                        Unduh PDF ({filteredLoans.length})
-                    </button>
-                    <button
-                        onClick={() => exportLoanApprovalExcel(filteredLoans)}
-                        className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-[11px] font-black hover:bg-emerald-700 transition-all shadow-sm shrink-0"
-                    >
-                        <Download size={14} /> Export Excel
-                    </button>
+                    <div className="flex items-center gap-2 shrink-0">
+                        <button
+                            onClick={fetchLoans}
+                            disabled={loading}
+                            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-xl text-[11px] font-black hover:bg-gray-50 transition-all shadow-sm disabled:opacity-50"
+                        >
+                            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+                            Refresh
+                        </button>
+                        <button
+                            onClick={handleBatchDownload}
+                            disabled={filteredLoans.length === 0}
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-[11px] font-black hover:bg-blue-700 transition-all shadow-sm disabled:opacity-50 shrink-0"
+                        >
+                            <FileDown size={14} />
+                            Unduh PDF ({filteredLoans.length})
+                        </button>
+                        <button
+                            onClick={() => exportLoanApprovalExcel(filteredLoans)}
+                            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-[11px] font-black hover:bg-emerald-700 transition-all shadow-sm shrink-0"
+                        >
+                            <Download size={14} /> Export Excel
+                        </button>
+                    </div>
                 </div>
                 {/* Filters Row */}
                 <div className="px-5 py-3 flex flex-col sm:flex-row flex-wrap gap-3 items-center bg-gray-50/60">
@@ -184,13 +199,33 @@ const AssesmentPinjaman = () => {
                         <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={13} />
                         <select
                             value={filterCompany}
-                            onChange={(e) => setFilterCompany(e.target.value)}
+                            onChange={(e) => {
+                                setFilterCompany(e.target.value);
+                                setCurrentPage(1);
+                            }}
                             className="w-full pl-8 pr-8 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs bg-white font-bold tracking-tight italic appearance-none shadow-sm"
                         >
                             <option value="ALL">Semua PT</option>
                             {companies.map(c => (
                                 <option key={c} value={c}>{c}</option>
                             ))}
+                        </select>
+                    </div>
+
+                    <div className="flex items-center gap-2 ml-auto">
+                        <span className="text-[10px] font-black italic text-gray-400">Tampilkan:</span>
+                        <select
+                            value={itemsPerPage}
+                            onChange={(e) => {
+                                setItemsPerPage(Number(e.target.value));
+                                setCurrentPage(1);
+                            }}
+                            className="pl-3 pr-8 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs bg-white font-bold tracking-tight italic appearance-none shadow-sm"
+                        >
+                            <option value={20}>20</option>
+                            <option value={50}>50</option>
+                            <option value={100}>100</option>
+                            <option value={200}>200</option>
                         </select>
                     </div>
                 </div>
@@ -226,14 +261,14 @@ const AssesmentPinjaman = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200">
-                                {filteredLoans.map((loan, index) => (
+                                {paginatedLoans.map((loan, index) => (
                                     <tr
                                         key={loan.id}
                                         onClick={() => handleRowClick(loan)}
                                         className={`transition-colors cursor-pointer hover:bg-emerald-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/70'}`}
                                     >
                                         <td className="px-2 py-1 border-r border-slate-200 text-center">
-                                            <span className="text-[9px] font-black text-gray-400 italic">{index + 1}</span>
+                                            <span className="text-[9px] font-black text-gray-400 italic">{(currentPage - 1) * itemsPerPage + index + 1}</span>
                                         </td>
                                         <td className="px-2 py-1 border-r border-slate-200">
                                             <span className="font-bold text-slate-900 text-[11px] tracking-tight leading-none">{loan.personal_data?.full_name || '-'}</span>
@@ -281,7 +316,7 @@ const AssesmentPinjaman = () => {
 
                     {/* Mobile Card View */}
                     <div className="lg:hidden divide-y divide-gray-50 text-left">
-                        {filteredLoans.map((loan) => (
+                        {paginatedLoans.map((loan) => (
                             <div
                                 key={loan.id}
                                 onClick={() => handleRowClick(loan)}
@@ -351,15 +386,34 @@ const AssesmentPinjaman = () => {
                 </div>
             )}
 
-            {/* DATA COUNT FOOTER */}
+            {/* DATA COUNT FOOTER AND PAGINATION */}
             {!loading && filteredLoans.length > 0 && (
-                <div className="bg-white px-6 py-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
-                    <p className="text-xs font-black text-gray-400 tracking-widest italic text-left">
-                        Menampilkan <span className="text-emerald-600">{filteredLoans.length}</span> Pengajuan Menunggu Assesment
+                <div className="bg-white px-6 py-4 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <p className="text-xs font-black text-gray-400 tracking-widest italic text-left order-2 sm:order-1">
+                        Menampilkan <span className="text-emerald-600">{paginatedLoans.length}</span> dari {filteredLoans.length} Pengajuan
                     </p>
-                    <p className="text-[10px] font-bold text-gray-300 italic">
-                        Kopssi Management System • {new Date().getFullYear()}
-                    </p>
+
+                    <div className="flex items-center gap-2 order-1 sm:order-2">
+                        <button
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className="p-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-30 transition-all shadow-sm"
+                        >
+                            <ChevronLeft size={16} />
+                        </button>
+
+                        <div className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black italic tracking-widest text-slate-600 shadow-sm">
+                            {currentPage} / {totalPages || 1}
+                        </div>
+
+                        <button
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages || totalPages === 0}
+                            className="p-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-30 transition-all shadow-sm"
+                        >
+                            <ChevronRight size={16} />
+                        </button>
+                    </div>
                 </div>
             )}
 

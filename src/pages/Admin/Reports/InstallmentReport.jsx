@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
-import { Search, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Download, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { exportPaidInstallmentsReportExcel } from '../../../utils/reportExcel';
 
 const InstallmentReport = () => {
@@ -11,7 +11,7 @@ const InstallmentReport = () => {
     const [filterCompany, setFilterCompany] = useState('ALL');
     const [installments, setInstallments] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [itemsPerPage, setItemsPerPage] = useState(20);
 
     useEffect(() => {
         fetchInstallments();
@@ -59,12 +59,22 @@ const InstallmentReport = () => {
                         <h2 className="text-xl md:text-2xl font-black text-gray-900 italic tracking-tight leading-none">Laporan Angsuran</h2>
                         <p className="text-[11px] text-gray-400 mt-1 font-medium italic tracking-tight">Histori Pembayaran Angsuran Lunas</p>
                     </div>
-                    <button
-                        onClick={() => exportPaidInstallmentsReportExcel(filteredData)}
-                        className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-[11px] font-black hover:bg-emerald-700 transition-all shadow-sm shrink-0"
-                    >
-                        <Download size={14} /> Export Excel
-                    </button>
+                    <div className="flex items-center gap-2 shrink-0">
+                        <button
+                            onClick={fetchInstallments}
+                            disabled={loading}
+                            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-xl text-[11px] font-black hover:bg-gray-50 transition-all shadow-sm disabled:opacity-50"
+                        >
+                            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+                            Refresh
+                        </button>
+                        <button
+                            onClick={() => exportPaidInstallmentsReportExcel(filteredData)}
+                            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-[11px] font-black hover:bg-emerald-700 transition-all shadow-sm shrink-0"
+                        >
+                            <Download size={14} /> Export Excel
+                        </button>
+                    </div>
                 </div>
                 {/* Filters Row */}
                 <div className="px-5 py-3 flex flex-col sm:flex-row flex-wrap gap-3 items-center bg-gray-50/60">
@@ -104,6 +114,23 @@ const InstallmentReport = () => {
                             <option key={c} value={c}>{c}</option>
                         ))}
                     </select>
+
+                    <div className="flex items-center gap-2 ml-auto">
+                        <span className="text-[10px] font-black italic text-gray-400">Tampilkan:</span>
+                        <select
+                            value={itemsPerPage}
+                            onChange={(e) => {
+                                setItemsPerPage(Number(e.target.value));
+                                setCurrentPage(1);
+                            }}
+                            className="pl-3 pr-8 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs bg-white font-bold tracking-tight italic appearance-none shadow-sm"
+                        >
+                            <option value={20}>20</option>
+                            <option value={50}>50</option>
+                            <option value={100}>100</option>
+                            <option value={200}>200</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -114,9 +141,9 @@ const InstallmentReport = () => {
                             <tr>
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 w-12 text-center bg-emerald-50/50">No</th>
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 bg-emerald-50/50">Nama / No Pinjaman</th>
-                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center bg-emerald-50/50">Bulan Ke</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center bg-emerald-50/50">Jatuh Tempo</th>
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-right bg-emerald-50/50">Nominal</th>
-                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic text-center bg-emerald-50/50">Tgl Bayar</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic text-center bg-emerald-50/50">Tgl Lunas</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200">
@@ -144,7 +171,9 @@ const InstallmentReport = () => {
                                             <p className="text-[9px] text-slate-400 font-mono tracking-tighter leading-none">{inst.pinjaman?.no_pinjaman}</p>
                                         </td>
                                         <td className="px-2 py-1 text-center border-r border-slate-200">
-                                            <span className="text-[10px] font-black text-emerald-600 font-mono tracking-tighter leading-none">#{inst.bulan_ke}</span>
+                                            <span className="text-[10px] font-black text-emerald-600 font-mono tracking-tighter leading-none">
+                                                {inst.jatuh_tempo ? new Date(inst.jatuh_tempo).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' }) : '-'} (#{inst.bulan_ke})
+                                            </span>
                                         </td>
                                         <td className="px-2 py-1 text-right border-r border-slate-200">
                                             <span className="text-[11px] font-black text-emerald-600 font-mono italic leading-none">{formatCurrency(inst.amount).replace(/Rp\s?/, '')}</span>

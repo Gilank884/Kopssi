@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
-import { Search, AlertCircle, ChevronRight, Filter, Download } from 'lucide-react';
+import { Search, AlertCircle, ChevronRight, Filter, Download, ChevronLeft, RefreshCw } from 'lucide-react';
+import { useDebounce } from '../../hooks/useDebounce';
 import { exportPencairanPinjamanExcel } from '../../utils/reportExcel';
 
 const PencairanPinjaman = () => {
@@ -11,6 +12,10 @@ const PencairanPinjaman = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterCompany, setFilterCompany] = useState('ALL');
     const [companies, setCompanies] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(20);
+    const [totalCount, setTotalCount] = useState(0);
+    const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
     const fetchCompanies = async () => {
         try {
@@ -27,50 +32,67 @@ const PencairanPinjaman = () => {
     };
 
     useEffect(() => {
-        fetchLoans();
         fetchCompanies();
     }, []);
+
+    useEffect(() => {
+        fetchLoans();
+    }, [debouncedSearchTerm, filterCompany, currentPage, itemsPerPage]);
+
+    // Reset to page 1 on filter or search change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [debouncedSearchTerm, filterCompany]);
 
     const fetchLoans = async () => {
         try {
             setLoading(true);
-            const { data, error } = await supabase
+            const from = (currentPage - 1) * itemsPerPage;
+            const to = from + itemsPerPage - 1;
+
+            let query = supabase
                 .from('pinjaman')
                 .select(`
                     *,
-                    personal_data:personal_data_id (
+                    personal_data:personal_data_id !inner (
                         full_name,
                         nik,
                         phone,
                         company,
                         work_unit
                     )
-                `)
-                .eq('status', 'DISETUJUI')
-                .order('created_at', { ascending: false });
+                `, { count: 'exact' })
+                .eq('status', 'DISETUJUI');
+
+            if (filterCompany !== 'ALL') {
+                query = query.eq('personal_data.company', filterCompany);
+            }
+
+            if (debouncedSearchTerm) {
+                query = query.or(`no_pinjaman.ilike.%${debouncedSearchTerm}%, personal_data.full_name.ilike.%${debouncedSearchTerm}%, personal_data.nik.ilike.%${debouncedSearchTerm}%`);
+            }
+
+            const { data, count, error } = await query
+                .order('created_at', { ascending: false })
+                .range(from, to);
 
             if (error) throw error;
             setLoans(data || []);
+            setTotalCount(count || 0);
+
         } catch (error) {
             console.error('Error fetching loans:', error);
-            alert('Gagal memuat data pengajuan pinjaman');
+            // alert('Gagal memuat data pengajuan pinjaman');
         } finally {
             setLoading(false);
         }
     };
 
     const handleRowClick = (loan) => {
-        navigate(`/admin/pencairan-pinjaman/${loan.id}`);
+        navigate(`/admin/loan-detail/${loan.id}`);
     };
 
-    const filteredLoans = loans.filter(loan => {
-        const matchesSearch = loan.personal_data?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            loan.no_pinjaman?.toLowerCase().includes(searchTerm.toLowerCase());
-
-        const matchesCompany = filterCompany === 'ALL' || loan.personal_data?.company === filterCompany;
-
-        return matchesSearch && matchesCompany;
-    });
+    const totalPages = Math.ceil(totalCount / itemsPerPage);
 
     const formatDate = (dateString) => {
         if (!dateString) return '-';
@@ -92,12 +114,22 @@ const PencairanPinjaman = () => {
                         <h2 className="text-xl md:text-2xl font-black text-gray-900 italic tracking-tight leading-none">Pencairan Pinjaman</h2>
                         <p className="text-[11px] text-gray-400 mt-1 font-medium italic tracking-tight">Tahap 2: Proses pencairan dana ke anggota</p>
                     </div>
-                    <button
-                        onClick={() => exportPencairanPinjamanExcel(filteredLoans)}
-                        className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-[11px] font-black hover:bg-emerald-700 transition-all shadow-sm shrink-0"
-                    >
-                        <Download size={14} /> Export Excel
-                    </button>
+                    <div className="flex items-center gap-2 shrink-0">
+                        <button
+                            onClick={fetchLoans}
+                            disabled={loading}
+                            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-xl text-[11px] font-black hover:bg-gray-50 transition-all shadow-sm disabled:opacity-50"
+                        >
+                            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+                            Refresh
+                        </button>
+                        <button
+                            onClick={() => exportPencairanPinjamanExcel(loans)}
+                            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-[11px] font-black hover:bg-emerald-700 transition-all shadow-sm shrink-0"
+                        >
+                            <Download size={14} /> Export Excel
+                        </button>
+                    </div>
                 </div>
                 {/* Filters Row */}
                 <div className="px-5 py-3 flex flex-col sm:flex-row flex-wrap gap-3 items-center bg-gray-50/60">
@@ -132,7 +164,7 @@ const PencairanPinjaman = () => {
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
                     <p className="mt-4 text-gray-500">Memuat data pengajuan...</p>
                 </div>
-            ) : filteredLoans.length === 0 ? (
+            ) : loans.length === 0 ? (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
                     <AlertCircle className="mx-auto text-gray-400" size={48} />
                     <p className="mt-4 text-gray-500 font-medium text-center">Tidak ada pengajuan pinjaman baru yang menunggu persetujuan</p>
@@ -155,14 +187,14 @@ const PencairanPinjaman = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200">
-                                {filteredLoans.map((loan, index) => (
+                                {loans.map((loan, index) => (
                                     <tr
                                         key={loan.id}
                                         onClick={() => handleRowClick(loan)}
-                                        className={`transition-colors cursor-pointer group hover:bg-emerald-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/70'}`}
+                                        className={`transition-colors cursor-pointer group hover:bg-emerald-50 ${(currentPage - 1) * itemsPerPage + index % 2 === 0 ? 'bg-white' : 'bg-gray-50/70'}`}
                                     >
                                         <td className="px-2 py-1 border-r border-slate-200 text-center">
-                                            <span className="text-[9px] font-black text-gray-400 italic">{index + 1}</span>
+                                            <span className="text-[9px] font-black text-gray-400 italic">{(currentPage - 1) * itemsPerPage + index + 1}</span>
                                         </td>
                                         <td className="px-2 py-1 border-r border-slate-200">
                                             <span className="font-black text-slate-900 text-[11px] tracking-tight leading-none">{loan.personal_data?.full_name || '-'}</span>
@@ -199,7 +231,7 @@ const PencairanPinjaman = () => {
 
                     {/* Mobile Card View */}
                     <div className="md:hidden divide-y divide-gray-50 text-left">
-                        {filteredLoans.map((loan) => (
+                        {loans.map((loan) => (
                             <div
                                 key={loan.id}
                                 onClick={() => handleRowClick(loan)}
@@ -240,14 +272,33 @@ const PencairanPinjaman = () => {
             )}
 
             {/* DATA COUNT FOOTER */}
-            {!loading && filteredLoans.length > 0 && (
-                <div className="bg-white px-6 py-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
-                    <p className="text-xs font-black text-gray-400 tracking-widest italic text-left">
-                        Menampilkan <span className="text-emerald-600">{filteredLoans.length}</span> Pengajuan Menunggu Pencairan
+            {!loading && loans.length > 0 && (
+                <div className="bg-white px-6 py-4 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <p className="text-xs font-black text-gray-400 tracking-widest italic text-left order-2 sm:order-1">
+                        Menampilkan <span className="text-emerald-600">{loans.length}</span> dari {totalCount} Pengajuan
                     </p>
-                    <p className="text-[10px] font-bold text-gray-300 italic">
-                        Kopssi Management System • {new Date().getFullYear()}
-                    </p>
+                    
+                    <div className="flex items-center gap-2 order-1 sm:order-2">
+                        <button
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className="p-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-30 transition-all shadow-sm"
+                        >
+                            <ChevronLeft size={16} />
+                        </button>
+
+                        <div className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black italic tracking-widest text-slate-600 shadow-sm">
+                            {currentPage} / {totalPages || 1}
+                        </div>
+
+                        <button
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages || totalPages === 0}
+                            className="p-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-30 transition-all shadow-sm"
+                        >
+                            <ChevronRight size={16} />
+                        </button>
+                    </div>
                 </div>
             )}
 

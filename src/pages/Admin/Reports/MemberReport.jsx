@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
-import { Search, Download, Users, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Download, Users, CalendarDays, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { exportMembersReportExcel } from '../../../utils/reportExcel';
 
 const MemberReport = () => {
@@ -10,7 +10,7 @@ const MemberReport = () => {
     const [filterCompany, setFilterCompany] = useState('ALL');
     const [filterStatus, setFilterStatus] = useState('ALL');
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [itemsPerPage, setItemsPerPage] = useState(20);
 
     useEffect(() => {
         fetchMembers();
@@ -55,12 +55,22 @@ const MemberReport = () => {
                         <h2 className="text-xl md:text-2xl font-black text-gray-900 italic tracking-tight leading-none">Laporan Anggota</h2>
                         <p className="text-[11px] text-gray-400 mt-1 font-medium italic tracking-tight">Data Profil Anggota Koperasi</p>
                     </div>
-                    <button
-                        onClick={() => exportMembersReportExcel(filteredMembers)}
-                        className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-[11px] font-black hover:bg-emerald-700 transition-all shadow-sm shrink-0"
-                    >
-                        <Download size={14} /> Export Excel
-                    </button>
+                    <div className="flex items-center gap-2 shrink-0">
+                        <button
+                            onClick={fetchMembers}
+                            disabled={loading}
+                            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-xl text-[11px] font-black hover:bg-gray-50 transition-all shadow-sm disabled:opacity-50"
+                        >
+                            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+                            Refresh
+                        </button>
+                        <button
+                            onClick={() => exportMembersReportExcel(filteredMembers)}
+                            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-[11px] font-black hover:bg-emerald-700 transition-all shadow-sm shrink-0"
+                        >
+                            <Download size={14} /> Export Excel
+                        </button>
+                    </div>
                 </div>
                 {/* Filters Row */}
                 <div className="px-5 py-3 flex flex-col sm:flex-row flex-wrap gap-3 items-center bg-gray-50/60">
@@ -94,6 +104,23 @@ const MemberReport = () => {
                             <option key={s} value={s}>{s}</option>
                         ))}
                     </select>
+
+                    <div className="flex items-center gap-2 ml-auto">
+                        <span className="text-[10px] font-black italic text-gray-400">Tampilkan:</span>
+                        <select
+                            value={itemsPerPage}
+                            onChange={(e) => {
+                                setItemsPerPage(Number(e.target.value));
+                                setCurrentPage(1);
+                            }}
+                            className="pl-3 pr-8 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs bg-white font-bold tracking-tight italic appearance-none shadow-sm"
+                        >
+                            <option value={20}>20</option>
+                            <option value={50}>50</option>
+                            <option value={100}>100</option>
+                            <option value={200}>200</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -144,11 +171,15 @@ const MemberReport = () => {
                                             {m.company || '-'}
                                         </td>
                                         <td className="px-2 py-1 text-center">
-                                            <span className={`inline-flex px-1.5 py-0.5 rounded text-[8px] font-black tracking-widest italic shadow-sm border ${m.status === 'active'
+                                            <span className={`inline-flex px-1.5 py-0.5 rounded text-[8px] font-black tracking-widest italic shadow-sm border ${m.status === 'AKTIF'
                                                 ? 'bg-emerald-600 text-white border-emerald-700'
-                                                : 'bg-gray-100 text-gray-400 border-gray-200'
+                                                : m.status === 'PASIF'
+                                                    ? 'bg-amber-100 text-amber-700 border-amber-200'
+                                                    : m.status === 'KELUAR'
+                                                        ? 'bg-red-600 text-white border-red-700'
+                                                        : 'bg-gray-100 text-gray-400 border-gray-200'
                                                 }`}>
-                                                {m.status}
+                                                {m.status || 'UNKNOWN'}
                                             </span>
                                         </td>
                                     </tr>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
-import { X, User, Wallet, FileText, Check, Eye, ChevronLeft, AlertCircle } from 'lucide-react';
+import { X, User, Wallet, FileText, Check, Eye, ChevronLeft, AlertCircle, Loader2 } from 'lucide-react';
 import { generateLoanAnalysisPDF } from '../../utils/loanAnalysisPdf';
 
 const AssesmentDetail = () => {
@@ -18,6 +18,7 @@ const AssesmentDetail = () => {
     const [useInterest, setUseInterest] = useState(false);
     const [interestType, setInterestType] = useState('PERSENAN'); // PERSENAN or NOMINAL
     const [interestValue, setInterestValue] = useState('10'); // Default 10%
+    const [isProcessing, setIsProcessing] = useState(false);
 
     useEffect(() => {
         fetchLoanDetail();
@@ -126,6 +127,7 @@ const AssesmentDetail = () => {
         if (!confirmReject) return;
 
         try {
+            setIsProcessing(true);
             const { error: updateError } = await supabase
                 .from('pinjaman')
                 .update({
@@ -140,6 +142,8 @@ const AssesmentDetail = () => {
         } catch (error) {
             console.error('Error rejecting loan:', error);
             alert('Gagal menolak pinjaman: ' + error.message);
+        } finally {
+            setIsProcessing(false);
         }
     };
 
@@ -172,6 +176,7 @@ const AssesmentDetail = () => {
         if (!confirmApprove) return;
 
         try {
+            setIsProcessing(true);
             const tenor = loan.tenor_bulan;
             const pokok = finalAmount;
 
@@ -210,6 +215,8 @@ const AssesmentDetail = () => {
         } catch (error) {
             console.error('Error updating status:', error);
             alert('Gagal menyetujui pinjaman: ' + error.message);
+        } finally {
+            setIsProcessing(false);
         }
     };
 
@@ -227,245 +234,326 @@ const AssesmentDetail = () => {
     if (!loan) return null;
 
     return (
-        <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-500 max-w-[1600px] mx-auto pb-12">
-            {/* Header Section */}
-            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+        <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-500 max-w-[1400px] mx-auto pb-20">
+            {/* Minimalist Header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => navigate('/admin/assesment-pinjaman')}
-                        className="p-3 bg-white hover:bg-gray-50 rounded-2xl transition-all text-gray-400 border border-gray-100 shadow-sm"
+                        className="p-2.5 bg-white hover:bg-gray-50 rounded-xl transition-all text-gray-400 border border-gray-100 shadow-sm"
                     >
-                        <ChevronLeft size={20} />
+                        <ChevronLeft size={18} />
                     </button>
-                    <div className="text-left">
-                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 italic tracking-tight">Detail Verifikasi</h2>
-                        <p className="text-xs md:text-sm text-gray-500 mt-1 font-medium italic tracking-tight">{loan.no_pinjaman} • {loan.personal_data?.full_name}</p>
+                    <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-full bg-emerald-600 flex items-center justify-center text-white font-black text-xl shadow-md">
+                            {loan.personal_data?.full_name?.charAt(0)}
+                        </div>
+                        <div>
+                            <h2 className="text-xl md:text-2xl font-black text-gray-900 italic tracking-tight leading-none">{loan.personal_data?.full_name}</h2>
+                            <p className="text-[10px] text-gray-400 mt-1 font-black italic tracking-widest uppercase opacity-70">{loan.no_pinjaman} • {loan.jenis_pinjaman || 'PINJAMAN'}</p>
+                        </div>
+                    </div>
+                </div>
+                <div className="px-4 py-2 bg-amber-50 text-amber-700 border border-amber-100 rounded-xl font-black text-[10px] tracking-widest italic shadow-sm uppercase">
+                    Status: {loan.status}
+                </div>
+            </div>
+
+            {/* Compact Member Profil Data Card */}
+            <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm text-left">
+                <div className="flex items-center gap-2 mb-4">
+                    <User size={15} className="text-emerald-600" />
+                    <h4 className="font-black text-[10px] tracking-widest text-gray-400 uppercase italic">Profil & Identitas Member</h4>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div>
+                        <label className="text-[9px] font-black text-gray-400 tracking-widest uppercase mb-0.5 block">NIK / No. HP</label>
+                        <p className="text-sm font-bold text-gray-900">{loan.personal_data?.nik} / {loan.personal_data?.phone}</p>
+                    </div>
+                    <div>
+                        <label className="text-[9px] font-black text-gray-400 tracking-widest uppercase mb-0.5 block">Instansi / Unit Kerja</label>
+                        <p className="text-[13px] font-black text-gray-900 italic uppercase leading-tight">
+                            {loan.personal_data?.company || '-'} / {loan.personal_data?.work_unit || '-'}
+                        </p>
+                    </div>
+                    <div>
+                        <label className="text-[9px] font-black text-gray-400 tracking-widest uppercase mb-0.5 block">Status / Masa Kerja</label>
+                        <p className="text-sm font-bold text-gray-900 italic uppercase">
+                            {loan.personal_data?.employment_status || '-'} ({loan.personal_data?.masa_kerja || '-'} thn)
+                        </p>
+                    </div>
+                    <div>
+                        <label className="text-[9px] font-black text-gray-400 tracking-widest uppercase mb-0.5 block">Alamat Singkat</label>
+                        <p className="text-[11px] font-bold text-gray-900 italic uppercase leading-tight truncate">
+                            {loan.personal_data?.address || '-'}
+                        </p>
                     </div>
                 </div>
             </div>
 
-            <div className="space-y-6">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Main Content Area */}
-                    <div className="lg:col-span-2 space-y-6">
-                        {/* Detail Pinjaman & Edit Amount */}
-                        <div className="bg-white rounded-2xl border border-emerald-200 shadow-sm overflow-hidden">
-                            <div className="bg-emerald-600 px-6 py-4 flex items-center justify-between">
-                                <div className="flex items-center gap-2 text-white">
-                                    <Wallet size={20} />
-                                    <h3 className="font-black italic text-sm">Konfigurasi Pinjaman</h3>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Main Content Area */}
+                <div className="lg:col-span-2 space-y-4">
+                    {/* Loan Configuration Card */}
+                    <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm text-left">
+                        <div className="space-y-10">
+                            {/* Loan Configuration Section */}
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Wallet size={15} className="text-emerald-600" />
+                                    <h4 className="font-black text-[10px] tracking-widest text-gray-400 uppercase italic">Konfigurasi Pinjaman</h4>
                                 </div>
-                                <span className="bg-white/20 text-white px-3 py-1 rounded text-[10px] font-black italic">STEP 1</span>
-                            </div>
 
-                            <div className="p-6 space-y-6">
-                                <div className="space-y-4">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="text-left group">
-                                            <label className="text-[10px] font-black text-gray-400 block mb-1 italic">Permohonan Pinjaman (Fixed)</label>
-                                            <div className="relative">
-                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-black italic text-xl">Rp</span>
-                                                <input
-                                                    type="text"
-                                                    value={parseFloat(loan.jumlah_pengajuan || loan.jumlah_pinjaman).toLocaleString('id-ID')}
-                                                    className="w-full pl-12 pr-6 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl text-2xl font-black text-gray-400 italic focus:outline-none transition-all shadow-inner"
-                                                    disabled
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="text-left group">
-                                            <label className="text-[10px] font-black text-emerald-400 block mb-1 italic">Nominal Disetujui (Dapat Diubah)</label>
-                                            <div className="relative">
-                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 font-black italic text-xl">Rp</span>
-                                                <input
-                                                    type="text"
-                                                    value={editingAmount}
-                                                    onChange={(e) => {
-                                                        const val = e.target.value.replace(/\D/g, '');
-                                                        const formatted = val.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-                                                        setEditingAmount(formatted);
-                                                    }}
-                                                    className="w-full pl-12 pr-6 py-4 bg-emerald-50 border-2 border-emerald-100 rounded-2xl text-2xl font-black text-emerald-800 italic focus:outline-none focus:border-emerald-500 transition-all shadow-inner"
-                                                />
-                                            </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest italic">Permohonan Member</label>
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 font-bold italic text-lg">Rp</span>
+                                            <input
+                                                type="text"
+                                                value={parseFloat(loan.jumlah_pengajuan || loan.jumlah_pinjaman).toLocaleString('id-ID')}
+                                                className="w-full pl-12 pr-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-xl font-black text-gray-400 italic focus:outline-none"
+                                                disabled
+                                            />
                                         </div>
                                     </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-emerald-600 uppercase tracking-widest italic">Nominal Disetujui</label>
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 font-bold italic text-lg">Rp</span>
+                                            <input
+                                                type="text"
+                                                value={editingAmount}
+                                                onChange={(e) => {
+                                                    const val = e.target.value.replace(/\D/g, '');
+                                                    const formatted = val.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                                                    setEditingAmount(formatted);
+                                                }}
+                                                className="w-full pl-12 pr-6 py-4 bg-emerald-50/30 border border-emerald-100 rounded-2xl text-xl font-black text-emerald-800 italic focus:outline-none focus:border-emerald-500 transition-all font-mono"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
 
-                                    {/* Interest Configuration */}
-                                    <div className="bg-amber-50 rounded-2xl border-2 border-amber-200 p-6 space-y-4">
-                                        <div className="flex items-center justify-between gap-3">
-                                            <div className="relative inline-flex items-center cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    id="useInterest-page"
-                                                    checked={useInterest}
-                                                    onChange={(e) => setUseInterest(e.target.checked)}
-                                                    className="w-5 h-5 text-emerald-600 rounded-md focus:ring-emerald-500"
-                                                />
-                                                <label htmlFor="useInterest-page" className="ml-3 text-sm font-black text-gray-700 italic">
-                                                    Gunakan Bunga / Margin?
-                                                </label>
-                                            </div>
-
+                                {/* Interest & Margin Configuration */}
+                                <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 space-y-6">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <input
+                                                type="checkbox"
+                                                id="use-interest"
+                                                checked={useInterest}
+                                                onChange={(e) => setUseInterest(e.target.checked)}
+                                                className="w-5 h-5 text-emerald-600 rounded-lg focus:ring-emerald-500 border-gray-300 transition-all"
+                                            />
+                                            <label htmlFor="use-interest" className="text-xs font-black text-gray-700 italic tracking-tight cursor-pointer">
+                                                Margin ?
+                                            </label>
+                                        </div>
+                                        {useInterest && (
                                             <button
                                                 onClick={handleSaveDraft}
-                                                className="px-4 py-1.5 bg-amber-500 text-white rounded-lg text-[10px] font-black hover:bg-amber-600 transition-all shadow-md flex items-center gap-2"
+                                                className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-md active:scale-95 flex items-center gap-2"
                                             >
-                                                <Check size={14} />
-                                                Tetapkan Bunga
+                                                <Check size={14} /> Tetapkan
                                             </button>
-                                        </div>
-
-                                        {useInterest ? (
-                                            <div className="space-y-4 pt-2 pl-2">
-                                                <div className="space-y-2">
-                                                    <label className="text-[10px] font-black text-amber-600 italic">Metode Perhitungan</label>
-                                                    <div className="flex gap-4">
-                                                        <button
-                                                            onClick={() => setInterestType('PERSENAN')}
-                                                            className={`flex-1 py-3 px-4 rounded-xl font-bold text-xs transition-all border-2 ${interestType === 'PERSENAN' ? 'bg-amber-500 text-white border-amber-500 shadow-md' : 'bg-white text-amber-600 border-amber-200'}`}
-                                                        >
-                                                            Persentase (%)
-                                                        </button>
-                                                        <button
-                                                            onClick={() => setInterestType('NOMINAL')}
-                                                            className={`flex-1 py-3 px-4 rounded-xl font-bold text-xs transition-all border-2 ${interestType === 'NOMINAL' ? 'bg-amber-500 text-white border-amber-500 shadow-md' : 'bg-white text-amber-600 border-amber-200'}`}
-                                                        >
-                                                            Nominal (Rp)
-                                                        </button>
-                                                    </div>
-                                                </div>
-
-                                                <div className="space-y-2">
-                                                    <label className="text-[10px] font-black text-amber-600 italic">
-                                                        {interestType === 'PERSENAN' ? 'Suku Bunga flat (% / Tahun)' : 'Nominal Bunga Total (Rp)'}
-                                                    </label>
-                                                    <div className="relative">
-                                                        <input
-                                                            type="number"
-                                                            value={interestValue}
-                                                            onChange={(e) => setInterestValue(e.target.value)}
-                                                            className="w-full px-4 py-3 bg-white border-2 border-amber-200 rounded-xl text-lg font-black text-gray-800 focus:outline-none focus:border-amber-500"
-                                                        />
-                                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 font-black text-amber-400 italic">
-                                                            {interestType === 'PERSENAN' ? '%' : 'Rp'}
-                                                        </span>
-                                                    </div>
-                                                </div>
-
-                                                {/* Live Result Cards */}
-                                                <div className="grid grid-cols-2 gap-4 mt-6">
-                                                    <div className="bg-white/60 p-4 rounded-xl border border-amber-200">
-                                                        <p className="text-[9px] font-black text-gray-400 italic mb-1">Estimasi Bunga</p>
-                                                        {(() => {
-                                                            const principal = parseFloat(editingAmount.toString().replace(/\./g, '')) || 0;
-                                                            const tenor = loan.tenor_bulan;
-                                                            let totalBunga = 0;
-                                                            if (interestType === 'PERSENAN') {
-                                                                totalBunga = principal * (parseFloat(interestValue || 0) / 100) * (tenor / 12);
-                                                            } else {
-                                                                totalBunga = parseFloat(interestValue || 0);
-                                                            }
-                                                            return <p className="text-lg font-black text-amber-600 italic">Rp {Math.round(totalBunga).toLocaleString('id-ID')}</p>;
-                                                        })()}
-                                                    </div>
-                                                    <div className="bg-white/60 p-4 rounded-xl border border-emerald-200">
-                                                        <p className="text-[9px] font-black text-gray-400 italic mb-1">Angsuran / Bulan</p>
-                                                        {(() => {
-                                                            const principal = parseFloat(editingAmount.toString().replace(/\./g, '')) || 0;
-                                                            const tenor = loan.tenor_bulan;
-                                                            let totalBunga = 0;
-                                                            if (interestType === 'PERSENAN') {
-                                                                totalBunga = principal * (parseFloat(interestValue || 0) / 100) * (tenor / 12);
-                                                            } else {
-                                                                totalBunga = parseFloat(interestValue || 0);
-                                                            }
-                                                            const total = principal + totalBunga;
-                                                            const cicilan = Math.ceil(total / tenor);
-                                                            return <p className="text-lg font-black text-emerald-700 italic">Rp {cicilan.toLocaleString('id-ID')}</p>;
-                                                        })()}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="flex items-center gap-3 p-4 bg-white/50 border border-amber-100 rounded-xl">
-                                                <AlertCircle size={20} className="text-amber-500" />
-                                                <p className="text-xs font-bold text-amber-700 italic">Pinjaman tanpa bunga dikonfigurasi. Total bayar akan sama dengan jumlah pinjaman.</p>
-                                            </div>
                                         )}
                                     </div>
+
+                                    {useInterest && (
+                                        <div className="space-y-6 pt-2 animate-in slide-in-from-top-2 duration-300">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <button
+                                                    onClick={() => setInterestType('PERSENAN')}
+                                                    className={`py-3 px-4 rounded-xl font-black text-[10px] tracking-widest transition-all border ${interestType === 'PERSENAN' ? 'bg-emerald-700 text-white border-emerald-700 shadow-md' : 'bg-white text-emerald-600 border-emerald-100 uppercase'}`}
+                                                >
+                                                    PERSENTASE (%)
+                                                </button>
+                                                <button
+                                                    onClick={() => setInterestType('NOMINAL')}
+                                                    className={`py-3 px-4 rounded-xl font-black text-[10px] tracking-widest transition-all border ${interestType === 'NOMINAL' ? 'bg-emerald-700 text-white border-emerald-700 shadow-md' : 'bg-white text-emerald-600 border-emerald-100 uppercase'}`}
+                                                >
+                                                    NOMINAL (RP)
+                                                </button>
+                                            </div>
+
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest italic">
+                                                    {interestType === 'PERSENAN' ? 'Suku Bunga flat (% / Tahun)' : 'Nominal Bunga Total (Rp)'}
+                                                </label>
+                                                <div className="relative">
+                                                    <input
+                                                        type="number"
+                                                        value={interestValue}
+                                                        onChange={(e) => setInterestValue(e.target.value)}
+                                                        className="w-full px-6 py-3 bg-white border border-gray-100 rounded-xl text-lg font-black text-emerald-900 focus:outline-none focus:border-emerald-500 shadow-sm"
+                                                    />
+                                                    <span className="absolute right-6 top-1/2 -translate-y-1/2 font-black text-emerald-500 italic uppercase">
+                                                        {interestType === 'PERSENAN' ? '%' : 'Rp'}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {/* Results Preview */}
+                                            <div className="grid grid-cols-2 gap-4 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                                                <div className="space-y-0.5">
+                                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest italic">Estimasi Bunga</p>
+                                                    {(() => {
+                                                        const principal = parseFloat(editingAmount.toString().replace(/\./g, '')) || 0;
+                                                        const tenor = loan.tenor_bulan;
+                                                        let totalBunga = 0;
+                                                        if (interestType === 'PERSENAN') {
+                                                            totalBunga = principal * (parseFloat(interestValue || 0) / 100) * (tenor / 12);
+                                                        } else {
+                                                            totalBunga = parseFloat(interestValue || 0);
+                                                        }
+                                                        return <p className="text-lg font-black text-emerald-600 italic">Rp {Math.round(totalBunga).toLocaleString('id-ID')}</p>;
+                                                    })()}
+                                                </div>
+                                                <div className="space-y-0.5 border-l border-gray-50 pl-4">
+                                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest italic">Cicilan / Bulan</p>
+                                                    {(() => {
+                                                        const principal = parseFloat(editingAmount.toString().replace(/\./g, '')) || 0;
+                                                        const tenor = loan.tenor_bulan;
+                                                        let totalBunga = 0;
+                                                        if (interestType === 'PERSENAN') {
+                                                            totalBunga = principal * (parseFloat(interestValue || 0) / 100) * (tenor / 12);
+                                                        } else {
+                                                            totalBunga = parseFloat(interestValue || 0);
+                                                        }
+                                                        const total = principal + totalBunga;
+                                                        const cicilan = Math.ceil(total / tenor);
+                                                        return <p className="text-lg font-black text-blue-600 italic">Rp {cicilan.toLocaleString('id-ID')}</p>;
+                                                    })()}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
+
                         </div>
+                    </div>
 
-                        {/* Summary Info */}
-                        <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm space-y-6">
-                            <div className="flex items-center gap-2 border-b border-gray-100 pb-4">
-                                <FileText size={20} className="text-blue-600" />
-                                <h3 className="font-black italic tracking-widest text-sm text-gray-800">Detail Pengajuan Anggota</h3>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="space-y-4">
+                    {/* Loan Information & Specifics Card */}
+                    <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm text-left">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 divide-x divide-gray-50">
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <FileText size={15} className="text-emerald-600" />
+                                    <h4 className="font-black text-[10px] tracking-widest text-gray-400 uppercase italic">Informasi Pengajuan</h4>
+                                </div>
+                                <div className="grid grid-cols-1 gap-4">
                                     <div>
-                                        <label className="text-[10px] font-black text-gray-400 italic">Jenis Pinjaman</label>
-                                        <p className="font-bold text-gray-800">{loan.jenis_pinjaman || '-'}</p>
-                                    </div>
-                                    <div>
-                                        <label className="text-[10px] font-black text-gray-400 italic">Keperluan</label>
-                                        <p className="font-bold text-gray-800">{loan.keperluan || '-'}</p>
+                                        <label className="text-[9px] font-black text-gray-400 uppercase mb-0.5 block">Jenis Pinjaman / Keperluan</label>
+                                        <p className="text-sm font-bold text-gray-900 italic uppercase">{loan.jenis_pinjaman || '-'} • {loan.keperluan || '-'}</p>
                                     </div>
                                 </div>
-                                <div className="space-y-4">
+                            </div>
+                            <div className="pl-8 space-y-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Check size={15} className="text-emerald-600" />
+                                    <h4 className="font-black text-[10px] tracking-widest text-gray-400 uppercase italic">Parameter & Tenor</h4>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="text-[10px] font-black text-gray-400 italic">Tenor</label>
-                                        <p className="font-bold text-gray-800">{loan.tenor_bulan} Bulan</p>
+                                        <label className="text-[9px] font-black text-gray-400 uppercase mb-0.5 block">Tenor</label>
+                                        <p className="text-sm font-black text-blue-600 italic uppercase">{loan.tenor_bulan} BULAN</p>
                                     </div>
                                     <div>
-                                        <label className="text-[10px] font-black text-gray-400 italic">No. Pinjaman</label>
-                                        <p className="font-mono font-bold text-gray-600 text-sm">{loan.no_pinjaman}</p>
+                                        <label className="text-[9px] font-black text-gray-400 uppercase mb-0.5 block">Dibuat Pada</label>
+                                        <p className="text-xs font-bold text-gray-500 italic uppercase">
+                                            {new Date(loan.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    {/* Sidebar Area */}
-                    <div className="space-y-6">
-                        {/* Running Loans Card */}
-                        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                            <div className="bg-gray-800 px-6 py-4 flex items-center gap-3">
-                                <Wallet size={18} className="text-white" />
-                                <h3 className="font-black italic tracking-widest text-xs text-white">Pinjaman Berjalan</h3>
+                {/* Sidebar Column */}
+                <div className="space-y-6">
+                    {/* Integrated Sidebar Card */}
+                    <div className="bg-white rounded-3xl border border-gray-100 shadow-lg overflow-hidden sticky top-6 text-left">
+                        <div className="p-1 px-8 pt-8 pb-4">
+                            <h3 className="text-[11px] font-black text-gray-900 tracking-[0.2em] italic uppercase mb-2">Keputusan Analis</h3>
+                            <div className="h-px bg-gray-50 mb-6" />
+                        </div>
+
+                        <div className="px-8 pb-8 space-y-4">
+                            <div className="space-y-3">
+                                <button
+                                    onClick={() => generateLoanAnalysisPDF(loan, false, analystName, {
+                                        amount: parseFloat(editingAmount.toString().replace(/\./g, '')),
+                                        useInterest: useInterest,
+                                        interestType: interestType,
+                                        interestValue: parseFloat(interestValue)
+                                    })}
+                                    className="w-full py-4 bg-blue-50 text-blue-700 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-blue-100 transition-all border border-blue-100 italic"
+                                >
+                                    <Eye size={18} />
+                                    PRATINJAU ANALISA
+                                </button>
+
+                                <button
+                                    onClick={handleApprove}
+                                    className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100 active:translate-y-0.5 italic"
+                                >
+                                    <Check size={20} />
+                                    SETUJUI PINJAMAN
+                                </button>
+
+                                <button
+                                    onClick={handleReject}
+                                    className="w-full py-4 bg-white text-red-600 border border-red-100 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-red-50 transition-all italic"
+                                >
+                                    <X size={18} />
+                                    TOLAK PENGAJUAN
+                                </button>
                             </div>
-                            <div className="p-0">
+
+                            <div className="space-y-3 pt-4 border-t border-gray-50">
+                                <button
+                                    onClick={() => navigate('/admin/assesment-pinjaman')}
+                                    className="w-full py-3 bg-white text-gray-400 rounded-2xl font-black text-[10px] tracking-widest hover:text-gray-600 transition-all uppercase italic"
+                                >
+                                    BATAL / KEMBALI
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Integrated History of Running Loans */}
+                        <div className="bg-gray-900 px-8 py-8 text-white">
+                            <h4 className="text-[10px] font-black tracking-widest mb-6 italic uppercase opacity-60">Pinjaman Berjalan Lainnya</h4>
+                            <div className="space-y-4">
                                 {runningLoans.length === 0 ? (
-                                    <div className="p-8 text-center">
-                                        <AlertCircle className="mx-auto text-gray-300 mb-2" size={32} />
-                                        <p className="text-xs font-bold text-gray-400 italic">Tidak ada pinjaman berjalan lain</p>
+                                    <div className="py-4 text-center opacity-40 italic">
+                                        <AlertCircle className="mx-auto mb-2 opacity-50" size={24} />
+                                        <p className="text-[10px] font-black tracking-widest">TIDAK ADA PINJAMAN LAIN</p>
                                     </div>
                                 ) : (
-                                    <div className="divide-y divide-gray-100">
+                                    <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                                         {runningLoans.map((rl) => (
                                             <Link
                                                 key={rl.id}
                                                 to={`/admin/loan-detail/${rl.id}`}
-                                                className="p-4 hover:bg-emerald-50 transition-colors block border-b border-gray-100 last:border-0"
+                                                className="group block bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-all backdrop-blur-sm"
                                             >
-                                                <div className="flex justify-between items-start mb-1">
-                                                    <span className="text-[10px] font-black text-emerald-600 uppercase italic bg-emerald-50 px-2 py-0.5 rounded">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <span className={`text-[8px] font-black px-2 py-0.5 rounded tracking-tighter shadow-sm border ${rl.status === 'DICAIRKAN' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-blue-500/20 text-blue-400 border-blue-500/30'}`}>
                                                         {rl.status}
                                                     </span>
-                                                    <span className="text-[10px] font-mono font-bold text-gray-400">{rl.no_pinjaman}</span>
+                                                    <span className="text-[9px] font-mono font-bold text-white/30">{rl.no_pinjaman}</span>
                                                 </div>
-                                                <p className="text-sm font-black text-gray-800 italic">
+                                                <p className="text-sm font-black text-white italic tracking-tight">
                                                     Rp {rl.jumlah_pinjaman.toLocaleString('id-ID')}
                                                 </p>
-                                                <div className="flex justify-between items-center mt-1">
-                                                    <p className="text-[10px] font-bold text-gray-500 uppercase">
-                                                        Tenor: {rl.tenor_bulan} Bulan
+                                                <div className="flex justify-between items-center mt-3 pt-3 border-t border-white/5">
+                                                    <p className="text-[9px] font-bold text-white/50 uppercase tracking-widest italic">
+                                                        {rl.tenor_bulan} BULAN
                                                     </p>
-                                                    <ChevronLeft size={12} className="text-emerald-400 rotate-180" />
+                                                    <ChevronLeft size={12} className="text-white/40 group-hover:text-white transition-colors rotate-180" />
                                                 </div>
                                             </Link>
                                         ))}
@@ -473,49 +561,15 @@ const AssesmentDetail = () => {
                                 )}
                             </div>
                         </div>
-
-                        {/* Actions Card */}
-                        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm space-y-4 sticky top-24">
-                            <button
-                                onClick={() => generateLoanAnalysisPDF(loan, false, analystName, {
-                                    amount: parseFloat(editingAmount.toString().replace(/\./g, '')),
-                                    useInterest: useInterest,
-                                    interestType: interestType,
-                                    interestValue: parseFloat(interestValue)
-                                })}
-                                className="w-full py-4 bg-blue-50 text-blue-700 rounded-xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-blue-100 transition-all border border-blue-200"
-                            >
-                                <Eye size={18} />
-                                Pratinjau Analisa
-                            </button>
-
-                            <button
-                                onClick={handleApprove}
-                                className="w-full py-4 bg-emerald-600 text-white rounded-xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100"
-                            >
-                                <Check size={18} />
-                                Setujui Sekarang
-                            </button>
-
-                            <button
-                                onClick={handleReject}
-                                className="w-full py-4 bg-red-50 text-red-600 rounded-xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-red-100 transition-all border border-red-200"
-                            >
-                                <X size={18} />
-                                Tolak Pinjaman
-                            </button>
-
-                            <button
-                                onClick={() => navigate('/admin/assesment-pinjaman')}
-                                className="w-full py-4 bg-white text-gray-500 rounded-xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-gray-50 transition-all border border-gray-200"
-                            >
-                                <X size={18} />
-                                Kembali Ke Daftar
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
+
+            {isProcessing && (
+                <div className="fixed inset-0 z-[60] bg-black/20 backdrop-blur-[2px] flex items-center justify-center">
+                    <Loader2 className="animate-spin text-emerald-600" size={48} />
+                </div>
+            )}
         </div>
     );
 };

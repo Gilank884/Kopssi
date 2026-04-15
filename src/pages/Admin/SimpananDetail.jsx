@@ -101,115 +101,141 @@ const SimpananDetail = () => {
     }
 
     return (
-        <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-500 max-w-[1600px] mx-auto">
-            {/* Header Section */}
-            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
-            {/* Header */}
+        <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-500 max-w-[1400px] mx-auto pb-20">
+            {/* Minimalist Header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <button
-                        onClick={() => navigate(-1)}
-                        className="p-3 bg-white hover:bg-gray-50 rounded-2xl transition-all text-gray-400 border border-gray-100 shadow-sm"
+                        onClick={() => navigate('/admin/simpanan-anggota')}
+                        className="p-2.5 bg-white hover:bg-gray-50 rounded-xl transition-all text-gray-400 border border-gray-100 shadow-sm"
                     >
-                        <ArrowLeft size={20} />
+                        <ArrowLeft size={18} />
                     </button>
-                    <div className="text-left">
-                        <h2 className="text-2xl md:text-3xl font-black text-gray-900 italic tracking-tight">Detail Simpanan Anggota</h2>
-                        <p className="text-xs md:text-sm text-gray-500 mt-1 font-medium italic tracking-tight">{member.no_npp} • {member.full_name}</p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Member Card */}
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <div className="flex flex-col md:flex-row gap-6 md:items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 bg-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-sm">
-                            {member.full_name?.substring(0, 2)}
+                    <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-full bg-emerald-600 flex items-center justify-center text-white font-black text-xl shadow-md">
+                            {member.full_name?.charAt(0)}
                         </div>
                         <div>
-                            <h3 className="text-lg font-bold text-gray-900">{member.full_name}</h3>
-                            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-gray-500 font-medium italic">
-                                <span className="flex items-center gap-1"><User size={14} /> {member.no_npp}</span>
-                                <span className="flex items-center gap-1"><Building size={14} /> {member.company}</span>
-                                <span className="flex items-center gap-1"><CreditCard size={14} /> {member.bank_gaji} - {member.rek_gaji}</span>
-                            </div>
+                            <h2 className="text-xl md:text-2xl font-black text-gray-900 italic tracking-tight leading-none">{member.full_name}</h2>
+                            <p className="text-[10px] text-gray-400 mt-1 font-black italic tracking-widest uppercase opacity-70">No. Anggota: {member.no_anggota || member.no_npp} • RIWAYAT SIMPANAN</p>
                         </div>
                     </div>
-                    <div className="text-right">
-                        <p className="text-xs font-bold text-gray-400 tracking-widest mb-1">Total Saldo Simpanan</p>
-                        <h2 className="text-3xl font-bold text-emerald-600">{formatCurrency(summary.total)}</h2>
+                </div>
+                <div className="px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-xl font-black text-[10px] tracking-widest italic shadow-sm uppercase">
+                    Status: {member.status_anggota || 'AKTIF'}
+                </div>
+            </div>
+
+            {/* Compact Profile & Balance Card */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 text-left">
+                {/* Identity Card */}
+                <div className="lg:col-span-2 bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                    <div className="flex items-center gap-2 mb-4">
+                        <User size={15} className="text-emerald-600" />
+                        <h4 className="font-black text-[10px] tracking-widest text-gray-400 uppercase italic">Profil Member</h4>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="text-[9px] font-black text-gray-400 uppercase mb-0.5 block">NPP / NIK</label>
+                            <p className="text-sm font-mono font-black text-gray-700 italic tracking-tighter">{member.no_npp || '-'} / {member.nik || '-'}</p>
+                        </div>
+                        <div>
+                            <label className="text-[9px] font-black text-gray-400 uppercase mb-0.5 block">Status Pekerjaan</label>
+                            <p className="text-[11px] font-bold text-gray-900 uppercase italic truncate">{member.company || '-'}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Summary Card */}
+                <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-center">
+                    <div className="flex justify-between items-end">
+                        <div>
+                            <label className="text-[9px] font-black text-gray-400 uppercase mb-0.5 block italic leading-none">Total Saldo Simpanan</label>
+                            <h3 className="text-2xl font-black text-emerald-600 italic tracking-tighter">
+                                {formatCurrency(summary.total)}
+                            </h3>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-[8px] font-black text-gray-300 uppercase italic">Update</p>
+                            <p className="text-[10px] font-bold text-gray-500 italic">
+                                {savings.length > 0 ? new Date(savings[0].created_at).toLocaleDateString('id-ID') : '-'}
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
-                    <p className="text-[10px] font-bold text-gray-400 tracking-widest mb-1">Simp. Pokok</p>
-                    <h3 className="text-lg font-bold text-gray-800">{formatCurrency(summary.pokok)}</h3>
-                </div>
-                <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
-                    <p className="text-[10px] font-bold text-gray-400 tracking-widest mb-1">Simp. Wajib</p>
-                    <h3 className="text-lg font-bold text-gray-800">{formatCurrency(summary.wajib)}</h3>
-                </div>
-                <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
-                    <p className="text-[10px] font-bold text-gray-400 tracking-widest mb-1">Simp. Wajib Khusus</p>
-                    <h3 className="text-lg font-bold text-gray-800">{formatCurrency(summary.wajibKhusus)}</h3>
-                </div>
-                <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
-                    <p className="text-[10px] font-bold text-gray-400 tracking-widest mb-1">Simp. Sukarela</p>
-                    <h3 className="text-lg font-bold text-gray-800">{formatCurrency(summary.sukarela)}</h3>
-                </div>
-                <div className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
-                    <p className="text-[10px] font-bold text-gray-400 tracking-widest mb-1">Uang Parkir</p>
-                    <h3 className="text-lg font-bold text-gray-800">{formatCurrency(summary.parkir)}</h3>
-                </div>
-            </div>
+                    {/* Breakdown Grid */}
+                    {/* Breakdown Grid - Ultra Compact */}
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-left">
+                        {[
+                            { label: 'Pokok', val: summary.pokok, color: 'text-gray-800' },
+                            { label: 'Wajib', val: summary.wajib, color: 'text-gray-800' },
+                            { label: 'Khusus', val: summary.wajibKhusus, color: 'text-gray-800' },
+                            { label: 'Sukarela', val: summary.sukarela, color: 'text-gray-800' },
+                            { label: 'Parkir', val: summary.parkir, color: 'text-emerald-600' }
+                        ].map((item, idx) => (
+                            <div key={idx} className="p-3 px-4 bg-white rounded-xl border border-gray-50 shadow-sm">
+                                <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest italic mb-0.5">Simp. {item.label}</p>
+                                <p className={`text-[13px] font-black italic ${item.color}`}>{formatCurrency(item.val)}</p>
+                            </div>
+                        ))}
+                    </div>
 
-            {/* Transaction History */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="overflow-auto max-h-[50vh] text-left">
-                    <table className="w-full text-left border-collapse table-auto">
-                        <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
-                            <tr>
-                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 w-12 text-center bg-emerald-50/50">No</th>
-                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 bg-emerald-50/50">Tanggal</th>
-                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center bg-emerald-50/50">Jenis</th>
-                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 bg-emerald-50/50">Tipe Simpanan</th>
-                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 bg-emerald-50/50">Keterangan</th>
-                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic text-right bg-emerald-50/50">Jumlah</th>
+
+            {/* History Table in Card */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden text-left">
+                <div className="px-8 py-6 border-b border-gray-50 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
+                            <History size={16} className="text-emerald-600" />
+                        </div>
+                        <h3 className="font-black italic text-xs text-gray-800 uppercase tracking-widest">Riwayat Transaksi</h3>
+                    </div>
+                </div>
+
+                <div className="overflow-x-auto max-h-[600px] overflow-y-auto custom-scrollbar">
+                    <table className="w-full">
+                        <thead className="sticky top-0 bg-white z-10">
+                            <tr className="bg-gray-50/50">
+                                <th className="px-8 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest italic border-b border-gray-100">Tanggal</th>
+                                <th className="px-8 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest italic border-b border-gray-100">Keterangan</th>
+                                <th className="px-8 py-4 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest italic border-b border-gray-100">Jenis</th>
+                                <th className="px-8 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest italic border-b border-gray-100">Nominal</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-200">
+                        <tbody className="divide-y divide-gray-50">
                             {savings.length === 0 ? (
                                 <tr>
-                                    <td colSpan="6" className="px-6 py-20 text-center text-slate-400">
-                                        <p className="font-black text-[10px] tracking-widest italic">Belum ada riwayat transaksi</p>
+                                    <td colSpan="4" className="px-8 py-12 text-center text-gray-400 italic font-black text-xs uppercase tracking-widest opacity-40">
+                                        Belum ada riwayat transaksi
                                     </td>
                                 </tr>
                             ) : (
                                 savings.map((item, index) => (
-                                    <tr key={item.id} className="hover:bg-emerald-50 transition-colors group">
-                                        <td className="px-2 py-1 border-r border-slate-200 text-center">
-                                            <span className="text-[10px] font-black text-gray-400 italic">{index + 1}</span>
+                                    <tr key={item.id} className="hover:bg-gray-50/50 transition-colors group">
+                                        <td className="px-8 py-4">
+                                            <p className="text-xs font-bold text-gray-900 italic uppercase">
+                                                {new Date(item.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}
+                                            </p>
                                         </td>
-                                        <td className="px-2 py-1 text-[10px] font-bold text-slate-500 border-r border-slate-200 leading-none whitespace-nowrap italic">
-                                            {new Date(item.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                        <td className="px-8 py-4">
+                                            <div>
+                                                <p className="text-xs font-bold text-gray-600 leading-relaxed uppercase italic">
+                                                    {item.description || item.type}
+                                                </p>
+                                                <p className="text-[9px] font-mono text-gray-400 tracking-tighter uppercase mt-0.5">{item.type} • {item.id.split('-')[0]}</p>
+                                            </div>
                                         </td>
-                                        <td className="px-2 py-1 text-center border-r border-slate-200">
-                                            <span className={`inline-flex px-1.5 py-0.5 rounded text-[8px] font-black tracking-tighter shadow-sm border ${item.transaction_type === 'SETOR' ? 'bg-emerald-600 text-white border-emerald-700' : 'bg-red-600 text-white border-red-700'
-                                                }`}>
+                                        <td className="px-8 py-4 text-center">
+                                            <span className={`inline-flex px-2 py-0.5 rounded text-[8px] font-black tracking-widest italic shadow-sm border uppercase ${item.transaction_type === 'SETOR' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-red-50 text-red-600 border-red-100'}`}>
                                                 {item.transaction_type}
                                             </span>
                                         </td>
-                                        <td className="px-2 py-1 text-[10px] font-black text-slate-700 border-r border-slate-200 leading-none italic">
-                                            {item.type}
-                                        </td>
-                                        <td className="px-2 py-1 text-[10px] text-slate-400 italic border-r border-slate-200 leading-tight truncate max-w-[200px]">
-                                            {item.description || '-'}
-                                        </td>
-                                        <td className={`px-2 py-1 text-right text-[11px] font-black font-mono leading-none ${item.transaction_type === 'SETOR' ? 'text-emerald-600' : 'text-red-600'
-                                            }`}>
-                                            {item.transaction_type === 'SETOR' ? '+' : '-'} {formatCurrency(item.amount).replace(/Rp\s?/, '')}
+                                        <td className="px-8 py-4 text-right">
+                                            <p className={`text-sm font-black italic ${item.transaction_type === 'SETOR' ? 'text-emerald-600' : 'text-red-600'}`}>
+                                                {item.transaction_type === 'SETOR' ? '+' : '-'} {formatCurrency(item.amount).replace('Rp', '').trim()}
+                                            </p>
                                         </td>
                                     </tr>
                                 ))

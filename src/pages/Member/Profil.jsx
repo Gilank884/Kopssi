@@ -85,8 +85,8 @@ const Profil = () => {
                             Status: {profile.status || 'Pending'}
                         </span>
                         <span className="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-medium rounded-full">NIK: {profile.nik}</span>
-                        {profile.no_npp && (
-                            <span className="px-3 py-1 bg-purple-100 text-purple-700 text-sm font-medium rounded-full">NPP: {profile.no_npp}</span>
+                        {profile.no_anggota && (
+                            <span className="px-3 py-1 bg-purple-100 text-purple-700 text-sm font-medium rounded-full">No. Anggota: {profile.no_anggota}</span>
                         )}
                     </div>
                 </div>

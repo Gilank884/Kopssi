@@ -1,6 +1,6 @@
 import React, { useLayoutEffect, useRef, useState, useEffect } from 'react';
 import gsap from 'gsap';
-import { FileText, AlertCircle, Loader2 } from 'lucide-react';
+import { FileText, AlertCircle, Loader2, CheckCircle2, History, ArrowRight } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,7 +9,7 @@ const PengajuanHutang = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         full_name: '',
-        no_npp: '',
+        no_anggota: '',
         jumlah_pinjaman: '',
         tenor_bulan: '',
         kategori: '',
@@ -23,6 +23,7 @@ const PengajuanHutang = () => {
     const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState(null);
     const [personalDataId, setPersonalDataId] = useState(null);
+    const [lastLoanNo, setLastLoanNo] = useState('');
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -43,7 +44,7 @@ const PengajuanHutang = () => {
 
                 const { data: personalData, error: fetchError } = await supabase
                     .from('personal_data')
-                    .select('id, full_name, no_npp')
+                    .select('id, full_name, no_anggota')
                     .eq('user_id', authUser.id)
                     .single();
 
@@ -55,7 +56,7 @@ const PengajuanHutang = () => {
                     setFormData(prev => ({
                         ...prev,
                         full_name: personalData.full_name || '',
-                        no_npp: personalData.no_npp || ''
+                        no_anggota: personalData.no_anggota || ''
                     }));
                     setPersonalDataId(personalData.id);
                 }
@@ -130,13 +131,42 @@ const PengajuanHutang = () => {
         }));
     };
 
-    const generateLoanNumber = () => {
+    const generateLoanNumber = async () => {
         const date = new Date();
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const random = Math.floor(1000 + Math.random() * 9000);
-        return `RS${year}${month}${day}-${random}`;
+        const yy = String(date.getFullYear()).slice(-2);
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const prefix = `R${yy}${mm}`;
+
+        try {
+            // Get the latest loan number with the same prefix (R+YY+MM)
+            const { data, error } = await supabase
+                .from('pinjaman')
+                .select('no_pinjaman')
+                .ilike('no_pinjaman', `${prefix}%`)
+                .order('no_pinjaman', { ascending: false })
+                .limit(1);
+
+            if (error) throw error;
+
+            let sequenceNum = 1;
+            if (data && data.length > 0) {
+                const lastNo = data[0].no_pinjaman;
+                // Extract last 4 digits
+                const lastSeqStr = lastNo.slice(-4);
+                const lastSeq = parseInt(lastSeqStr, 10);
+                if (!isNaN(lastSeq)) {
+                    sequenceNum = lastSeq + 1;
+                }
+            }
+
+            const sequence = String(sequenceNum).padStart(4, '0');
+            return `${prefix}${sequence}`;
+        } catch (err) {
+            console.error("Error generating sequential loan number:", err);
+            // Fallback for emergency (prevent blocking user application if query fails)
+            const random = Math.floor(1000 + Math.random() * 9000);
+            return `${prefix}X${random}`;
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -151,7 +181,7 @@ const PengajuanHutang = () => {
         }
 
         try {
-            const noPinjaman = generateLoanNumber();
+            const noPinjaman = await generateLoanNumber();
             const rawJumlahPinjaman = parseFloat(formData.jumlah_pinjaman.replace(/\./g, ''));
             const tenor = parseInt(formData.tenor_bulan);
 
@@ -177,6 +207,7 @@ const PengajuanHutang = () => {
 
             if (insertError) throw insertError;
 
+            setLastLoanNo(noPinjaman);
             setSubmitted(true);
             setFormData(prev => ({
                 ...prev,
@@ -185,10 +216,13 @@ const PengajuanHutang = () => {
                 keperluan: ''
             }));
 
-            // Redirect to history after success
+            // Redirect is now handled by modal button or auto-close if desired
+            // But for now, we leave it open until user interacts or we can set longer timeout
+            /*
             setTimeout(() => {
                 navigate('/dashboard/riwayat-pengajuan');
-            }, 2000);
+            }, 3000);
+            */
 
         } catch (err) {
             console.error("Error submitting loan:", err);
@@ -249,8 +283,8 @@ const PengajuanHutang = () => {
                             </label>
                             <input
                                 type="text"
-                                name="no_npp"
-                                value={formData.no_npp}
+                                name="no_anggota"
+                                value={formData.no_anggota}
                                 className="w-full rounded-lg border border-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 bg-gray-50/50 font-bold"
                                 readOnly
                             />
@@ -351,12 +385,6 @@ const PengajuanHutang = () => {
 
                     {/* Aksi */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-2">
-                        {submitted && (
-                            <div className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-full px-4 py-1.5 animate-bounce">
-                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                Pengajuan Berhasil! Mengalihkan...
-                            </div>
-                        )}
                         <div className="flex gap-3 md:ml-auto">
                             <button
                                 type="submit"
@@ -369,6 +397,49 @@ const PengajuanHutang = () => {
                     </div>
                 </form>
             </div>
+
+            {/* SUCCESS MODAL */}
+            {submitted && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-300">
+                        <div className="bg-emerald-600 p-8 flex flex-col items-center text-center">
+                            <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mb-4 animate-bounce">
+                                <CheckCircle2 size={48} className="text-white" />
+                            </div>
+                            <h3 className="text-2xl font-black text-white italic tracking-tighter">PENGAJUAN BERHASIL!</h3>
+                            <p className="text-emerald-100 text-xs font-bold uppercase tracking-widest mt-1 opacity-80">Permohonan Anda Telah Tercatat</p>
+                        </div>
+                        
+                        <div className="p-8 space-y-6 text-center">
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Nomor Pinjaman Anda</p>
+                                <div className="bg-gray-50 rounded-xl py-3 border border-gray-100 font-mono text-xl font-black text-gray-800 tracking-tighter italic">
+                                    {lastLoanNo}
+                                </div>
+                            </div>
+
+                            <p className="text-xs text-gray-500 font-medium leading-relaxed italic">
+                                Pengajuan Anda sedang menunggu proses verifikasi oleh tim Admin KOPSSI. Anda dapat memantau statusnya di menu Riwayat.
+                            </p>
+
+                            <div className="flex flex-col gap-3">
+                                <button
+                                    onClick={() => navigate('/dashboard/riwayat-pengajuan')}
+                                    className="w-full bg-emerald-600 text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 group"
+                                >
+                                    <History size={16} /> Lihat Riwayat <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                                </button>
+                                <button
+                                    onClick={() => setSubmitted(false)}
+                                    className="text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-gray-600 transition-colors"
+                                >
+                                    Tutup Halaman Ini
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

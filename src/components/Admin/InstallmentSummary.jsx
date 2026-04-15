@@ -290,7 +290,9 @@ const InstallmentSummary = ({ loan, installments, userLoans, formatCurrency, sel
                                                                     onChange={() => onToggleInstallment(inst)}
                                                                     className="w-3.5 h-3.5 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
                                                                 />
-                                                                <span className="text-[10px] font-bold text-gray-600 uppercase italic">Bulan Ke-{inst.bulan_ke}</span>
+                                                                <span className="text-[10px] font-bold text-gray-600 uppercase italic">
+                                                                    Bulan Ke-{inst.bulan_ke} ({new Date(inst.tanggal_bayar).toLocaleDateString('id-ID', { month: 'long' })})
+                                                                </span>
                                                             </div>
                                                             <span className="text-[10px] font-black text-blue-700 italic">{formatCurrency(inst.amount)}</span>
                                                         </div>

@@ -70,6 +70,10 @@ const AdminLayout = () => {
         navigate('/');
     };
 
+    // Get user role for permission checks
+    const currentUser = JSON.parse(localStorage.getItem('auth_user') || '{}');
+    const isSuperAdmin = currentUser?.role === 'SUPERADMIN';
+
     const navItems = [
         {
             path: '/admin',
@@ -128,6 +132,9 @@ const AdminLayout = () => {
             icon: <Settings size={20} />,
             children: [
                 { path: '/admin/master-data', label: 'Master Data', icon: <ClipboardCheck size={18} /> },
+                ...(isSuperAdmin ? [
+                    { path: '/admin/user-management', label: 'Manajemen User', icon: <Users size={18} /> }
+                ] : []),
             ]
         },
         {
@@ -552,20 +559,30 @@ const AdminLayout = () => {
                             <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white shadow-sm"></span>
                         </button>
 
-                        <div className="flex items-center gap-3 md:pl-2 border-l border-transparent md:border-gray-200 cursor-pointer hover:bg-gray-50 p-1 md:p-1.5 md:pr-3 rounded-full transition-all group">
-                            <div className="w-9 h-9 md:w-10 md:h-10 bg-gradient-to-br from-blue-100 to-indigo-50 rounded-full flex items-center justify-center text-blue-600 shadow-sm border border-blue-100 group-hover:scale-105 transition-transform overflow-hidden">
-                                <UserCircle size={24} />
-                            </div>
-                            <div className="hidden sm:flex flex-col text-left">
-                                <span className="text-[13px] font-black text-slate-800 leading-tight group-hover:text-blue-700 transition-colors">Admin Super</span>
-                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Administrator</span>
+                        <div className="flex items-center gap-2">
+                             <button
+                                onClick={() => navigate('/dashboard')}
+                                className="hidden md:flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl font-black text-[10px] tracking-widest uppercase hover:bg-emerald-100 transition-all border border-emerald-100/50 shadow-sm group/mode"
+                            >
+                                <Users size={14} className="group-hover/mode:scale-110 transition-transform" />
+                                Mode User
+                            </button>
+
+                            <div className="flex items-center gap-3 md:pl-2 border-l border-transparent md:border-gray-200 cursor-pointer hover:bg-gray-50 p-1 md:p-1.5 md:pr-3 rounded-full transition-all group">
+                                <div className="w-9 h-9 md:w-10 md:h-10 bg-gradient-to-br from-blue-100 to-indigo-50 rounded-full flex items-center justify-center text-blue-600 shadow-sm border border-blue-100 group-hover:scale-105 transition-transform overflow-hidden">
+                                    <UserCircle size={24} />
+                                </div>
+                                <div className="hidden sm:flex flex-col text-left">
+                                    <span className="text-[13px] font-black text-slate-800 leading-tight group-hover:text-blue-700 transition-colors">Admin Super</span>
+                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Administrator</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </header>
 
                 {/* MAIN CONTENT */}
-                <main className="flex-1 overflow-auto bg-[#f8fafc] p-4 md:p-8 scroll-smooth">
+                <main className="flex-1 overflow-auto bg-slate-100/70 p-4 md:p-8 scroll-smooth">
                     <div className="max-w-[1700px] mx-auto animate-in fade-in slide-in-from-bottom-3 duration-700 delay-150">
                         <Outlet />
                     </div>

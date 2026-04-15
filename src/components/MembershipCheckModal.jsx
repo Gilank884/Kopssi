@@ -2,6 +2,7 @@ import React, { useState, useRef, useLayoutEffect } from 'react';
 import gsap from 'gsap';
 import { Search, X, Check, Loader2, Info, User, Briefcase, MapPin, Edit3 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
+import bcrypt from 'bcryptjs';
 
 const MembershipCheckModal = ({ isOpen, onClose }) => {
     const modalRef = useRef(null);
@@ -59,15 +60,15 @@ const MembershipCheckModal = ({ isOpen, onClose }) => {
         setLoading(true);
         setError('');
         try {
-            // 1. Check personal_data table directly for NPP
+            // 1. Check personal_data table directly for No Anggota
             const { data: profileData, error: profileError } = await supabase
                 .from('personal_data')
                 .select('*')
-                .eq('no_npp', searchTerm)
+                .eq('no_anggota', searchTerm)
                 .single();
 
             if (profileError || !profileData) {
-                throw new Error('Data NPP tidak ditemukan. Silakan hubungi admin untuk pendaftaran.');
+                throw new Error('Nomor Anggota tidak ditemukan. Silakan hubungi admin untuk pendaftaran.');
             }
 
             // 2. We already have the profileData, now ensure it has a user_id if we want to update password
@@ -203,9 +204,12 @@ const MembershipCheckModal = ({ isOpen, onClose }) => {
         try {
             // 1. Update Password in users table
             if (member.user_id) {
+                const salt = await bcrypt.genSalt(10);
+                const hashedPassword = await bcrypt.hash(newPassword, salt);
+                
                 const { error: passwordError } = await supabase
                     .from('users')
-                    .update({ password: newPassword })
+                    .update({ password: hashedPassword })
                     .eq('id', member.user_id);
 
                 if (passwordError) throw passwordError;
@@ -251,7 +255,7 @@ const MembershipCheckModal = ({ isOpen, onClose }) => {
                         <X size={24} />
                     </button>
                     <h2 className="text-xl md:text-2xl font-bold italic uppercase tracking-tight">Cek Keanggotaan</h2>
-                    <p className="text-blue-300 text-xs md:text-sm mt-1 italic font-medium">Verifikasi data Anda menggunakan NPP</p>
+                    <p className="text-blue-300 text-xs md:text-sm mt-1 italic font-medium">Verifikasi data Anda menggunakan Nomor Anggota</p>
                 </div>
 
                 <div className="p-8 flex-1 overflow-y-auto">
@@ -259,7 +263,7 @@ const MembershipCheckModal = ({ isOpen, onClose }) => {
                         <div className="space-y-6">
                             <form onSubmit={handleSearch} className="space-y-4">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest italic">Masukkan Nomor NPP Anda</label>
+                                    <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest italic">Masukkan Nomor Anggota Anda</label>
                                     <div className="relative">
                                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                                         <input
@@ -314,7 +318,7 @@ const MembershipCheckModal = ({ isOpen, onClose }) => {
                                         <User size={56} strokeWidth={3} />
                                     </div>
                                     <h3 className="text-2xl font-black uppercase text-gray-900 italic tracking-tight">Keanggotaan Aktif!</h3>
-                                    <p className="text-sm font-bold text-gray-500 max-w-xs mx-auto leading-relaxed italic">Selamat! Akun Anda sudah aktif. Silakan login menggunakan Nomor NPP Anda.</p>
+                                    <p className="text-sm font-bold text-gray-500 max-w-xs mx-auto leading-relaxed italic">Selamat! Akun Anda sudah aktif. Silakan login menggunakan Nomor Anggota Anda.</p>
                                     <button
                                         onClick={() => setMember(null)}
                                         className="mt-8 px-8 py-3 rounded-2xl border border-gray-200 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 hover:bg-gray-50 transition-all"
@@ -345,9 +349,9 @@ const MembershipCheckModal = ({ isOpen, onClose }) => {
                                         <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
                                             <div className="flex items-center gap-2 mb-2">
                                                 <Briefcase size={16} className="text-gray-400" />
-                                                <p className="text-[9px] font-black uppercase text-gray-400 tracking-widest">NPP / NIK</p>
+                                                <p className="text-[9px] font-black uppercase text-gray-400 tracking-widest">No. Anggota / NIK</p>
                                             </div>
-                                            <p className="text-sm font-bold text-gray-900 uppercase italic leading-tight">{member.no_npp || member.nik || '-'}</p>
+                                            <p className="text-sm font-bold text-gray-900 uppercase italic leading-tight">{member.no_anggota || member.nik || '-'}</p>
                                         </div>
                                     </div>
 

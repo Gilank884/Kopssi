@@ -34,12 +34,12 @@ const AdminOverview = () => {
             const { data: activeMem } = await supabase
                 .from('personal_data')
                 .select('id', { count: 'exact' })
-                .in('status', ['ACTIVE', 'ACTIVED', 'VERIFIED', 'active', 'verified', 'DONE VERIFIKASI']);
+                .in('status', ['AKTIF', 'ACTIVE', 'ACTIVED', 'VERIFIED', 'active', 'verified', 'DONE VERIFIKASI']);
 
             const { data: passiveMem } = await supabase
                 .from('personal_data')
                 .select('id', { count: 'exact' })
-                .in('status', ['NON_ACTIVE', 'NONAKTIF', 'PASIF']);
+                .in('status', ['PASIF', 'NON_ACTIVE', 'NONAKTIF', 'pasif']);
 
             const { count: activeLoans } = await supabase
                 .from('pinjaman')
@@ -95,7 +95,7 @@ const AdminOverview = () => {
             const { data: allNonActive } = await supabase
                 .from('personal_data')
                 .select('id, exit_realisasi_status')
-                .in('status', ['NON_ACTIVE', 'NONAKTIF']);
+                .in('status', ['PASIF', 'NON_ACTIVE', 'NONAKTIF', 'pasif']);
 
             const pendingExitMembers = (allNonActive || []).filter(m => m.exit_realisasi_status !== 'SENT');
             const pendingExitIds = pendingExitMembers.map(m => m.id);

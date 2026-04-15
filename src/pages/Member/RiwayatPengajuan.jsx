@@ -105,8 +105,8 @@ const RiwayatPengajuan = () => {
                             <FileText size={20} />
                         </div>
                         <div>
-                            <h2 className="text-lg font-bold text-gray-900 italic uppercase tracking-tighter">Pinjaman Terdaftar</h2>
-                            <p className="text-xs text-gray-500 font-medium uppercase tracking-widest text-[10px]">Riwayat semua pengajuan pinjaman Anda</p>
+                            <h2 className="text-lg font-bold text-gray-900 italic tracking-tighter">Pinjaman Terdaftar</h2>
+                            <p className="text-xs text-gray-500 font-medium tracking-widest text-[10px]">Riwayat semua pengajuan pinjaman Anda</p>
                         </div>
                     </div>
                 </div>

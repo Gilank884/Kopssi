@@ -84,9 +84,8 @@ const LandingPage = () => {
     const handleLogin = (loginData) => {
         setIsLoginOpen(false);
         setTimeout(() => {
-            // loginData.role adalah role dari database (ADMIN | MEMBER)
-            // loginData.loginAs adalah pilihan user di UI (admin | user)
-            if (loginData.role === 'ADMIN') {
+            // Support ADMIN and SUPERADMIN redirection
+            if (loginData.role === 'ADMIN' || loginData.role === 'SUPERADMIN') {
                 // Admin redirect ke dashboard admin
                 navigate('/admin');
             } else {

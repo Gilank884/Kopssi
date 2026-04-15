@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
-import { Search, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Download, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { exportInterestIncomeReportExcel } from '../../../utils/reportExcel';
 
 const InterestReport = () => {
@@ -8,7 +8,7 @@ const InterestReport = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [data, setData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [itemsPerPage, setItemsPerPage] = useState(20);
 
     useEffect(() => {
         fetchData();
@@ -26,21 +26,32 @@ const InterestReport = () => {
 
             const processedData = (installments || []).map(inst => {
                 const loan = inst.pinjaman;
-                const principal = parseFloat(loan.jumlah_pinjaman);
-                const tenor = loan.tenor_bulan;
+                
+                // Add safety check for missing loan data
+                if (!loan) {
+                    return {
+                        ...inst,
+                        interest_amount: 0,
+                        nama: 'Data Tidak Ditemukan',
+                        no_pinjaman: '-'
+                    };
+                }
+
+                const principal = parseFloat(loan.jumlah_pinjaman) || 0;
+                const tenor = loan.tenor_bulan || 1;
                 let totalBunga = 0;
                 if (loan.tipe_bunga === 'PERSENAN') {
-                    totalBunga = principal * (parseFloat(loan.nilai_bunga) / 100) * (tenor / 12);
+                    totalBunga = principal * (parseFloat(loan.nilai_bunga || 0) / 100) * (tenor / 12);
                 } else {
-                    totalBunga = parseFloat(loan.nilai_bunga);
+                    totalBunga = parseFloat(loan.nilai_bunga || 0);
                 }
                 const interestPerMonth = Math.round(totalBunga / tenor);
 
                 return {
                     ...inst,
                     interest_amount: interestPerMonth,
-                    nama: loan.personal_data?.full_name,
-                    no_pinjaman: loan.no_pinjaman
+                    nama: loan.personal_data?.full_name || 'Tanpa Nama',
+                    no_pinjaman: loan.no_pinjaman || '-'
                 };
             });
             setData(processedData);
@@ -71,12 +82,22 @@ const InterestReport = () => {
                         <h2 className="text-xl md:text-2xl font-black text-gray-900 italic tracking-tight leading-none">Bagi Hasil</h2>
                         <p className="text-[11px] text-gray-400 mt-1 font-medium italic tracking-tight">Laporan Porsi Bagi Hasil Pinjaman</p>
                     </div>
-                    <button
-                        onClick={() => exportInterestIncomeReportExcel(filteredData)}
-                        className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-[11px] font-black hover:bg-emerald-700 transition-all shadow-sm shrink-0"
-                    >
-                        <Download size={14} /> Export Excel
-                    </button>
+                    <div className="flex items-center gap-2 shrink-0">
+                        <button
+                            onClick={fetchData}
+                            disabled={loading}
+                            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-xl text-[11px] font-black hover:bg-gray-50 transition-all shadow-sm disabled:opacity-50"
+                        >
+                            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+                            Refresh
+                        </button>
+                        <button
+                            onClick={() => exportInterestIncomeReportExcel(filteredData)}
+                            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-[11px] font-black hover:bg-emerald-700 transition-all shadow-sm shrink-0"
+                        >
+                            <Download size={14} /> Export Excel
+                        </button>
+                    </div>
                 </div>
                 {/* Filters Row */}
                 <div className="px-5 py-3 flex flex-col sm:flex-row flex-wrap gap-3 items-center bg-gray-50/60">
@@ -89,6 +110,23 @@ const InterestReport = () => {
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="pl-9 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full text-xs font-medium bg-white shadow-sm"
                         />
+                    </div>
+
+                    <div className="flex items-center gap-2 ml-auto">
+                        <span className="text-[10px] font-black italic text-gray-400">Tampilkan:</span>
+                        <select
+                            value={itemsPerPage}
+                            onChange={(e) => {
+                                setItemsPerPage(Number(e.target.value));
+                                setCurrentPage(1);
+                            }}
+                            className="pl-3 pr-8 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs bg-white font-bold tracking-tight italic appearance-none shadow-sm"
+                        >
+                            <option value={20}>20</option>
+                            <option value={50}>50</option>
+                            <option value={100}>100</option>
+                            <option value={200}>200</option>
+                        </select>
                     </div>
                 </div>
             </div>

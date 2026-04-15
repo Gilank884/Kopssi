@@ -70,27 +70,21 @@ const DashboardLayout = () => {
     // NAV ITEMS (MEMBER)
     // =====================
     const memberNav = [
-        { path: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} />, end: true },
-        { path: '/dashboard/simpanan', label: 'Simpanan Saya', icon: <Wallet size={20} /> },
-        { path: '/dashboard/pinjaman', label: 'Pinjaman Saya', icon: <CreditCard size={20} /> },
-        { path: '/dashboard/angsuran', label: 'Angsuran Saya', icon: <CalendarDays size={20} /> },
-        { path: '/dashboard/pengajuan-pinjaman', label: 'Ajukan Pinjaman', icon: <FileText size={20} /> },
-        { path: '/dashboard/riwayat-pengajuan', label: 'Riwayat Pinjaman', icon: <Clock size={20} /> },
-        { path: '/dashboard/profil', label: 'Profil', icon: <User size={20} /> },
+        { path: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} />, end: true, category: 'UTAMA' },
+        { path: '/dashboard/simpanan', label: 'Simpanan Saya', icon: <Wallet size={20} />, category: 'KEUANGAN' },
+        { path: '/dashboard/pinjaman', label: 'Pinjaman Saya', icon: <CreditCard size={20} />, category: 'KEUANGAN' },
+        { path: '/dashboard/angsuran', label: 'Angsuran Saya', icon: <CalendarDays size={20} />, category: 'KEUANGAN' },
+        { path: '/dashboard/pengajuan-pinjaman', label: 'Ajukan Pinjaman', icon: <FileText size={20} />, category: 'LAYANAN' },
+        { path: '/dashboard/riwayat-pengajuan', label: 'Riwayat Pinjaman', icon: <Clock size={20} />, category: 'LAYANAN' },
+        { path: '/dashboard/profil', label: 'Profil', icon: <User size={20} />, category: 'AKUN' },
     ];
 
     // =====================
-    // NAV ITEMS (ADMIN)
+    // NAVIGATION SELECTOR
     // =====================
-    const adminNav = [
-        { path: '/admin', label: 'Dashboard Admin', icon: <LayoutDashboard size={20} />, end: true },
-        { path: '/admin/pengajuan-anggota', label: 'Pengajuan Anggota', icon: <FileText size={20} /> },
-        { path: '/admin/members', label: 'Data Anggota', icon: <User size={20} /> },
-        { path: '/admin/assesment-pinjaman', label: 'Penyetujuan Pinjaman', icon: <Shield size={20} /> },
-        { path: '/admin/pencairan-pinjaman', label: 'Pencairan Pinjaman', icon: <CreditCard size={20} /> },
-    ];
-
-    const navItems = authUser.role === 'ADMIN' ? adminNav : memberNav;
+    // This layout is only used for /dashboard routes, so we always show memberNav 
+    // even for Admins who are in "User Mode".
+    const navItems = memberNav;
 
     const currentItem =
         navItems.find(item => item.path === location.pathname) || { label: 'Dashboard' };
