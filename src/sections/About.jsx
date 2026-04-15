@@ -245,8 +245,8 @@ const About = () => {
                                     </div>
                                 </div>
                                 <div>
-                                    <h4 className="text-xl font-bold text-slate-900 mb-2">Bunga & Bagi Hasil Kompetitif</h4>
-                                    <p className="text-slate-600">Menawarkan imbal hasil simpanan yang menarik dan bunga pinjaman yang kompetitif untuk anggota.</p>
+                                    <h4 className="text-xl font-bold text-slate-900 mb-2">Bagi Hasil Kompetitif</h4>
+                                    <p className="text-slate-600">Menawarkan imbal hasil simpanan yang menarik dan bagi hasil pinjaman yang kompetitif untuk anggota.</p>
                                 </div>
                             </div>
 

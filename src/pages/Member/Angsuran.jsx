@@ -144,7 +144,7 @@ const Angsuran = () => {
                                 <th className="px-6 py-4 font-black text-center">Bulan</th>
                                 <th className="px-6 py-4 font-black">Jatuh Tempo</th>
                                 <th className="px-6 py-4 font-black text-right">Pokok</th>
-                                <th className="px-6 py-4 font-black text-right">Margin / Bunga</th>
+                                <th className="px-6 py-4 font-black text-right">Bagi Hasil</th>
                                 <th className="px-6 py-4 font-black text-right">Total Tagihan</th>
                                 <th className="px-6 py-4 font-black text-center">Status</th>
                             </tr>

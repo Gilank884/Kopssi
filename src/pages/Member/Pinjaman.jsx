@@ -367,14 +367,14 @@ const Pinjaman = () => {
                             <span className="font-medium text-gray-900">{loan.tenor_bulan} Bulan</span>
                         </div>
                         <div className="flex justify-between py-2 border-b border-gray-50">
-                            <span className="text-gray-500">Suku Bunga</span>
+                            <span className="text-gray-500">Persentase Bagi Hasil</span>
                             <span className="font-medium text-gray-900">
                                 {loan.tipe_bunga === 'PERSENAN' ? `${loan.nilai_bunga}% / Tahun` :
                                     loan.tipe_bunga === 'NOMINAL' ? `Rp ${parseFloat(loan.nilai_bunga).toLocaleString('id-ID')}` : '0%'}
                             </span>
                         </div>
                         <div className="flex justify-between py-2 border-b border-gray-50">
-                            <span className="text-gray-500">Total Bunga</span>
+                            <span className="text-gray-500">Total Bagi Hasil</span>
                             <span className="font-medium text-gray-900">{formatCurrency(summary.totalBunga || 0)}</span>
                         </div>
                         <div className="flex justify-between py-2 border-b border-gray-50">
@@ -411,7 +411,7 @@ const Pinjaman = () => {
                         </div>
                         {/* 
                         <div className="flex justify-between py-2 border-b border-gray-50">
-                            <span className="text-gray-500">Bunga Terbayar</span>
+                            <span className="text-gray-500">Bagi Hasil Terbayar</span>
                             <span className="font-medium text-gray-900">-</span>
                         </div>
                         */}

@@ -69,7 +69,7 @@ const InterestReport = () => {
                 <div className="px-5 pt-5 pb-4 border-b border-gray-100 flex items-center justify-between">
                     <div>
                         <h2 className="text-xl md:text-2xl font-black text-gray-900 italic tracking-tight leading-none">Bagi Hasil</h2>
-                        <p className="text-[11px] text-gray-400 mt-1 font-medium italic tracking-tight">Laporan Porsi Bunga Pinjaman</p>
+                        <p className="text-[11px] text-gray-400 mt-1 font-medium italic tracking-tight">Laporan Porsi Bagi Hasil Pinjaman</p>
                     </div>
                     <button
                         onClick={() => exportInterestIncomeReportExcel(filteredData)}
@@ -101,7 +101,7 @@ const InterestReport = () => {
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 w-12 text-center bg-emerald-50/50">No</th>
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 bg-emerald-50/50">Nama / No Pinjaman</th>
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-center bg-emerald-50/50">Bulan Ke</th>
-                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-right bg-emerald-50/50">Porsi Bunga</th>
+                                <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic border-r border-slate-200 text-right bg-emerald-50/50">Porsi Bagi Hasil</th>
                                 <th className="px-2 py-2 font-black text-slate-700 text-[10px] tracking-widest italic text-center bg-emerald-50/50">Tgl Bayar</th>
                             </tr>
                         </thead>

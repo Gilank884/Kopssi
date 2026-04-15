@@ -11,7 +11,7 @@ const Reports = () => {
     const tabs = [
         { id: 'ANGGOTA', label: 'Laporan Anggota', icon: <Users size={16} />, component: <MemberReport /> },
         { id: 'ANGSURAN', label: 'Laporan Angsuran', icon: <Banknote size={16} />, component: <InstallmentReport /> },
-        { id: 'BUNGA', label: 'Laporan Pendapatan Bunga', icon: <Percent size={16} />, component: <InterestReport /> },
+        { id: 'BUNGA', label: 'Laporan Pendapatan Bagi Hasil', icon: <Percent size={16} />, component: <InterestReport /> },
         { id: 'SISA_PINJAMAN', label: 'Laporan Sisa Pinjaman', icon: <Landmark size={16} />, component: <OutstandingLoanReport /> },
     ];
 

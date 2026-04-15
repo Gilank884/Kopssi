@@ -70,7 +70,7 @@ const AdminSettings = () => {
                     </div>
                     <div>
                         <h3 className="font-bold text-gray-800">Konfigurasi Sistem</h3>
-                        <p className="text-gray-500 text-sm">Parameter bunga dan biaya</p>
+                        <p className="text-gray-500 text-sm">Parameter bagi hasil dan biaya</p>
                     </div>
                 </div>
                 <div className="p-6 space-y-4">

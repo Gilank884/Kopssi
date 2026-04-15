@@ -356,8 +356,8 @@ const Simpanan = () => {
             </div>
 
             <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
-                <h4 className="font-bold text-gray-800 mb-2">Informasi Bunga</h4>
-                <p className="text-gray-600 text-sm">Anda mendapatkan bunga simpanan sebesar <span className="font-bold">4% per tahun</span> untuk Simpanan Sukarela. Bunga dihitung berdasarkan saldo terendah setiap bulan dan dikreditkan pada akhir bulan.</p>
+                <h4 className="font-bold text-gray-800 mb-2">Informasi Bagi Hasil</h4>
+                <p className="text-gray-600 text-sm">Anda mendapatkan bagi hasil simpanan sebesar <span className="font-bold">4% per tahun</span> untuk Simpanan Sukarela. Bagi hasil dihitung berdasarkan saldo terendah setiap bulan dan dikreditkan pada akhir bulan.</p>
             </div>
         </div>
     );
